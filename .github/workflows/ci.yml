@@ -111,7 +111,9 @@ jobs:
       - run: npm install -g npm@11
       - run: npm ci
         working-directory: frontend
-      - run: npx playwright install --with-deps --only-shell chromium
+      # La imagen ubuntu-24.04 incluye Chrome y sus bibliotecas; no reinstalar fuentes/Xvfb
+      # de idiomas ajenos a la interfaz española. Playwright valida las bibliotecas al lanzar.
+      - run: npx playwright install --only-shell chromium
         timeout-minutes: 5
         working-directory: frontend
       - name: Iniciar aplicación y esperar disponibilidad

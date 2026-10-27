@@ -24,7 +24,9 @@ El flujo `.github/workflows/ci.yml` tiene tres trabajos:
    antes de ejecutar `npm run e2e`.
 
 El trabajo E2E fija Ubuntu 24.04 para mantener estables las dependencias de Chromium e instala solo
-su variante headless. La instalación tiene un límite de cinco minutos; el trabajo completo, veinte.
+su variante headless. Usa las bibliotecas de Chrome incluidas en la imagen del runner, sin reinstalar
+fuentes adicionales ni Xvfb para las pruebas headless. Playwright valida las bibliotecas al lanzar.
+La instalación tiene un límite de cinco minutos; el trabajo completo, veinte.
 
 Las credenciales declaradas en ese trabajo pertenecen exclusivamente al runner desechable. No se
 usan secretos, servidores ni cuentas de producción. La configuración `dev` habilita cookies locales
