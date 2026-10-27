@@ -16,12 +16,25 @@ data class AppProperties(
     val mail: Mail = Mail(),
     val bootstrap: Bootstrap = Bootstrap(),
     val storage: Storage = Storage(),
+    val checkout: Checkout = Checkout(),
 ) {
     data class Storage(
         /** Carpeta donde se guardan imágenes públicas (logos, portadas, productos, QR). */
         val localDir: String = "./data/media",
+        /** Comprobantes de pago: nunca se sirven públicamente. */
+        val privateDir: String = "./data/private",
         val maxImageBytes: Long = 2 * 1024 * 1024,
+        val maxReceiptBytes: Long = 5 * 1024 * 1024,
         val maxImageDimension: Int = 4096,
+    )
+
+    data class Checkout(
+        /** Tiempo que se retiene un cupo mientras el comprador paga. */
+        val reservationHold: Duration = Duration.ofMinutes(30),
+        /** Tiempo que se retiene el cupo tras reportar el pago, mientras el vendedor verifica. */
+        val verificationHold: Duration = Duration.ofDays(2),
+        /** Un pedido sin pago reportado vence tras este plazo. */
+        val orderTtl: Duration = Duration.ofDays(2),
     )
 
     data class Session(

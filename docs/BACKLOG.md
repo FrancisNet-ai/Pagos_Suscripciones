@@ -7,9 +7,13 @@
 * [ADR-004](decisions/ADR-004-tipografias.md) Playfair Display / Bodoni Moda en lugar de Voga / Bodoni FLF hasta tener licencia.
 * [ADR-005](decisions/ADR-005-pagos-manuales-yape-plin.md) Verificación manual de Yape/Plin.
 * La raíz del repositorio cumple el papel de la carpeta `digital-saas/` de la especificación.
+* El estado «incidencia» de un pedido se modela con `orders.incident_reason` (no como estado aparte) para no mezclar el ciclo de pago con la revisión manual.
+* El enlace del pedido usa un token aleatorio de 256 bits (solo se guarda su hash). Un reintento con la misma `Idempotency-Key` emite un enlace nuevo para el mismo pedido.
 
 ## Pendientes
-- [ ] Fase 3: crear reservas de cupo desde el checkout y marcar reservas vencidas (`EXPIRED`) con tarea programada; transferencias tardías como incidencia.
+- [ ] Fase 4: crear `customer_subscriptions` al verificar pagos de suscripciones y rellenar las de pedidos ya pagados.
+- [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
+- [ ] Playwright como suite versionada en el repositorio (hoy los flujos E2E se ejecutan como scripts de verificación).
 - [ ] Fase 6: aplicar `product_limit` del plan SaaS al crear productos.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
 - [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.

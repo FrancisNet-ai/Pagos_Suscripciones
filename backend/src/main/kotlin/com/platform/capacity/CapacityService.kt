@@ -58,7 +58,7 @@ class CapacityService(
      * Debe llamarse dentro de la transacción que crea el pedido.
      */
     @Transactional
-    fun reserve(businessId: UUID, productId: UUID, holdFor: Duration): CapacityAllocation? {
+    fun reserve(businessId: UUID, productId: UUID, holdFor: Duration, orderId: UUID? = null): CapacityAllocation? {
         val product = products.lockByIdAndBusinessId(productId, businessId) ?: throw ApiException.notFound("El producto no existe.")
         if (!product.capacityEnabled) return null
         if (availability(product).soldOut) throw soldOut()
@@ -68,9 +68,55 @@ class CapacityService(
                 productId = productId,
                 allocationStatus = AllocationStatus.RESERVED,
                 reservedUntil = clock.instant().plus(holdFor),
+                orderId = orderId,
             ),
         )
     }
+
+    /**
+     * Mantiene el cupo de un pedido mientras el vendedor verifica un pago reportado.
+     * Si la reserva ya venció, intenta recuperarla; devuelve `false` si ya no hay cupo
+     * (transferencia tardía: el pedido debe tratarse como incidencia, nunca como venta automática).
+     */
+    @Transactional
+    fun holdForOrder(businessId: UUID, orderId: UUID, holdFor: Duration): Boolean {
+        val allocation = allocations.findByOrderIdAndBusinessId(orderId, businessId) ?: return true
+        val now = clock.instant()
+        when (allocation.allocationStatus) {
+            AllocationStatus.OCCUPIED, AllocationStatus.RELEASE_PENDING -> return true
+            AllocationStatus.RESERVED -> if (allocation.reservedUntil!!.isAfter(now)) {
+                allocation.reservedUntil = maxOf(allocation.reservedUntil!!, now.plus(holdFor))
+                return true
+            }
+            AllocationStatus.EXPIRED, AllocationStatus.RELEASED -> Unit
+        }
+        val product = products.lockByIdAndBusinessId(allocation.productId, businessId)!!
+        if (availability(product).soldOut) return false
+        allocation.allocationStatus = AllocationStatus.RESERVED
+        allocation.reservedUntil = now.plus(holdFor)
+        allocation.releasedAt = null
+        return true
+    }
+
+    /** Ocupa el cupo del pedido al verificarse el pago. Sin control de cupos no hace nada. */
+    @Transactional
+    fun occupyForOrder(businessId: UUID, orderId: UUID) {
+        allocations.findByOrderIdAndBusinessId(orderId, businessId)?.let { occupy(businessId, it.id) }
+    }
+
+    /** Libera una reserva no pagada (pedido cancelado, vencido o pago rechazado). No toca cupos ocupados. */
+    @Transactional
+    fun expireReservationForOrder(businessId: UUID, orderId: UUID) {
+        val allocation = allocations.findByOrderIdAndBusinessId(orderId, businessId) ?: return
+        if (allocation.allocationStatus == AllocationStatus.RESERVED) {
+            allocation.allocationStatus = AllocationStatus.EXPIRED
+            allocation.reservedUntil = null
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun reservationFor(businessId: UUID, orderId: UUID): CapacityAllocation? =
+        allocations.findByOrderIdAndBusinessId(orderId, businessId)
 
     /** Convierte una reserva en cupo ocupado (pago verificado). Una reserva vencida solo se confirma si aún hay espacio. */
     @Transactional

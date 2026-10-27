@@ -253,3 +253,14 @@
     white-space: nowrap;
   }
 }
+
+@layer components {
+  /* Botón con el color de cada tienda (contraste calculado en store-theme.ts). */
+  .btn-store {
+    background: var(--store-accent, var(--color-corporate));
+    color: var(--store-on-accent, var(--color-snow));
+  }
+  .btn-store:not(:disabled):hover {
+    filter: brightness(0.92);
+  }
+}

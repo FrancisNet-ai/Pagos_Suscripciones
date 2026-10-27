@@ -22,8 +22,8 @@ spring:
     locations: classpath:db/migration
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 3MB
+      max-file-size: 5MB
+      max-request-size: 6MB
   jackson:
     default-property-inclusion: always
 
@@ -76,6 +76,11 @@ app:
     log-links: false
   storage:
     local-dir: ${APP_STORAGE_LOCAL_DIR:./data/media}
+    private-dir: ${APP_STORAGE_PRIVATE_DIR:./data/private}
+  checkout:
+    reservation-hold: ${APP_CHECKOUT_RESERVATION_HOLD:PT30M}
+    verification-hold: ${APP_CHECKOUT_VERIFICATION_HOLD:P2D}
+    order-ttl: ${APP_CHECKOUT_ORDER_TTL:P2D}
   bootstrap:
     super-admin-email: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:}
     super-admin-password: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:}

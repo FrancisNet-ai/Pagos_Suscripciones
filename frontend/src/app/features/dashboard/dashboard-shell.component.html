@@ -33,6 +33,10 @@
       </div>
     }
 
+    @if (auth.business(); as business) {
+      <a [href]="'/tienda/' + business.slug" target="_blank" rel="noopener" class="mx-6 mt-4 text-sm text-mist underline decoration-mist/40 underline-offset-4 hover:text-snow">Ver mi tienda ↗</a>
+    }
+
     <nav class="flex-1 overflow-y-auto px-3 py-5" aria-label="Secciones">
       <ul class="space-y-1">
         @for (item of nav; track item.label) {
@@ -59,7 +63,8 @@
                   @for (child of item.children; track child.label) {
                     <li>
                       @if (child.route) {
-                        <a [routerLink]="child.route" routerLinkActive="!text-snow font-semibold"
+                        <a [routerLink]="child.route" [queryParams]="child.queryParams ?? null"
+                           routerLinkActive="!text-snow font-semibold" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored' }"
                            class="block py-1.5 text-sm text-mist no-underline hover:text-snow">{{ child.label }}</a>
                       } @else {
                         <span class="block py-1.5 text-sm text-mist/50" aria-disabled="true">{{ child.label }} <span class="text-[0.625rem] uppercase tracking-wider">· pronto</span></span>

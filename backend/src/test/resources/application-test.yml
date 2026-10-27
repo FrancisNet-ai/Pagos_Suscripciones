@@ -13,3 +13,4 @@ logging:
 app:
   storage:
     local-dir: ${java.io.tmpdir}/platform-test-media
+    private-dir: ${java.io.tmpdir}/platform-test-private

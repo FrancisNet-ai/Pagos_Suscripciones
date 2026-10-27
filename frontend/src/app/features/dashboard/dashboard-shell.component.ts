@@ -10,6 +10,7 @@ interface NavChild {
   label: string;
   /** Sin `route`: aún no implementado, se muestra deshabilitado. */
   route?: string;
+  queryParams?: Record<string, string>;
 }
 
 interface NavItem {
@@ -34,7 +35,13 @@ export class DashboardShellComponent {
     { label: 'Inicio', route: '/panel' },
     { label: 'Productos', route: '/panel/productos' },
     { label: 'Clientes', children: [{ label: 'Todos' }, { label: 'Registrar cliente' }] },
-    { label: 'Ventas y pagos', children: [{ label: 'Pedidos' }, { label: 'Por verificar' }] },
+    {
+      label: 'Ventas y pagos',
+      children: [
+        { label: 'Pedidos', route: '/panel/ventas' },
+        { label: 'Por verificar', route: '/panel/ventas', queryParams: { filtro: 'TO_VERIFY' } },
+      ],
+    },
     { label: 'Suscripciones y renovaciones', children: [{ label: 'Próximos vencimientos' }, { label: 'Renovaciones' }] },
     {
       label: 'Configuración',

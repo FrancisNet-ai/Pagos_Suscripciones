@@ -37,6 +37,20 @@ export const routes: Routes = [
     loadComponent: () => import('./features/legal/legal.page').then((m) => m.LegalPage),
   },
   {
+    path: 'tienda/:slug',
+    loadComponent: () => import('./features/storefront/storefront.page').then((m) => m.StorefrontPage),
+  },
+  {
+    path: 'tienda/:slug/comprar/:productId',
+    title: 'Completar pedido',
+    loadComponent: () => import('./features/checkout/checkout.page').then((m) => m.CheckoutPage),
+  },
+  {
+    path: 'pedido/:token',
+    title: 'Tu pedido',
+    loadComponent: () => import('./features/order-status/order-status.page').then((m) => m.OrderStatusPage),
+  },
+  {
     path: 'panel',
     canActivate: [authGuard, roleGuard('BUSINESS_OWNER')],
     loadComponent: () => import('./features/dashboard/dashboard-shell.component').then((m) => m.DashboardShellComponent),
@@ -60,6 +74,16 @@ export const routes: Routes = [
         path: 'productos/:id',
         title: 'Producto · Panel',
         loadComponent: () => import('./features/products/product-form.page').then((m) => m.ProductFormPage),
+      },
+      {
+        path: 'ventas',
+        title: 'Pedidos · Panel',
+        loadComponent: () => import('./features/orders/orders-list.page').then((m) => m.OrdersListPage),
+      },
+      {
+        path: 'ventas/:id',
+        title: 'Pedido · Panel',
+        loadComponent: () => import('./features/orders/order-detail.page').then((m) => m.OrderDetailPage),
       },
       {
         path: 'configuracion',

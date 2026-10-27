@@ -15,8 +15,16 @@
           @let business = s.business;
           <p class="mt-3 max-w-2xl text-lg">
             Este es el espacio de <strong class="font-semibold text-night">{{ business.businessName }}</strong>.
-            Aquí verás tus ventas, pagos por verificar y renovaciones a medida que se habiliten.
+            Desde aquí gestionas tu tienda, tus productos y los pagos que te reportan tus compradores.
           </p>
+
+          @if (s.setup.toVerify > 0) {
+            <a routerLink="/panel/ventas" [queryParams]="{ filtro: 'TO_VERIFY' }"
+               class="mt-6 flex items-center justify-between gap-4 rounded-[var(--radius-panel)] border border-warning/40 bg-warning-soft px-5 py-4 text-warning no-underline">
+              <span><strong class="type-numeric">{{ s.setup.toVerify }}</strong> {{ s.setup.toVerify === 1 ? 'pago reportado espera' : 'pagos reportados esperan' }} tu verificación.</span>
+              <span class="font-semibold">Revisar →</span>
+            </a>
+          }
 
           @if (business.status === 'SUSPENDED') {
             <p class="notice notice-error mt-6" role="alert">Tu negocio está suspendido. Las compras nuevas están bloqueadas; contacta a soporte para reactivarlo.</p>
@@ -27,10 +35,15 @@
             <p class="type-eyebrow !text-mist">Tu enlace público</p>
             <p class="mt-3 break-all font-[family-name:var(--font-editorial)] text-2xl text-snow sm:text-3xl">{{ storeUrl(business.slug) }}</p>
             <p class="mt-3 max-w-xl text-sm text-mist">
-              Ya está reservado para tu negocio. Tu tienda se abrirá a los compradores cuando publiques tus primeros productos.
+              @if (s.setup.publishedProducts > 0 && s.setup.paymentConfigured) {
+                Tu tienda está recibiendo pedidos. Compártela por WhatsApp, redes sociales o donde vendas.
+              } @else {
+                Ya está reservado para tu negocio. Para recibir pedidos, habilita Yape o Plin y publica al menos un producto.
+              }
             </p>
             <div class="mt-6 flex flex-wrap items-center gap-3">
               <button type="button" class="btn btn-light" (click)="copyStoreUrl(business.slug)">Copiar enlace</button>
+              <a class="btn btn-ghost-light" [href]="'/tienda/' + business.slug" target="_blank" rel="noopener">Ver mi tienda</a>
               <span class="text-sm text-mist" role="status" aria-live="polite">{{ copied() ? 'Enlace copiado' : '' }}</span>
             </div>
           </div>

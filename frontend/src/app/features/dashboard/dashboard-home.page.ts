@@ -11,6 +11,7 @@ import { Business } from '../settings/settings.api';
 interface Setup {
   paymentConfigured: boolean;
   publishedProducts: number;
+  toVerify: number;
 }
 
 type LoadState =
@@ -35,12 +36,13 @@ export class DashboardHomePage {
       business: this.http.get<Business>('/api/v1/business/me'),
       methods: this.http.get<{ enabled: boolean }[]>('/api/v1/business/me/payment-methods'),
       published: this.http.get<{ totalItems: number }>('/api/v1/products', { params: { filter: 'PUBLISHED', size: 1 } }),
+      orders: this.http.get<{ toVerify: number }>('/api/v1/orders/summary'),
     }).pipe(
       map(
-        ({ business, methods, published }): LoadState => ({
+        ({ business, methods, published, orders }): LoadState => ({
           status: 'ready',
           business,
-          setup: { paymentConfigured: methods.some((m) => m.enabled), publishedProducts: published.totalItems },
+          setup: { paymentConfigured: methods.some((m) => m.enabled), publishedProducts: published.totalItems, toVerify: orders.toVerify },
         }),
       ),
       catchError((e: unknown) => of<LoadState>({ status: 'error', message: ApiError.from(e).message })),

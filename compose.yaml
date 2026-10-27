@@ -49,6 +49,8 @@ services:
     volumes:
       # Imágenes subidas por los vendedores (logos, portadas, productos, QR).
       - media:/app/data/media
+      # Comprobantes de pago: privados, nunca servidos por Nginx.
+      - private:/app/data/private
 
   web:
     build:
@@ -63,3 +65,4 @@ services:
 volumes:
   pgdata:
   media:
+  private:

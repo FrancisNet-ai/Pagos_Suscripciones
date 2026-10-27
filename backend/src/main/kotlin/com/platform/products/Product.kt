@@ -54,5 +54,7 @@ interface ProductRepository : JpaRepository<Product, UUID> {
     )
     fun search(businessId: UUID, statuses: Collection<PublicationStatus>, pattern: String, pageable: Pageable): Page<Product>
 
+    fun findByBusinessIdAndPublicationStatusOrderByCreatedAtDesc(businessId: UUID, status: PublicationStatus): List<Product>
+
     fun countByBusinessIdAndPublicationStatus(businessId: UUID, status: PublicationStatus): Long
 }

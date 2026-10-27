@@ -122,24 +122,42 @@ en uso → `409 CAPACITY_BELOW_USAGE`.
 |---|---|
 | `/actuator/health` | Estado (liveness/readiness) para el proxy y Docker |
 
+## Fase 3 — implementado
+
+### Tienda pública (anónimo)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/stores/{slug}` | Nombre, descripción, logo, portada, color, `acceptingOrders`, métodos habilitados. Sin IDs internos, código empresarial ni números de cobro. Negocio suspendido → `acceptingOrders: false`, sin catálogo ni contacto |
+| `GET` | `/public/stores/{slug}/products` | Productos `PUBLISHED`: precio, duración, `availableSlots` (solo con cupos), `soldOut`, `purchasable` |
+| `GET` | `/public/stores/{slug}/products/{id}` | `404` si no pertenece al slug o no está publicado |
+| `POST` | `/public/stores/{slug}/orders` | `{ productId, customerName, phone, paymentMethod, acceptTerms, acceptDataProcessing, acceptRenewalReminders }` + header opcional `Idempotency-Key` → `201 { publicToken, orderNumber }` |
+
+El servidor ignora cualquier precio enviado por el navegador. Errores: `PRODUCT_SOLD_OUT`, `PRODUCT_UNAVAILABLE`,
+`STORE_NOT_ACCEPTING_ORDERS`, `RATE_LIMITED` (15 pedidos/15 min por IP; 6/hora por celular y negocio).
+
+### Pedido del comprador (token aleatorio, sin cuenta)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/orders/{token}` | Estado real, importe, instrucciones de pago (titular **declarado**, celular, QR, importe exacto), reserva vigente, `whatsappUrl` (`wa.me` con mensaje prellenado) |
+| `POST` | `/public/orders/{token}/payment-report` | `multipart/form-data`: `transactionReference` (4–40 alfanuméricos) y `receipt` opcional (PNG/JPG/WebP ≤ 5 MB) → pago `PENDING_VERIFICATION`, pedido `PAYMENT_REPORTED`. **Nunca** `VERIFIED` |
+
+Errores: `DUPLICATE_REFERENCE` (mismo código vigente en el negocio y método), `PAYMENT_ALREADY_REPORTED`, `ORDER_ALREADY_PAID`, `ORDER_CLOSED`.
+
+### Ventas y verificación (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/orders?filter=ALL\|TO_VERIFY\|AWAITING_PAYMENT\|PAID\|CLOSED&from=&to=&productId=&query=&page=` | Fechas en la zona horaria del negocio; búsqueda por cliente, celular o número |
+| `GET` | `/orders/summary` | `{ toVerify }` |
+| `GET` | `/orders/{id}` | Detalle con historial de pagos, estado del cupo, incidencia y consentimiento de recordatorios |
+| `POST` | `/orders/{id}/cancel` | `{ reason }` — solo sin pago verificado; libera la reserva |
+| `POST` | `/payments/{id}/verify` | Bloqueo `FOR UPDATE` + transición solo desde `PENDING_VERIFICATION`; ocupa el cupo; auditado. Segunda aprobación → `409 PAYMENT_ALREADY_PROCESSED` |
+| `POST` | `/payments/{id}/reject` | `{ reason }` (5–300) — el comprador puede volver a reportar |
+| `GET` | `/payments/{id}/receipt` | Comprobante privado (`Cache-Control: no-store`), cada acceso auditado |
+
 ## Fases siguientes — contratos orientativos
-
-### Tienda pública y checkout (Fase 3)
-
-* `GET /public/stores/{slug}` → datos públicos del negocio (sin IDs internos sensibles).
-* `GET /public/stores/{slug}/products` → productos `PUBLISHED`, con `soldOut` y disponibilidad solo si hay cupos.
-* `POST /public/stores/{slug}/orders` `{ productId, customerName, phone, paymentMethod, acceptTerms, acceptDataProcessing }`
-  → `201 { orderNumber, publicToken, amount, paymentInstructions, status, reservedUntil }`.
-  El precio lo calcula el servidor; el producto debe pertenecer al `slug`.
-* `GET /public/orders/{publicToken}` → estado real del pedido.
-* `POST /public/orders/{publicToken}/payment-report` `{ transactionReference }` + comprobante opcional → `PENDING_VERIFICATION`.
-* `GET /public/orders/{publicToken}/whatsapp-link` → `{ url, message }` generado con datos reales.
-
-### Ventas y pagos (Fase 3)
-
-* `GET /orders?from=&to=&productId=&status=&page=` · `GET /orders/{id}`
-* `POST /payments/{id}/verify` · `POST /payments/{id}/reject` `{ reason }` — transición condicional, auditada.
-* `GET /payments/{id}/receipt` — descarga autenticada del comprobante (nunca URL pública).
 
 ### Clientes y suscripciones (Fase 4)
 

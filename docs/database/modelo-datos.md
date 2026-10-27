@@ -76,16 +76,16 @@ erDiagram
 | `business_payment_methods` | `id`, `business_id`, `method` (`YAPE`, `PLIN`), `holder_name`, `phone`, `qr_image_url`, `is_enabled` | `UNIQUE(business_id, method)`; titular **declarado** por el vendedor |
 | `capacity_allocations` | `id`, `business_id`, `product_id`, `allocation_status` (+ `order_id` y `customer_subscription_id` en Fases 3–4) (`RESERVED`, `OCCUPIED`, `RELEASE_PENDING`, `RELEASED`, `EXPIRED`), `reserved_until`, `released_at`, `version` | Disponibilidad = `capacity − count(RESERVED vigentes + OCCUPIED + RELEASE_PENDING)` calculada bajo `SELECT … FOR UPDATE` sobre `products` |
 
-### Tienda, pedidos y pagos (Fase 3)
+### Tienda, pedidos y pagos (Fase 3 — `V3__storefront_orders_payments.sql`)
 
 | Tabla | Columnas clave | Notas |
 |---|---|---|
 | `customers` | `id`, `business_id`, `full_name`, `phone` (E.164 `+51…`), `source` (`STOREFRONT`, `MANUAL`, `IMPORT`), `notes`, timestamps | `UNIQUE(business_id, phone)` — **sin** unicidad global de teléfono |
-| `customer_consents` | `id`, `business_id`, `customer_id`, `purpose` (`PURCHASE_TERMS`, `DATA_PROCESSING`, `MARKETING_WHATSAPP`, `RENEWAL_REMINDERS`), `granted`, `source`, `policy_version`, `created_at`, `revoked_at` | Historial, nunca se sobrescribe |
+| `customer_consents` | `id`, `business_id`, `customer_id`, `order_id`, `purpose` (`PURCHASE_TERMS`, `DATA_PROCESSING`, `MARKETING_WHATSAPP`, `RENEWAL_REMINDERS`), `granted`, `source`, `policy_version`, `created_at`, `revoked_at` | Historial, nunca se sobrescribe |
 | `order_number_sequences` | `business_id`, `year`, `last_value` | Numeración legible por negocio y año con bloqueo de fila |
-| `orders` | `id`, `order_number`, `business_id`, `customer_id`, `kind` (`PURCHASE`, `RENEWAL`), `renewal_request_id`, `status` (`AWAITING_PAYMENT`, `PAYMENT_REPORTED`, `PAID`, `CANCELLED`, `EXPIRED`, `INCIDENT`), `total_amount`, `currency`, `idempotency_key`, timestamps | `UNIQUE(business_id, order_number)`, `UNIQUE(business_id, idempotency_key)` |
+| `orders` | `id`, `order_number`, `business_id`, `customer_id`, `customer_name_snapshot`, `customer_phone_snapshot`, `kind` (`PURCHASE`, `RENEWAL`), `status` (`AWAITING_PAYMENT`, `PAYMENT_REPORTED`, `PAID`, `CANCELLED`, `EXPIRED`), `total_amount`, `currency`, `public_token_hash`, `idempotency_key`, `incident_reason`, `cancellation_reason`, `paid_at`, timestamps | `UNIQUE(business_id, order_number)`, `UNIQUE(public_token_hash)`, `UNIQUE(business_id, idempotency_key)`; `renewal_request_id` en Fase 5 |
 | `order_items` | `id`, `order_id`, `product_id`, `product_name_snapshot`, `product_type_snapshot`, `unit_price_snapshot`, `duration_snapshot`, `quantity` | Copia histórica inmutable |
-| `customer_payments` | `id`, `business_id`, `order_id`, `payment_method_id`, `method_snapshot`, `holder_name_snapshot`, `receiver_phone_snapshot`, `amount`, `transaction_reference`, `receipt_url`, `status` (`PENDING`, `REPORTED`, `PENDING_VERIFICATION`, `VERIFIED`, `REJECTED`, `CANCELLED`, `REFUNDED`), `reported_at`, `verified_at`, `verified_by`, `rejection_reason`, `version` | Índice único parcial `(business_id, method_snapshot, transaction_reference) WHERE status IN ('PENDING_VERIFICATION','VERIFIED')` para detectar referencias duplicadas |
+| `customer_payments` | `id`, `business_id`, `order_id`, `payment_method_id`, `method_snapshot`, `holder_name_snapshot`, `receiver_phone_snapshot`, `amount`, `transaction_reference`, `receipt_key` (archivo privado), `status` (`PENDING`, `REPORTED`, `PENDING_VERIFICATION`, `VERIFIED`, `REJECTED`, `CANCELLED`, `REFUNDED`), `reported_at`, `verified_at`, `verified_by`, `rejection_reason`, `version` | Índice único parcial `(business_id, method_snapshot, transaction_reference) WHERE status IN ('PENDING_VERIFICATION','VERIFIED')` para detectar referencias duplicadas |
 
 ### Suscripciones y renovaciones (Fases 4–5)
 

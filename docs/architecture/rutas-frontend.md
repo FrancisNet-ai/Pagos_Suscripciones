@@ -14,13 +14,13 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/panel/productos` | `products` | owner | 2 |
 | `/panel/productos/nuevo`, `/panel/productos/:id` | `products` | owner | 2 |
 | `/panel/clientes`, `/panel/clientes/nuevo`, `/panel/clientes/:id` | `customers` | owner | 4 |
-| `/panel/ventas`, `/panel/ventas/:id` | `orders` + `payments` | owner | 3 |
+| `/panel/ventas` (`?filtro=TO_VERIFY`), `/panel/ventas/:id` | `orders` | owner | 3 |
 | `/panel/suscripciones` | `subscriptions` | owner | 4 |
 | `/panel/renovaciones` | `renewals` | owner | 5 |
 | `/panel/configuracion/negocio`, `/enlace`, `/cobros` (plan SaaS en Fase 6) | `settings` | owner | 2 / 6 |
 | `/tienda/:slug` | `storefront` | público | 3 |
 | `/tienda/:slug/comprar/:productId` | `checkout` | público | 3 |
-| `/pedido/:publicToken` | `checkout/order-status` | público | 3 |
+| `/pedido/:token` | `order-status` | público (token del pedido) | 3 |
 | `/renovar/:token` | `renewals/public` | público | 5 |
 | `/admin` | `super-admin` (shell propio) | `SUPER_ADMIN` | 6 |
 | `**` | página 404 | público | 1 |

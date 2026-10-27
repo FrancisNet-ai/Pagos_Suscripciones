@@ -16,6 +16,11 @@ servidor, auditoría, landing page, panel inicial e infraestructura Docker.
 enlace público, Yape y Plin con titular declarado y QR, catálogo de productos con imágenes, publicación
 y control de cupos sin sobreventa.
 
+**Fase 3 — Tienda y checkout: completada.** Tienda pública por enlace, compra sin registro desde el
+celular, pedidos `ORD-AAAA-NNNNNN`, instrucciones Yape/Plin con titular declarado, reporte de pago con
+comprobante privado, verificación manual auditada, cupos reservados sin sobreventa y enlace a WhatsApp
+con los datos reales del pedido.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

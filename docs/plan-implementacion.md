@@ -40,10 +40,22 @@ Las reservas se crean desde el checkout (Fase 3). Una reserva vencida deja de co
 el proceso programado que la marca como `EXPIRED` y la gestión de transferencias tardías llegan con
 las Fases 3 y 5.
 
-## Fase 3 — Tienda y checkout
-Tienda pública por slug, catálogo, compra sin registro, clientes por negocio, consentimientos, pedidos
-con numeración `ORD-AAAA-NNNNNN`, reserva temporal de cupo, instrucciones Yape/Plin, reporte de pago y
-comprobante, verificación/rechazo manual auditado, enlace `wa.me`, Playwright para el flujo completo.
+## Fase 3 — Tienda y checkout ✅
+
+| Entregable | Detalle |
+|---|---|
+| Migración | `V3__storefront_orders_payments.sql`: `customers`, `customer_consents`, `order_number_sequences`, `orders`, `order_items`, `customer_payments`; `capacity_allocations.order_id` |
+| Tienda pública | `/tienda/{slug}` móvil, con logo, portada y color del negocio (contraste AA garantizado); solo productos publicados; agotados visibles pero no comprables; negocio suspendido sin catálogo |
+| Compra sin registro | Nombre + celular + Yape/Plin + consentimientos; precio y producto resueltos en el servidor; cliente único por negocio y celular (upsert atómico); `ORD-AAAA-NNNNNN` correlativo por negocio y año; `Idempotency-Key`; rate limiting |
+| Cupos | Reserva de 30 min al crear el pedido; se extiende 2 días al reportar el pago; pago tardío sin cupo → incidencia que bloquea la aprobación |
+| Pago | Instrucciones con titular declarado, número copiable, QR e importe exacto; reporte de código de operación + comprobante privado; códigos duplicados detectados |
+| Verificación | Aprobación con confirmación explícita, bloqueo pesimista y auditoría; rechazo con motivo y reintento del comprador; cancelación |
+| WhatsApp | `MessagingProvider` + `ManualWhatsAppLinkProvider`: enlace `wa.me` con número del negocio, datos reales y estado verdadero; nunca se marca como enviado |
+| Tareas | `OrderExpirationJob` cada 5 min: reservas vencidas → `EXPIRED`; pedidos sin pago tras 2 días → `EXPIRED` (idempotente, por lotes) |
+| Pruebas | Backend 96 (aprobación concurrente, sobreventa, IDOR, comprobantes privados, duplicados, idempotencia); frontend 47; flujo Playwright comprador (móvil) → vendedor → comprador |
+
+Pendiente para la Fase 4: crear la suscripción del comprador (`customer_subscriptions`) al verificar un
+pago de un producto `SUBSCRIPTION` (incluidos los pedidos ya pagados en esta fase).
 
 ## Fase 4 — Gestión comercial
 Dashboard con indicadores reales, clientes y clientes antiguos, suscripciones (pago ≠ activación ≠

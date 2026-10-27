@@ -26,6 +26,7 @@ class CapacityAllocation(
     @Enumerated(EnumType.STRING) @Column(nullable = false) var allocationStatus: AllocationStatus,
     var reservedUntil: Instant? = null,
     var releasedAt: Instant? = null,
+    @Column(updatable = false) val orderId: UUID? = null,
 ) : VersionedEntity()
 
 interface UsageRow {
@@ -36,6 +37,7 @@ interface UsageRow {
 
 interface CapacityAllocationRepository : JpaRepository<CapacityAllocation, UUID> {
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): CapacityAllocation?
+    fun findByOrderIdAndBusinessId(orderId: UUID, businessId: UUID): CapacityAllocation?
 
     /** Uso actual por producto: ocupados (incluye liberaciones pendientes) y reservas vigentes. */
     @Query(

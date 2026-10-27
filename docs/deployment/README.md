@@ -19,8 +19,8 @@ docker compose up --build
 
 ## Copias de seguridad
 ```bash
-infrastructure/scripts/backup-db.sh            # genera backups/AAAAmmdd-HHMMSS.dump y …-media.tar.gz
-infrastructure/scripts/restore-db.sh <archivo.dump> [archivo-media.tar.gz]  # restaura base e imágenes
+infrastructure/scripts/backup-db.sh            # genera backups/AAAAmmdd-HHMMSS.dump y …-files.tar.gz
+infrastructure/scripts/restore-db.sh <archivo.dump> [archivo-files.tar.gz]  # restaura base e imágenes
 ```
 Programar `backup-db.sh` diariamente (cron) y copiar los archivos fuera del servidor. Probar la
 restauración periódicamente en un entorno aislado.

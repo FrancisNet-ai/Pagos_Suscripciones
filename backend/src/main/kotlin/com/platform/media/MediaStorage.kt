@@ -12,63 +12,71 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
 /**
- * Almacenamiento local de imágenes públicas con nombres aleatorios no adivinables.
- * Se puede sustituir por un almacenamiento de objetos (S3 compatible) manteniendo esta API.
+ * Almacenamiento local de archivos con nombres aleatorios no adivinables, en dos zonas:
+ * - pública: logos, portadas, imágenes de productos y QR (servidas por [MediaController]);
+ * - privada: comprobantes de pago, solo descargables por el vendedor autenticado.
+ * Se puede sustituir por almacenamiento de objetos (S3 compatible) manteniendo esta API.
  */
 @Service
 class MediaStorage(private val properties: AppProperties) {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val root: Path = Path.of(properties.storage.localDir).toAbsolutePath().normalize()
+    private val publicRoot: Path = createRoot(properties.storage.localDir)
+    private val privateRoot: Path = createRoot(properties.storage.privateDir)
 
-    init {
-        Files.createDirectories(root)
-    }
+    /** Valida y guarda una imagen pública. Devuelve la URL pública relativa. */
+    fun storeImage(file: MultipartFile): String =
+        PUBLIC_PREFIX + store(publicRoot, file.bytes, properties.storage.maxImageBytes)
 
-    /** Valida y guarda la imagen. Devuelve la URL pública relativa. */
-    fun storeImage(file: MultipartFile): String {
-        val bytes = file.bytes
-        val type = ImageValidator.validate(bytes, properties.storage.maxImageBytes, properties.storage.maxImageDimension)
-        val key = "${UuidV7.generate()}.${type.extension}"
-        Files.write(root.resolve(key), bytes, StandardOpenOption.CREATE_NEW)
-        // Si la transacción que usa la imagen falla, el archivo no queda huérfano.
-        runAfterRollback { delete(key) }
-        return PUBLIC_PREFIX + key
-    }
+    /** Valida y guarda un comprobante privado. Devuelve su clave interna. */
+    fun storeReceipt(bytes: ByteArray): String = store(privateRoot, bytes, properties.storage.maxReceiptBytes)
 
     /** Elimina el archivo anterior solo cuando la transacción que lo reemplaza se confirma. */
     fun deleteAfterCommit(url: String?) {
         val key = keyFromUrl(url) ?: return
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-                override fun afterCommit() = delete(key)
+                override fun afterCommit() = delete(publicRoot, key)
             })
         } else {
-            delete(key)
+            delete(publicRoot, key)
         }
     }
 
-    fun resolve(key: String): Path? {
+    fun resolve(key: String): Path? = resolveIn(publicRoot, key)
+
+    fun resolveReceipt(key: String): Path? = resolveIn(privateRoot, key)
+
+    private fun store(root: Path, bytes: ByteArray, maxBytes: Long): String {
+        val type = ImageValidator.validate(bytes, maxBytes, properties.storage.maxImageDimension)
+        val key = "${UuidV7.generate()}.${type.extension}"
+        Files.write(root.resolve(key), bytes, StandardOpenOption.CREATE_NEW)
+        // Si la transacción que usa el archivo falla, no queda huérfano.
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                override fun afterCompletion(status: Int) {
+                    if (status == TransactionSynchronization.STATUS_ROLLED_BACK) delete(root, key)
+                }
+            })
+        }
+        return key
+    }
+
+    private fun resolveIn(root: Path, key: String): Path? {
         if (!KEY_PATTERN.matches(key)) return null
         val path = root.resolve(key).normalize()
         return path.takeIf { it.startsWith(root) && Files.isRegularFile(it) }
     }
 
-    private fun delete(key: String) {
+    private fun delete(root: Path, key: String) {
         try {
-            resolve(key)?.let(Files::deleteIfExists)
+            resolveIn(root, key)?.let(Files::deleteIfExists)
         } catch (ex: Exception) {
             log.warn("No se pudo eliminar el archivo {}", key, ex)
         }
     }
 
-    private fun runAfterRollback(action: () -> Unit) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) return
-        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-            override fun afterCompletion(status: Int) {
-                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) action()
-            }
-        })
-    }
+    private fun createRoot(dir: String): Path =
+        Path.of(dir).toAbsolutePath().normalize().also { Files.createDirectories(it) }
 
     companion object {
         const val PUBLIC_PREFIX = "/api/v1/public/media/"
