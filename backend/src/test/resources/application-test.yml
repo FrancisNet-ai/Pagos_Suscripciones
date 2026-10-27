@@ -1,0 +1,11 @@
+app:
+  session:
+    cookie-name: sid
+    cookie-secure: false
+  mail:
+    log-links: false
+
+logging:
+  level:
+    root: WARN
+    com.platform: INFO

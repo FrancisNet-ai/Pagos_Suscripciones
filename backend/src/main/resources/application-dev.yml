@@ -1,0 +1,17 @@
+# Desarrollo local: HTTP, documentación OpenAPI y enlaces de correo en el log.
+springdoc:
+  api-docs:
+    enabled: ${APP_OPENAPI_ENABLED:true}
+  swagger-ui:
+    enabled: ${APP_OPENAPI_ENABLED:true}
+
+app:
+  session:
+    cookie-name: ${APP_SESSION_COOKIE_NAME:sid}
+    cookie-secure: ${APP_SESSION_COOKIE_SECURE:false}
+  mail:
+    log-links: true
+
+logging:
+  level:
+    com.platform: DEBUG

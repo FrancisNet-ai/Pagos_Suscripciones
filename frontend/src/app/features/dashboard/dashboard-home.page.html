@@ -1,0 +1,91 @@
+<section aria-labelledby="inicio-titulo" class="mx-auto max-w-5xl">
+  <p class="type-eyebrow">Inicio</p>
+  <h1 id="inicio-titulo" class="type-h1 mt-3">Hola, {{ firstName() }}.</h1>
+
+  @let s = state();
+  @if (s.status === 'loading') {
+    <div class="mt-10 space-y-4" aria-busy="true" aria-live="polite">
+      <div class="h-5 w-2/3 animate-pulse rounded bg-mist/40"></div>
+      <div class="h-5 w-1/2 animate-pulse rounded bg-mist/30"></div>
+      <span class="sr-only">Cargando datos del negocio…</span>
+    </div>
+  } @else if (s.status === 'error') {
+    <p class="notice notice-error mt-8" role="alert">{{ s.message }}</p>
+  } @else {
+          @let business = s.business;
+          <p class="mt-3 max-w-2xl text-lg">
+            Este es el espacio de <strong class="font-semibold text-night">{{ business.businessName }}</strong>.
+            Aquí verás tus ventas, pagos por verificar y renovaciones a medida que se habiliten.
+          </p>
+
+          @if (business.status === 'SUSPENDED') {
+            <p class="notice notice-error mt-6" role="alert">Tu negocio está suspendido. Las compras nuevas están bloqueadas; contacta a soporte para reactivarlo.</p>
+          }
+
+          <!-- Enlace público -->
+          <div class="relative isolate mt-10 overflow-hidden rounded-[var(--radius-panel)] bg-night px-6 py-8 text-snow sm:px-10">
+            <p class="type-eyebrow !text-mist">Tu enlace público</p>
+            <p class="mt-3 break-all font-[family-name:var(--font-editorial)] text-2xl text-snow sm:text-3xl">{{ storeUrl(business.slug) }}</p>
+            <p class="mt-3 max-w-xl text-sm text-mist">
+              Ya está reservado para tu negocio. Tu tienda se abrirá a los compradores cuando publiques tus primeros productos.
+            </p>
+            <div class="mt-6 flex flex-wrap items-center gap-3">
+              <button type="button" class="btn btn-light" (click)="copyStoreUrl(business.slug)">Copiar enlace</button>
+              <span class="text-sm text-mist" role="status" aria-live="polite">{{ copied() ? 'Enlace copiado' : '' }}</span>
+            </div>
+          </div>
+
+          <div class="mt-14 grid gap-14 lg:grid-cols-[1.1fr_1fr]">
+            <!-- Datos del negocio -->
+            <section aria-labelledby="datos-titulo">
+              <h2 id="datos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Datos del negocio</h2>
+              <dl class="mt-6 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
+                  <dt class="text-sm text-[var(--text-muted)]">Código empresarial</dt>
+                  <dd class="type-numeric font-semibold text-night">{{ business.uniqueCode }}</dd>
+                </div>
+                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
+                  <dt class="text-sm text-[var(--text-muted)]">Slug público</dt>
+                  <dd class="break-all text-night">{{ business.slug }}</dd>
+                </div>
+                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
+                  <dt class="text-sm text-[var(--text-muted)]">WhatsApp</dt>
+                  <dd class="type-numeric text-night">{{ formatPhone(business.whatsappNumber) }}</dd>
+                </div>
+                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
+                  <dt class="text-sm text-[var(--text-muted)]">Zona horaria</dt>
+                  <dd class="text-night">{{ business.timeZone }}</dd>
+                </div>
+                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
+                  <dt class="text-sm text-[var(--text-muted)]">Creado</dt>
+                  <dd class="type-numeric text-night">{{ formatDate(business.createdAt, business.timeZone) }}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <!-- Primeros pasos -->
+            <section aria-labelledby="pasos-titulo">
+              <h2 id="pasos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Primeros pasos</h2>
+              <ol class="mt-6 space-y-5">
+                <li class="flex gap-4">
+                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-xs text-snow" aria-hidden="true">✓</span>
+                  <div><p class="font-semibold text-night">Cuenta y negocio creados</p><p class="text-sm">Tu enlace y código empresarial ya están asignados.</p></div>
+                </li>
+                <li class="flex gap-4">
+                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
+                  <div><p class="font-semibold text-night">Configurar Yape y Plin</p><p class="text-sm">Registrarás el titular y el número que verán tus compradores.</p></div>
+                </li>
+                <li class="flex gap-4">
+                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
+                  <div><p class="font-semibold text-night">Publicar tus productos</p><p class="text-sm">Precio en soles, duración y cupos opcionales.</p></div>
+                </li>
+                <li class="flex gap-4">
+                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
+                  <div><p class="font-semibold text-night">Compartir tu tienda</p><p class="text-sm">Envía tu enlace por WhatsApp y redes sociales.</p></div>
+                </li>
+              </ol>
+              <p class="mt-6 text-sm text-[var(--text-muted)]">Estas secciones se activarán en tu panel conforme se habiliten.</p>
+            </section>
+          </div>
+  }
+</section>

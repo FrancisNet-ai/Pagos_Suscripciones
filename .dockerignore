@@ -1,0 +1,8 @@
+.git
+.env
+backups/
+**/node_modules
+frontend/dist
+frontend/.angular
+backend/
+docs/

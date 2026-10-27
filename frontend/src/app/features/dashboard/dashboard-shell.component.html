@@ -1,0 +1,80 @@
+<div class="min-h-dvh lg:grid lg:grid-cols-[17rem_1fr] lg:bg-[linear-gradient(to_right,var(--color-night)_17rem,transparent_17rem)]">
+  <!-- Barra superior móvil -->
+  <header class="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-night px-4 py-3 lg:hidden">
+    <app-brand-mark tone="light" link="/panel" />
+    <button type="button" class="btn btn-ghost-light !min-h-10 !px-3" aria-controls="panel-nav" [attr.aria-expanded]="menuOpen()" (click)="menuOpen.set(true)">
+      Menú
+    </button>
+  </header>
+
+  @if (menuOpen()) {
+    <div class="fixed inset-0 z-40 bg-night/50 lg:hidden" (click)="menuOpen.set(false)" aria-hidden="true"></div>
+  }
+
+  <!-- Navegación lateral -->
+  <aside
+    id="panel-nav"
+    class="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col bg-night text-snow transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:self-start lg:w-auto lg:max-w-none lg:translate-x-0"
+    [class.-translate-x-full]="!menuOpen()"
+    [attr.aria-label]="'Navegación del panel'"
+    [cdkTrapFocus]="menuOpen()"
+    [cdkTrapFocusAutoCapture]="menuOpen()"
+    (keydown.escape)="menuOpen.set(false)"
+  >
+    <div class="flex items-center justify-between px-6 pb-6 pt-7">
+      <app-brand-mark tone="light" link="/panel" />
+      <button type="button" class="rounded px-2 py-1 text-sm text-mist hover:text-snow lg:hidden" (click)="menuOpen.set(false)">Cerrar</button>
+    </div>
+
+    @if (auth.business(); as business) {
+      <div class="mx-6 border-y border-white/10 py-4">
+        <p class="text-xs uppercase tracking-[0.14em] text-mist/80">Negocio</p>
+        <p class="mt-1 truncate font-[family-name:var(--font-editorial)] text-lg text-snow">{{ business.businessName }}</p>
+      </div>
+    }
+
+    <nav class="flex-1 overflow-y-auto px-3 py-5" aria-label="Secciones">
+      <ul class="space-y-1">
+        @for (item of nav; track item.label) {
+          <li>
+            @if (item.route) {
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="!bg-white/10 !text-snow before:!bg-mist"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="relative flex min-h-11 items-center rounded-md px-3 text-[0.9375rem] font-medium text-mist no-underline transition-colors before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded before:bg-transparent hover:bg-white/5 hover:text-snow"
+              >{{ item.label }}</a>
+            } @else {
+              <details class="group">
+                <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-md px-3 text-[0.9375rem] font-medium text-mist/70 hover:bg-white/5">
+                  {{ item.label }}
+                  <span class="text-[0.6875rem] uppercase tracking-wider text-mist/60">Próximamente</span>
+                </summary>
+                <ul class="mb-2 ml-3 border-l border-white/10 pl-3">
+                  @for (child of item.children; track child) {
+                    <li class="py-1.5 text-sm text-mist/50" aria-disabled="true">{{ child }}</li>
+                  }
+                </ul>
+              </details>
+            }
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="border-t border-white/10 px-6 py-5">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-corporate text-sm font-semibold text-snow" aria-hidden="true">{{ initials() }}</span>
+        <div class="min-w-0">
+          <p class="truncate text-sm font-semibold text-snow">{{ auth.user()?.fullName }}</p>
+          <p class="truncate text-xs text-mist/80">{{ auth.user()?.email }}</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost-light btn-block mt-4 !min-h-10" (click)="logout()" [disabled]="loggingOut()">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="min-w-0 px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <router-outlet />
+  </main>
+</div>
