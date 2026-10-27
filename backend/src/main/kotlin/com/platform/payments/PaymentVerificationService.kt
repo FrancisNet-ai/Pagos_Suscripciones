@@ -7,6 +7,8 @@ import com.platform.common.error.ApiException
 import com.platform.media.MediaStorage
 import com.platform.subscriptions.SubscriptionService
 import com.platform.orders.OrderItemRepository
+import com.platform.orders.OrderKind
+import com.platform.renewals.RenewalService
 import com.platform.orders.OrderRepository
 import com.platform.orders.OrderStatus
 import org.springframework.stereotype.Service
@@ -26,6 +28,7 @@ class PaymentVerificationService(
     private val capacity: CapacityService,
     private val items: OrderItemRepository,
     private val subscriptions: SubscriptionService,
+    private val renewals: RenewalService,
     private val media: MediaStorage,
     private val audit: AuditService,
     private val clock: Clock,
@@ -43,8 +46,13 @@ class PaymentVerificationService(
         order.status = OrderStatus.PAID
         order.paidAt = now
         order.incidentReason = null
-        // Pagado no significa entregado: la suscripción queda pendiente de activación.
-        subscriptions.createFromPaidOrder(order, items.findByOrderId(order.id))
+        if (order.kind == OrderKind.RENEWAL) {
+            // Renovación: amplía la vigencia de la suscripción existente y conserva su cupo.
+            renewals.completeFromPaidOrder(order)
+        } else {
+            // Pagado no significa entregado: la suscripción queda pendiente de activación.
+            subscriptions.createFromPaidOrder(order, items.findByOrderId(order.id))
+        }
         audit.record(
             AuditActions.PAYMENT_VERIFIED, actorId = actorId, businessId = businessId, entityType = "PAYMENT", entityId = payment.id,
             metadata = mapOf("orderNumber" to order.orderNumber, "amount" to payment.amount, "method" to payment.methodSnapshot.name, "reference" to payment.transactionReference),

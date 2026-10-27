@@ -68,12 +68,17 @@ pago de un producto `SUBSCRIPTION` (incluidos los pedidos ya pagados en esta fas
 | Reportes | Por periodo, producto, estado de pedido y clientes recurrentes; dinero confirmado separado de pendiente; históricos manuales informativos |
 | Pruebas | Backend 111 (incluye relleno de migración y aislamiento); frontend 52; flujo Playwright: compras → verificación → activación → cliente antiguo → panel y reportes |
 
-Las renovaciones (solicitudes, enlaces, respuestas y reportes de renovación) son la Fase 5.
+## Fase 5 — Renovaciones y avisos ✅
 
-## Fase 5 — Renovaciones y disponibilidad
-Tareas programadas idempotentes (vencimientos, solicitudes de renovación, expiración de reservas),
-enlaces seguros `/renovar/{token}`, respuestas sí/no, conservación del cupo, tareas de liberación,
-notificaciones pendientes para envío manual.
+| Entregable | Detalle |
+|---|---|
+| Migración | `V5__renewals.sql`: política de avisos por negocio, `renewal_requests` (una por suscripción y ciclo), `renewal_notifications` (un aviso por tipo), `notification_preferences`, `subscription_renewals`, `orders.renewal_request_id` |
+| Tarea programada | `RenewalJob` idempotente por lotes: abre solicitudes N días antes del vencimiento, programa el recordatorio previo y el del día, marca `RENEWAL_PENDING`, prepara la despedida a quien rechaza y cierra las solicitudes sin respuesta al terminar el plazo de gracia (cupo → `RELEASE_PENDING`) |
+| Enlace del comprador | `/renovar/{token}` (HMAC de 256 bits, solo se guarda el hash): Sí/No, pedido de renovación con Yape/Plin sin ocupar un cupo nuevo, exclusión de avisos |
+| Panel | Avisos por enviar (WhatsApp `wa.me` con el mensaje listo; «Ya lo envié» lo confirma el vendedor), próximos vencimientos, aceptaron, rechazaron, sin respuesta, renovadas, cupos por liberar; configuración de días de aviso y plazo de gracia; exclusión desde la ficha del cliente |
+| Reglas | Responder «Sí» no es pagar: la suscripción se extiende solo al verificar el pago (desde el vencimiento o desde hoy si ya venció); sin autorización de recordatorios el aviso se marca con advertencia y el vendedor decide |
+| Reportes | Renovaciones cobradas del mes en el panel; aceptadas, rechazadas, sin respuesta y pendientes en reportes |
+| Pruebas | Backend 121 (idempotencia del job, cupo conservado, token inválido, exclusión, plazo de gracia, aislamiento); frontend 56; flujo Playwright: avisos → enlace → aceptar y pagar → verificación → renovación; rechazo → despedida |
 
 ## Fase 6 — Comercialización del SaaS
 Planes configurables, suscripción y cobro SaaS con verificación por SUPER_ADMIN, límites por plan,

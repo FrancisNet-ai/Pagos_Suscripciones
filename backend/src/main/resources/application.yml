@@ -81,6 +81,8 @@ app:
     reservation-hold: ${APP_CHECKOUT_RESERVATION_HOLD:PT30M}
     verification-hold: ${APP_CHECKOUT_VERIFICATION_HOLD:P2D}
     order-ttl: ${APP_CHECKOUT_ORDER_TTL:P2D}
+  renewals:
+    token-secret: ${APP_RENEWAL_TOKEN_SECRET:}
   bootstrap:
     super-admin-email: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:}
     super-admin-password: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:}

@@ -107,7 +107,14 @@
         </section>
         <section aria-labelledby="renov-titulo">
           <h2 id="renov-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Renovaciones</h2>
-          <p class="mt-4 text-[var(--text-muted)]">Los reportes de renovaciones se habilitarán junto con el sistema de renovaciones.</p>
+          <dl class="mt-4 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-[0.9375rem]">
+            <div class="flex justify-between gap-3 py-3"><dt>Renovaciones pagadas</dt><dd class="type-numeric text-night"><strong>{{ r.renewals.confirmed.count }}</strong> · {{ r.renewals.confirmed.amount | soles }}</dd></div>
+            <div class="flex justify-between gap-3 py-3"><dt>Aceptaron renovar</dt><dd class="type-numeric font-semibold text-night">{{ r.renewals.accepted }}</dd></div>
+            <div class="flex justify-between gap-3 py-3"><dt>No renovarán</dt><dd class="type-numeric font-semibold text-night">{{ r.renewals.declined }}</dd></div>
+            <div class="flex justify-between gap-3 py-3"><dt>Sin respuesta</dt><dd class="type-numeric font-semibold text-night">{{ r.renewals.noResponse }}</dd></div>
+            <div class="flex justify-between gap-3 py-3"><dt>Por responder</dt><dd class="type-numeric font-semibold text-night">{{ r.renewals.pending }}</dd></div>
+          </dl>
+          <p class="mt-2 text-xs text-[var(--text-muted)]">Respuestas de las suscripciones que vencían en el periodo. Las renovaciones pagadas ya están incluidas en los ingresos confirmados.</p>
           @if (r.manualSubscriptionsRegistered > 0) {
             <p class="mt-4 text-sm">{{ r.manualSubscriptionsRegistered }} suscripciones antiguas registradas a mano en el periodo (no cuentan como ingresos).</p>
           }

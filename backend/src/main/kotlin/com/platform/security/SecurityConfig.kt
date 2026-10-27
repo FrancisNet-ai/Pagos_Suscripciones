@@ -85,7 +85,7 @@ class SecurityConfig(
                     .requestMatchers("/api/docs", "/api/docs/**", "/swagger-ui/**").permitAll()
                     .requestMatchers("/api/v1/admin/**").hasRole(Roles.SUPER_ADMIN)
                     .requestMatchers("/api/v1/business/**", "/api/v1/products/**", "/api/v1/orders/**", "/api/v1/payments/**",
-                        "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**",
+                        "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**", "/api/v1/renewals/**",
                     )
                     .hasRole(Roles.BUSINESS_OWNER)
                     .requestMatchers("/error").permitAll()

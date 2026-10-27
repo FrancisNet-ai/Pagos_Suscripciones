@@ -15,6 +15,14 @@
     @let d = s.dashboard;
     @let business = s.business;
 
+    @if (d.notificationsDue > 0) {
+      <a routerLink="/panel/renovaciones"
+         class="mt-6 flex items-center justify-between gap-4 rounded-[var(--radius-panel)] border border-steel/40 bg-mist/25 px-5 py-4 text-corporate no-underline">
+        <span><strong class="type-numeric">{{ d.notificationsDue }}</strong> {{ d.notificationsDue === 1 ? 'aviso de renovación listo' : 'avisos de renovación listos' }} para enviar por WhatsApp.</span>
+        <span class="shrink-0 font-semibold">Enviar →</span>
+      </a>
+    }
+
     @if (business.status === 'SUSPENDED') {
       <p class="notice notice-error mt-6" role="alert">Tu negocio está suspendido. Las compras nuevas están bloqueadas; contacta a soporte para reactivarlo.</p>
     }
@@ -32,6 +40,9 @@
         <p class="text-sm font-semibold text-[var(--text-muted)]">Ingresos confirmados de {{ monthName() }}</p>
         <p class="type-numeric mt-2 font-[family-name:var(--font-display)] text-5xl leading-none text-night sm:text-6xl">{{ d.confirmedMonth.amount | soles }}</p>
         <p class="mt-2 text-sm">{{ d.confirmedMonth.count }} {{ d.confirmedMonth.count === 1 ? 'venta pagada' : 'ventas pagadas' }} este mes · solo pagos verificados</p>
+        @if (d.renewalsMonth.count > 0) {
+          <p class="mt-1 text-sm">Incluye {{ d.renewalsMonth.count }} {{ d.renewalsMonth.count === 1 ? 'renovación' : 'renovaciones' }} ({{ d.renewalsMonth.amount | soles }}).</p>
+        }
         <dl class="mt-8 grid grid-cols-2 gap-6">
           <div>
             <dt class="text-sm text-[var(--text-muted)]">Hoy</dt>

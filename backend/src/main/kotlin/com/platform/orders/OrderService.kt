@@ -61,6 +61,7 @@ class OrderService(
             OrderSummary(
                 id = o.id,
                 orderNumber = o.orderNumber,
+                kind = o.kind,
                 customerName = o.customerNameSnapshot,
                 customerPhone = o.customerPhoneSnapshot,
                 productName = itemsByOrder[o.id]?.firstOrNull()?.productNameSnapshot ?: "",
@@ -81,11 +82,13 @@ class OrderService(
         val history = payments.findByOrderIdOrderByCreatedAtDesc(order.id)
         val allocation = capacity.reservationFor(businessId, order.id)
         val subscription = subscriptions.forOrder(businessId, order.id)
+            ?: order.renewalRequestId?.let { subscriptions.forRenewalRequest(businessId, it) }
         val remindersConsent = consents.findByCustomerIdOrderByCreatedAtDesc(order.customerId)
             .firstOrNull { it.purpose == ConsentPurpose.RENEWAL_REMINDERS }?.let { it.granted && it.revokedAt == null } ?: false
         return OrderDetail(
             id = order.id,
             orderNumber = order.orderNumber,
+            kind = order.kind,
             status = order.status,
             statusLabel = sellerLabel(order, history.firstOrNull()?.status),
             customerId = order.customerId,

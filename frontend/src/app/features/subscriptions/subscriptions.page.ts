@@ -13,7 +13,9 @@ const FILTERS: { value: SubscriptionFilter; label: string; empty: string }[] = [
   { value: 'PENDING_ACTIVATION', label: 'Por activar', empty: 'No hay suscripciones pagadas pendientes de activar.' },
   { value: 'EXPIRING', label: 'Por vencer', empty: 'Ninguna suscripción vence en los próximos 7 días.' },
   { value: 'ACTIVE', label: 'Activas', empty: 'No hay suscripciones activas.' },
+  { value: 'RENEWAL', label: 'En renovación', empty: 'Ningún cliente está renovando en este momento.' },
   { value: 'EXPIRED', label: 'Vencidas', empty: 'No hay suscripciones vencidas.' },
+  { value: 'RELEASE_PENDING', label: 'Cupos por liberar', empty: 'No hay cupos pendientes de liberar.' },
   { value: 'CLOSED', label: 'Finalizadas', empty: 'No hay suscripciones finalizadas o canceladas.' },
   { value: 'ALL', label: 'Todas', empty: 'Aún no hay suscripciones.' },
 ];

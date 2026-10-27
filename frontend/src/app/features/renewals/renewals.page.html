@@ -1,0 +1,99 @@
+<section class="mx-auto max-w-5xl" aria-labelledby="renov-titulo">
+  <p class="type-eyebrow">Suscripciones y renovaciones</p>
+  <h1 id="renov-titulo" class="type-h1 mt-3">Renovaciones</h1>
+  <p class="mt-3 max-w-2xl">
+    Cuando una suscripción está por vencer preparamos el aviso con un enlace personal de renovación. Lo envías tú desde tu WhatsApp;
+    la renovación se confirma solo al verificar el pago.
+  </p>
+
+  <nav class="mt-8 flex gap-1 overflow-x-auto border-b border-[var(--line-subtle)] pb-4" aria-label="Grupos de renovación">
+    @for (t of tabs(); track t.value) {
+      <button type="button" class="flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors"
+              [class]="tab() === t.value ? 'bg-night text-snow' : 'text-corporate hover:bg-mist/30'"
+              [attr.aria-pressed]="tab() === t.value" (click)="select(t.value)">
+        {{ t.label }}
+        @if (t.count) { <span class="type-numeric rounded-full px-1.5 text-xs" [class]="tab() === t.value ? 'bg-snow/20' : 'bg-mist/50'">{{ t.count }}</span> }
+      </button>
+    }
+  </nav>
+
+  @if (error(); as message) { <p class="notice notice-error mt-6" role="alert">{{ message }}</p> }
+
+  @switch (tab()) {
+    @case ('NOTIFICATIONS') {
+      @if (notifications(); as list) {
+        @if (list.length === 0) {
+          <p class="py-16 text-center font-[family-name:var(--font-editorial)] text-2xl text-night">No tienes avisos pendientes.</p>
+        } @else {
+          <ul class="divide-y divide-[var(--line-subtle)]">
+            @for (n of list; track n.id) {
+              <li class="grid gap-3 py-6 lg:grid-cols-[1fr_1.3fr] lg:gap-8">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.12em]" [class]="n.type === 'FAREWELL' ? 'text-[var(--text-muted)]' : 'text-warning'">{{ n.typeLabel }}</p>
+                  <a [routerLink]="['/panel/clientes', n.customerId]" class="mt-1 block font-semibold text-night no-underline hover:underline">{{ n.customerName }}</a>
+                  <p class="type-numeric text-sm text-[var(--text-muted)]">{{ local(n.customerPhone) }} · {{ n.productName }}</p>
+                  @if (!n.consent) {
+                    <p class="mt-2 text-xs text-warning">Este cliente no autorizó recordatorios al comprar. Envíalo solo si cuentas con su autorización.</p>
+                  }
+                </div>
+                <div>
+                  <p class="whitespace-pre-line rounded-[var(--radius-control)] bg-white p-4 text-sm ring-1 ring-[var(--line-subtle)]">{{ n.message }}</p>
+                  <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <a class="btn btn-primary !min-h-10" [href]="n.whatsappUrl" target="_blank" rel="noopener noreferrer" (click)="open(n)">Abrir WhatsApp</a>
+                    <button type="button" class="btn btn-secondary !min-h-10" (click)="markSent(n)" [disabled]="!opened().has(n.id)"
+                            [attr.title]="opened().has(n.id) ? null : 'Primero abre WhatsApp y envía el mensaje'">Ya lo envié</button>
+                    <button type="button" class="btn !min-h-10 text-corporate hover:bg-mist/30" (click)="skip(n)">Omitir</button>
+                  </div>
+                  <p class="mt-2 text-xs text-[var(--text-muted)]">WhatsApp se abre con el mensaje listo; el envío lo confirmas tú.</p>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      } @else {
+        <div class="mt-6 h-32 animate-pulse rounded bg-mist/25" aria-busy="true"></div>
+      }
+    }
+    @case ('RELEASE') {
+      @if (releases(); as list) {
+        @if (list.length === 0) {
+          <p class="py-16 text-center font-[family-name:var(--font-editorial)] text-2xl text-night">No hay cupos pendientes de liberar.</p>
+        } @else {
+          <p class="mt-6 text-sm">Estas suscripciones terminaron, pero su cupo sigue ocupado hasta que confirmes que retiraste el acceso en el servicio.</p>
+          <div class="divide-y divide-[var(--line-subtle)]">
+            @for (s of list; track s.id) { <app-subscription-item [sub]="s" [showCustomer]="true" (changed)="onReleased()" /> }
+          </div>
+        }
+      } @else {
+        <div class="mt-6 h-32 animate-pulse rounded bg-mist/25" aria-busy="true"></div>
+      }
+    }
+    @default {
+      @if (renewals(); as list) {
+        @if (list.length === 0) {
+          <p class="py-16 text-center font-[family-name:var(--font-editorial)] text-2xl text-night">No hay renovaciones en este grupo.</p>
+        } @else {
+          <ul class="divide-y divide-[var(--line-subtle)]">
+            @for (r of list; track r.id) {
+              <li class="grid gap-2 py-5 sm:grid-cols-[1.3fr_1fr_auto] sm:items-center sm:gap-6">
+                <div class="min-w-0">
+                  <a [routerLink]="['/panel/clientes', r.customerId]" class="font-semibold text-night no-underline hover:underline">{{ r.customerName }}</a>
+                  <p class="truncate text-sm text-[var(--text-muted)]">{{ r.productName }} · vence {{ date(r.cycleExpiresAt) }}</p>
+                </div>
+                <p class="text-sm">{{ responseLabel(r) }}@if (r.respondedAt) { <span class="text-[var(--text-muted)]"> · {{ date(r.respondedAt) }}</span> }</p>
+                <div class="flex flex-wrap gap-2">
+                  @if (r.status === 'OPEN' || r.status === 'AWAITING_PAYMENT') {
+                    <button type="button" class="btn btn-secondary !min-h-10" (click)="copyLink(r)">{{ copied() === r.id ? 'Copiado' : 'Copiar enlace' }}</button>
+                  }
+                  @if (r.orderId) { <a class="btn !min-h-10 text-corporate hover:bg-mist/30" [routerLink]="['/panel/ventas', r.orderId]">Ver pedido</a> }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      } @else {
+        <div class="mt-6 h-32 animate-pulse rounded bg-mist/25" aria-busy="true"></div>
+      }
+    }
+  }
+</section>

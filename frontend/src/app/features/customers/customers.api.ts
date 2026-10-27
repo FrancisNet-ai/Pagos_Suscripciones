@@ -26,6 +26,7 @@ export interface CustomerDetail {
   notes: string | null;
   createdAt: string;
   renewalRemindersConsent: boolean;
+  notificationsOptedOut: boolean;
   paidOrders: number;
   subscriptions: Subscription[];
   orders: OrderSummary[];
@@ -51,6 +52,10 @@ export class CustomersApi {
 
   update(id: string, payload: { fullName: string; notes: string | null }): Observable<CustomerDetail> {
     return this.http.put<CustomerDetail>(`/api/v1/customers/${id}`, payload);
+  }
+
+  setOptOut(id: string, optedOut: boolean): Observable<CustomerDetail> {
+    return this.http.put<CustomerDetail>(`/api/v1/customers/${id}/notifications`, { optedOut });
   }
 
   addSubscription(id: string, payload: ManualSubscriptionPayload): Observable<CustomerDetail> {

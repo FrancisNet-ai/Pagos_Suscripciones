@@ -195,13 +195,36 @@ Al verificar el pago de un producto `SUBSCRIPTION` se crea la suscripción en `P
 
 Fechas y agrupaciones en la zona horaria del negocio. Ingresos = solo pagos `VERIFIED`.
 
+## Fase 5 — implementado
+
+### Renovación del comprador (token, sin cuenta)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/renewals/{token}` | Suscripción, vencimiento, precio, respuesta y pedido vigente (si existe) |
+| `POST` | `/public/renewals/{token}/response` | `{ "response": "ACCEPTED" \| "DECLINED" }`. Aceptar no renueva: solo indica intención |
+| `POST` | `/public/renewals/{token}/orders` | `{ "paymentMethod": "YAPE" \| "PLIN" }` → pedido `RENEWAL` (sin reservar cupo nuevo) y su enlace `/pedido/{token}`; si ya existe uno abierto se reutiliza |
+| `POST` | `/public/renewals/{token}/opt-out` | El comprador deja de recibir avisos de este negocio |
+
+Token inválido o vencido → `404`. Rate limiting por IP.
+
+### Renovaciones (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/renewals?bucket=UPCOMING\|ACCEPTED\|DECLINED\|NO_RESPONSE\|COMPLETED&page=&size=` | Solicitudes por estado |
+| `GET` | `/renewals/overview` | Conteos por bandeja y avisos por enviar |
+| `GET` | `/renewals/notifications` | Avisos pendientes con mensaje y enlace `wa.me` listos, y si el cliente autorizó recordatorios |
+| `POST` | `/renewals/notifications/{id}/sent` | El vendedor confirma que lo envió (`SENT_MANUALLY`) |
+| `POST` | `/renewals/notifications/{id}/skip` | Omitir aviso (`SKIPPED`) |
+| `GET`/`PUT` | `/renewals/settings` | `{ reminderDaysBefore (0–15), reminderOnDueDay, renewalGraceDays (0–30) }` |
+| `PUT` | `/customers/{id}/notifications` | `{ "optedOut": true \| false }` exclusión registrada por el vendedor |
+
+Al verificar el pago de un pedido `RENEWAL` la suscripción se extiende desde su vencimiento (o desde
+hoy si ya venció) y se registra en `subscription_renewals`. `/reports/dashboard` añade `renewalsMonth`
+y `notificationsDue`; `/reports/sales` añade `renewals { confirmed, accepted, declined, noResponse, pending }`.
+
 ## Fases siguientes — contratos orientativos
-
-### Renovaciones (Fase 5)
-
-* `GET /renewals?bucket=UPCOMING|ACCEPTED|DECLINED|NO_RESPONSE` · `POST /renewals/{id}/notifications/{nid}/mark-sent`
-* `GET /public/renewals/{token}` · `POST /public/renewals/{token}/response` `{ "response": "ACCEPTED|DECLINED" }`
-* `POST /public/renewals/{token}/orders` — crea pedido de renovación (no ocupa un cupo nuevo).
 
 ### Administración SaaS (Fase 6)
 

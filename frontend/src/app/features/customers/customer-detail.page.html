@@ -78,10 +78,20 @@
             </ul>
           }
         </section>
-        <p class="text-xs text-[var(--text-muted)]">
-          Recordatorios de renovación por WhatsApp: {{ c.renewalRemindersConsent ? 'autorizados por el cliente' : 'sin autorización' }}.
-          Cliente desde el {{ date(c.createdAt) }}
-        </p>
+        <section aria-labelledby="avisos-titulo">
+          <h2 id="avisos-titulo" class="field-label">Avisos por WhatsApp</h2>
+          <p class="mt-2 text-sm">
+            @if (c.notificationsOptedOut) {
+              No desea recibir avisos. No se prepararán recordatorios para este cliente.
+            } @else {
+              Recordatorios de renovación: {{ c.renewalRemindersConsent ? 'autorizados por el cliente' : 'sin autorización registrada' }}.
+            }
+          </p>
+          <button type="button" class="link mt-2 text-sm" [disabled]="busy()" (click)="toggleOptOut(c)">
+            {{ c.notificationsOptedOut ? 'Volver a permitir avisos' : 'Registrar que no desea avisos' }}
+          </button>
+        </section>
+        <p class="text-xs text-[var(--text-muted)]">Cliente desde el {{ date(c.createdAt) }}</p>
       </aside>
     </div>
   } @else {

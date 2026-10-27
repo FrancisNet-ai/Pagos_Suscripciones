@@ -13,6 +13,7 @@ import com.platform.orders.OrderStatus
 import com.platform.orders.OrderSummary
 import com.platform.orders.OrderFilter
 import com.platform.products.ProductService
+import com.platform.renewals.RenewalService
 import com.platform.security.CurrentBusiness
 import com.platform.subscriptions.CustomerSubscriptionRepository
 import com.platform.subscriptions.ManualSubscriptionRequest
@@ -96,6 +97,7 @@ data class CustomerDetail(
     val notes: String?,
     val createdAt: Instant?,
     val renewalRemindersConsent: Boolean,
+    val notificationsOptedOut: Boolean,
     val paidOrders: Long,
     val subscriptions: List<SubscriptionResponse>,
     val orders: List<OrderSummary>,
@@ -132,9 +134,16 @@ class CustomerAdminService(
     private val subscriptions: SubscriptionService,
     private val orders: OrderService,
     private val orderRepo: OrderRepository,
+    private val renewals: RenewalService,
     private val audit: AuditService,
     private val clock: Clock,
 ) {
+    @Transactional
+    fun setOptOut(businessId: UUID, actorId: UUID, zone: ZoneId, customerId: UUID, optedOut: Boolean): CustomerDetail {
+        renewals.setOptOut(businessId, load(businessId, customerId).id, optedOut, "SELLER", actorId)
+        return detail(businessId, zone, customerId)
+    }
+
     @Transactional(readOnly = true)
     fun list(businessId: UUID, query: String?, filter: CustomerFilter, page: Int, size: Int): PageResponse<CustomerSummary> {
         val result = search.search(
@@ -162,6 +171,7 @@ class CustomerAdminService(
         return CustomerDetail(
             id = c.id, fullName = c.fullName, phone = c.phone, source = c.source, notes = c.notes, createdAt = c.createdAt,
             renewalRemindersConsent = reminders?.let { it.granted && it.revokedAt == null } ?: false,
+            notificationsOptedOut = renewals.isOptedOut(c.id),
             paidOrders = orderRepo.countByBusinessIdAndCustomerIdAndStatus(businessId, c.id, OrderStatus.PAID),
             subscriptions = subscriptions.forCustomer(businessId, c),
             orders = orders.list(businessId, zone, OrderFilter.ALL, null, null, null, c.phone, 0, 20).items,
@@ -235,6 +245,11 @@ class CustomerController(private val service: CustomerAdminService, private val 
     @PutMapping("/{id}")
     fun update(current: CurrentBusiness, @PathVariable id: UUID, @Valid @RequestBody body: UpdateCustomerRequest) =
         service.update(current.businessId, current.userId, zone(current), id, body)
+
+    @PutMapping("/{id}/notifications")
+    @Operation(summary = "Registra que el cliente no desea (o vuelve a aceptar) avisos por WhatsApp")
+    fun notifications(current: CurrentBusiness, @PathVariable id: UUID, @RequestBody body: com.platform.renewals.OptOutRequest) =
+        service.setOptOut(current.businessId, current.userId, zone(current), id, body.optedOut)
 
     @PostMapping("/{id}/subscriptions")
     @Operation(summary = "Registra una suscripción antigua para un cliente existente")

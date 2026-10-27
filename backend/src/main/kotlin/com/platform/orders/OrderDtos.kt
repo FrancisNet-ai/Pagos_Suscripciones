@@ -22,6 +22,7 @@ enum class OrderFilter(val statuses: Set<OrderStatus>) {
 data class OrderSummary(
     val id: UUID,
     val orderNumber: String,
+    val kind: OrderKind,
     val customerName: String,
     val customerPhone: String,
     val productName: String,
@@ -61,6 +62,7 @@ data class OrderItemDetail(
 data class OrderDetail(
     val id: UUID,
     val orderNumber: String,
+    val kind: OrderKind,
     val status: OrderStatus,
     val statusLabel: String,
     val customerId: UUID,

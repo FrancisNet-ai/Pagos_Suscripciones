@@ -18,6 +18,8 @@ export interface Dashboard {
   confirmedToday: Money;
   confirmedMonth: Money;
   pendingVerification: Money;
+  renewalsMonth: Money;
+  notificationsDue: number;
   customers: number;
   subscriptions: { pendingActivation: number; active: number; expiringSoon: number; expired: number; capacityReleasePending: number };
   soldOutProducts: { id: string; name: string; capacity: number | null }[];
@@ -36,6 +38,7 @@ export interface SalesReport {
   recurringCustomers: number;
   topRecurring: { customerId: string; fullName: string; phone: string; paidOrders: number; amount: number }[];
   manualSubscriptionsRegistered: number;
+  renewals: { confirmed: Money; accepted: number; declined: number; noResponse: number; pending: number };
 }
 
 @Injectable({ providedIn: 'root' })

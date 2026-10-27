@@ -50,6 +50,9 @@ data class DashboardResponse(
     val confirmedToday: Money,
     val confirmedMonth: Money,
     val pendingVerification: Money,
+    /** Renovaciones con pago verificado este mes (ya incluidas en los ingresos confirmados). */
+    val renewalsMonth: Money,
+    val notificationsDue: Long,
     val customers: Long,
     val subscriptions: SubscriptionCounts,
     val soldOutProducts: List<SoldOutProduct>,
@@ -75,7 +78,11 @@ data class SalesReport(
     val topRecurring: List<RecurringCustomer>,
     /** Suscripciones antiguas registradas a mano: informativo, no son ingresos del periodo. */
     val manualSubscriptionsRegistered: Long,
+    val renewals: RenewalStats,
 )
+
+/** Renovaciones del periodo: pagadas (incluidas en `confirmed`) y respuestas de solicitudes que vencían en él. */
+data class RenewalStats(val confirmed: Money, val accepted: Long, val declined: Long, val noResponse: Long, val pending: Long)
 
 @Service
 class ReportsService(
@@ -104,6 +111,11 @@ class ReportsService(
             pendingVerification = jdbc.queryForObject(
                 "select coalesce(sum(amount), 0), count(*) from customer_payments where business_id = ? and status = 'PENDING_VERIFICATION'",
                 { rs, _ -> Money(rs.getBigDecimal(1), rs.getLong(2)) }, businessId,
+            )!!,
+            renewalsMonth = paidRenewals(businessId, startOfMonth, tomorrow),
+            notificationsDue = jdbc.queryForObject(
+                "select count(*) from renewal_notifications where business_id = ? and delivery_status = 'PENDING' and scheduled_at <= ?",
+                Long::class.java, businessId, ts(now),
             )!!,
             customers = jdbc.queryForObject("select count(*) from customers where business_id = ?", Long::class.java, businessId)!!,
             subscriptions = subscriptionCounts(businessId, now),
@@ -164,6 +176,29 @@ class ReportsService(
                 "select count(*) from customer_subscriptions where business_id = ? and origin <> 'ORDER' and created_at >= ? and created_at < ?",
                 Long::class.java, businessId, ts(start), ts(end),
             )!!,
+            renewals = renewalStats(businessId, start, end),
+        )
+    }
+
+    private fun paidRenewals(businessId: UUID, from: Instant, to: Instant): Money = jdbc.queryForObject(
+        """
+        select coalesce(sum(total_amount), 0), count(*) from orders
+        where business_id = ? and kind = 'RENEWAL' and status = 'PAID' and paid_at >= ? and paid_at < ?
+        """.trimIndent(),
+        { rs, _ -> Money(rs.getBigDecimal(1), rs.getLong(2)) }, businessId, ts(from), ts(to),
+    )!!
+
+    private fun renewalStats(businessId: UUID, from: Instant, to: Instant): RenewalStats {
+        val byStatus = jdbc.query(
+            "select status, count(*) from renewal_requests where business_id = ? and cycle_expires_at >= ? and cycle_expires_at < ? group by status",
+            { rs, _ -> rs.getString(1) to rs.getLong(2) }, businessId, ts(from), ts(to),
+        ).toMap()
+        return RenewalStats(
+            confirmed = paidRenewals(businessId, from, to),
+            accepted = (byStatus["AWAITING_PAYMENT"] ?: 0) + (byStatus["COMPLETED"] ?: 0),
+            declined = byStatus["DECLINED"] ?: 0,
+            noResponse = byStatus["EXPIRED"] ?: 0,
+            pending = byStatus["OPEN"] ?: 0,
         )
     }
 
@@ -241,6 +276,10 @@ object ActivityText {
             "SUBSCRIPTION_CANCELLED" -> "Suscripción cancelada"
             "SUBSCRIPTION_REGISTERED" -> "Cliente antiguo registrado: ${meta["customer"]} · ${meta["product"]}"
             "CAPACITY_RELEASED" -> "Cupo liberado: ${meta["product"]}"
+            "RENEWAL_ACCEPTED" -> "Un cliente aceptó renovar ${meta["product"]}"
+            "RENEWAL_DECLINED" -> "Un cliente no renovará ${meta["product"]}"
+            "RENEWAL_COMPLETED" -> "Renovación confirmada: ${meta["product"]} ($order)"
+            "RENEWAL_ORDER_CREATED" -> "Pedido de renovación $order"
             "CUSTOMER_CREATED" -> "Cliente registrado: ${meta["name"]}"
             "PRODUCT_CREATED" -> "Producto creado"
             "PRODUCT_STATUS_CHANGED" -> if (meta["to"] == "PUBLISHED") "Producto publicado" else null

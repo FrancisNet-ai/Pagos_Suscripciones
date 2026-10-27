@@ -51,6 +51,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/order-status/order-status.page').then((m) => m.OrderStatusPage),
   },
   {
+    path: 'renovar/:token',
+    title: 'Renovar suscripción',
+    loadComponent: () => import('./features/renewals/renewal-public.page').then((m) => m.RenewalPublicPage),
+  },
+  {
     path: 'panel',
     canActivate: [authGuard, roleGuard('BUSINESS_OWNER')],
     loadComponent: () => import('./features/dashboard/dashboard-shell.component').then((m) => m.DashboardShellComponent),
@@ -106,6 +111,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/customers/customer-detail.page').then((m) => m.CustomerDetailPage),
       },
       {
+        path: 'renovaciones',
+        title: 'Renovaciones · Panel',
+        loadComponent: () => import('./features/renewals/renewals.page').then((m) => m.RenewalsPage),
+      },
+      {
         path: 'suscripciones',
         title: 'Suscripciones · Panel',
         loadComponent: () => import('./features/subscriptions/subscriptions.page').then((m) => m.SubscriptionsPage),
@@ -124,6 +134,11 @@ export const routes: Routes = [
             path: 'enlace',
             title: 'Enlace público · Panel',
             loadComponent: () => import('./features/settings/store-link.page').then((m) => m.StoreLinkPage),
+          },
+          {
+            path: 'renovaciones',
+            title: 'Avisos de renovación · Panel',
+            loadComponent: () => import('./features/settings/renewal-settings.page').then((m) => m.RenewalSettingsPage),
           },
           {
             path: 'cobros',

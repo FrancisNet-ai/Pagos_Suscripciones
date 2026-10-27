@@ -87,16 +87,18 @@ erDiagram
 | `order_items` | `id`, `order_id`, `product_id`, `product_name_snapshot`, `product_type_snapshot`, `unit_price_snapshot`, `duration_snapshot`, `quantity` | Copia histórica inmutable |
 | `customer_payments` | `id`, `business_id`, `order_id`, `payment_method_id`, `method_snapshot`, `holder_name_snapshot`, `receiver_phone_snapshot`, `amount`, `transaction_reference`, `receipt_key` (archivo privado), `status` (`PENDING`, `REPORTED`, `PENDING_VERIFICATION`, `VERIFIED`, `REJECTED`, `CANCELLED`, `REFUNDED`), `reported_at`, `verified_at`, `verified_by`, `rejection_reason`, `version` | Índice único parcial `(business_id, method_snapshot, transaction_reference) WHERE status IN ('PENDING_VERIFICATION','VERIFIED')` para detectar referencias duplicadas |
 
-### Suscripciones y renovaciones (Fase 4 — `V4__customer_subscriptions.sql`; renovaciones en Fase 5)
+### Suscripciones y renovaciones (Fase 4 — `V4__customer_subscriptions.sql`; renovaciones Fase 5 — `V5__renewals.sql`)
 
 | Tabla | Columnas clave | Notas |
 |---|---|---|
 | `customer_subscriptions` | `id`, `business_id`, `customer_id`, `product_id`, `order_id`, `origin` (`ORDER`, `MANUAL`, `IMPORT`), `product_name_snapshot`, `paid_at`, `start_at`, `expires_at`, `duration_days`, `contracted_price`, `status` (`PENDING_ACTIVATION`, `ACTIVE`, `RENEWAL_PENDING`, `EXPIRED`, `CANCELLED`, `ENDED`), `last_renewed_at`, `cancelled_at`, `cancellation_reason`, `notes`, `version` | `CHECK` de fechas según estado; `UNIQUE(order_id)`; único parcial `(business_id, customer_id, product_id, start_at)` para manuales; índice parcial de activas por `expires_at` |
-| `subscription_renewals` | `id`, `subscription_id`, `order_id`, `previous_expires_at`, `new_expires_at`, `created_at` | Historial de renovaciones |
-| `renewal_requests` | `id`, `business_id`, `subscription_id`, `token_hash`, `token_expires_at`, `response` (`NONE`, `ACCEPTED`, `DECLINED`), `status` (`OPEN`, `AWAITING_PAYMENT`, `COMPLETED`, `DECLINED`, `EXPIRED`), `responded_at`, `created_at` | Índice único parcial: una solicitud abierta por suscripción y ciclo |
-| `renewal_notifications` | `id`, `renewal_request_id`, `notification_type` (`REMINDER_3_DAYS`, `REMINDER_DUE_DAY`, `FAREWELL`), `channel` (`MANUAL_LINK`, `WHATSAPP_API`), `scheduled_at`, `sent_at`, `delivery_status` (`PENDING`, `SENT_MANUALLY`, `SENT`, `DELIVERED`, `FAILED`, `SKIPPED`), `provider_message_id` | `UNIQUE(renewal_request_id, notification_type)` evita duplicados |
-| `notification_preferences` | `id`, `business_id`, `customer_id`, `channel`, `opted_out`, `updated_at` | Exclusiones |
-| `seller_tasks` | `id`, `business_id`, `type` (`RELEASE_ACCESS`, `ACTIVATE_SERVICE`, `REVIEW_INCIDENT`), `entity_type`, `entity_id`, `status`, `due_at` | Tareas manuales pendientes para el vendedor |
+| `subscription_renewals` | `id`, `business_id`, `subscription_id`, `order_id`, `renewal_request_id`, `previous_expires_at`, `new_expires_at`, `amount`, `created_at` | Historial de renovaciones; `UNIQUE(order_id)`, `CHECK(new_expires_at > previous_expires_at)` |
+| `renewal_requests` | `id`, `business_id`, `subscription_id`, `customer_id`, `product_id`, `cycle_expires_at`, `token_hash`, `token_expires_at`, `response` (`NONE`, `ACCEPTED`, `DECLINED`), `status` (`OPEN`, `AWAITING_PAYMENT`, `COMPLETED`, `DECLINED`, `EXPIRED`), `responded_at`, `completed_at`, `order_id`, `version` | `UNIQUE(subscription_id, cycle_expires_at)`: una solicitud por ciclo; `UNIQUE(token_hash)` |
+| `renewal_notifications` | `id`, `business_id`, `renewal_request_id`, `customer_id`, `notification_type` (`REMINDER_BEFORE`, `REMINDER_DUE_DAY`, `FAREWELL`), `channel` (`MANUAL_LINK`, `WHATSAPP_API`), `scheduled_at`, `sent_at`, `sent_by`, `delivery_status` (`PENDING`, `SENT_MANUALLY`, `SENT`, `DELIVERED`, `FAILED`, `SKIPPED`), `provider_message_id` | `UNIQUE(renewal_request_id, notification_type)` evita duplicados |
+| `notification_preferences` | `id`, `business_id`, `customer_id`, `channel`, `opted_out`, `source` (`CUSTOMER`, `SELLER`) | `UNIQUE(customer_id, channel)`; exclusiones |
+
+`businesses` añade `reminder_days_before` (0–15), `reminder_on_due_day` y `renewal_grace_days` (0–30).
+`orders.renewal_request_id` es obligatorio si y solo si `kind = 'RENEWAL'`.
 
 ## Integridad y concurrencia
 

@@ -1,5 +1,6 @@
 package com.platform.storefront
 
+import com.platform.businesses.Business
 import com.platform.businesses.BusinessStatus
 import com.platform.capacity.CapacityService
 import com.platform.common.audit.AuditActions
@@ -10,16 +11,21 @@ import com.platform.common.ratelimit.RateLimiter
 import com.platform.common.text.SecureTokens
 import com.platform.common.validation.PeruPhone
 import com.platform.customers.ConsentPurpose
+import com.platform.customers.Customer
 import com.platform.customers.CustomerService
 import com.platform.orders.Order
+import com.platform.products.Product
 import com.platform.orders.OrderItem
 import com.platform.orders.OrderItemRepository
 import com.platform.orders.OrderNumberService
+import com.platform.orders.OrderKind
 import com.platform.orders.OrderRepository
+import com.platform.payments.BusinessPaymentMethod
 import com.platform.payments.BusinessPaymentMethodRepository
 import com.platform.payments.CustomerPayment
 import com.platform.payments.CustomerPaymentRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.ZoneId
@@ -70,42 +76,7 @@ class CheckoutService(
 
         val customerName = request.customerName!!.trim().replace(Regex("\\s+"), " ")
         val customer = customers.findOrCreateFromStorefront(business.id, customerName, phone)
-        val token = SecureTokens.newToken()
-        val order = orders.saveAndFlush(
-            Order(
-                businessId = business.id,
-                orderNumber = orderNumbers.next(business.id, ZoneId.of(business.timeZone)),
-                customerId = customer.id,
-                customerNameSnapshot = customerName,
-                customerPhoneSnapshot = phone,
-                totalAmount = product.price,
-                publicTokenHash = SecureTokens.sha256Hex(token),
-                idempotencyKey = idempotencyKey,
-            ),
-        )
-        items.save(
-            OrderItem(
-                orderId = order.id,
-                productId = product.id,
-                productNameSnapshot = product.name,
-                productTypeSnapshot = product.productType,
-                unitPriceSnapshot = product.price,
-                durationSnapshot = product.durationDays,
-            ),
-        )
-        // Bloquea el producto y reserva el cupo; si está agotado se revierte todo el pedido.
-        capacity.reserve(business.id, product.id, properties.checkout.reservationHold, order.id)
-        payments.save(
-            CustomerPayment(
-                businessId = business.id,
-                orderId = order.id,
-                paymentMethodId = method.id,
-                methodSnapshot = method.method,
-                holderNameSnapshot = method.holderName,
-                receiverPhoneSnapshot = method.phone,
-                amount = order.totalAmount,
-            ),
-        )
+        val (order, token) = placeOrder(business, customer.id, customerName, phone, product, method, idempotencyKey, reserveCapacity = true)
         customers.recordConsents(
             customer, order.id,
             mapOf(
@@ -119,5 +90,71 @@ class CheckoutService(
             metadata = mapOf("orderNumber" to order.orderNumber, "amount" to order.totalAmount), ipAddress = ip,
         )
         return CreateOrderResponse(token, order.orderNumber)
+    }
+
+    /**
+     * Pedido de renovación: mismo cliente y producto, precio vigente del producto. No reserva un
+     * cupo nuevo: la suscripción conserva el suyo.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun placeRenewalOrder(
+        business: Business,
+        customer: Customer,
+        product: Product,
+        method: BusinessPaymentMethod,
+        renewalRequestId: UUID,
+    ): Pair<Order, String> =
+        placeOrder(business, customer.id, customer.fullName, customer.phone, product, method, null, reserveCapacity = false, renewalRequestId = renewalRequestId)
+
+    private fun placeOrder(
+        business: Business,
+        customerId: UUID,
+        customerName: String,
+        phone: String,
+        product: Product,
+        method: BusinessPaymentMethod,
+        idempotencyKey: UUID?,
+        reserveCapacity: Boolean,
+        renewalRequestId: UUID? = null,
+    ): Pair<Order, String> {
+        val token = SecureTokens.newToken()
+        val order = orders.saveAndFlush(
+            Order(
+                businessId = business.id,
+                orderNumber = orderNumbers.next(business.id, ZoneId.of(business.timeZone)),
+                customerId = customerId,
+                customerNameSnapshot = customerName,
+                customerPhoneSnapshot = phone,
+                totalAmount = product.price,
+                publicTokenHash = SecureTokens.sha256Hex(token),
+                idempotencyKey = idempotencyKey,
+                kind = if (renewalRequestId != null) OrderKind.RENEWAL else OrderKind.PURCHASE,
+                renewalRequestId = renewalRequestId,
+            ),
+        )
+        items.save(
+            OrderItem(
+                orderId = order.id,
+                productId = product.id,
+                productNameSnapshot = product.name,
+                productTypeSnapshot = product.productType,
+                unitPriceSnapshot = product.price,
+                durationSnapshot = product.durationDays,
+            ),
+        )
+        // Bloquea el producto y reserva el cupo; si está agotado se revierte todo el pedido.
+        if (reserveCapacity) capacity.reserve(business.id, product.id, properties.checkout.reservationHold, order.id)
+        payments.save(
+            CustomerPayment(
+                businessId = business.id,
+                orderId = order.id,
+                paymentMethodId = method.id,
+                methodSnapshot = method.method,
+                holderNameSnapshot = method.holderName,
+                receiverPhoneSnapshot = method.phone,
+                amount = order.totalAmount,
+            ),
+        )
+        return order to token
     }
 }

@@ -11,6 +11,7 @@ export type Method = 'YAPE' | 'PLIN';
 export interface OrderSummary {
   id: string;
   orderNumber: string;
+  kind: 'PURCHASE' | 'RENEWAL';
   customerName: string;
   customerPhone: string;
   productName: string;
@@ -41,6 +42,7 @@ export interface PaymentDetail {
 export interface OrderDetail {
   id: string;
   orderNumber: string;
+  kind: 'PURCHASE' | 'RENEWAL';
   status: OrderStatus;
   statusLabel: string;
   customerId: string;

@@ -17,7 +17,16 @@ data class AppProperties(
     val bootstrap: Bootstrap = Bootstrap(),
     val storage: Storage = Storage(),
     val checkout: Checkout = Checkout(),
+    val renewals: Renewals = Renewals(),
 ) {
+    data class Renewals(
+        /**
+         * Secreto para derivar los enlaces de renovación (HMAC). Permite reconstruir el enlace al
+         * preparar cada aviso sin guardarlo en texto plano. Cambiarlo invalida los enlaces vigentes.
+         */
+        val tokenSecret: String = "",
+    )
+
     data class Storage(
         /** Carpeta donde se guardan imágenes públicas (logos, portadas, productos, QR). */
         val localDir: String = "./data/media",

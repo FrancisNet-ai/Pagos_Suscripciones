@@ -12,7 +12,8 @@ docker compose up --build
 1. Servidor con Docker y un proxy TLS delante (Caddy, Traefik o Nginx con Let's Encrypt) que termine HTTPS
    y reenvíe al contenedor `web`.
 2. Variables: `SPRING_PROFILES_ACTIVE=prod`, credenciales de base de datos propias, `APP_PUBLIC_BASE_URL=https://tudominio.com`,
-   `APP_SESSION_COOKIE_SECURE=true`, SMTP.
+   `APP_SESSION_COOKIE_SECURE=true`, SMTP y `APP_RENEWAL_TOKEN_SECRET` (obligatorio, ≥ 32 caracteres,
+   `openssl rand -base64 48`; cambiarlo invalida los enlaces de renovación ya enviados).
 3. Las migraciones Flyway se aplican al arrancar el backend.
 4. Health check: `GET /actuator/health`.
 5. Logs en stdout (formato JSON en `prod`), recogidos por Docker.

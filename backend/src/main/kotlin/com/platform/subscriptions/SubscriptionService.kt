@@ -166,16 +166,19 @@ class SubscriptionService(
             SubscriptionFilter.ALL -> SubscriptionStatus.entries
             SubscriptionFilter.PENDING_ACTIVATION -> listOf(SubscriptionStatus.PENDING_ACTIVATION)
             SubscriptionFilter.ACTIVE, SubscriptionFilter.EXPIRING -> listOf(SubscriptionStatus.ACTIVE, SubscriptionStatus.RENEWAL_PENDING)
+            SubscriptionFilter.RENEWAL -> listOf(SubscriptionStatus.RENEWAL_PENDING)
             SubscriptionFilter.EXPIRED -> listOf(SubscriptionStatus.EXPIRED)
             SubscriptionFilter.CLOSED -> listOf(SubscriptionStatus.CANCELLED, SubscriptionStatus.ENDED)
+            SubscriptionFilter.RELEASE_PENDING -> SubscriptionStatus.entries
         }
         val sort = when (filter) {
-            SubscriptionFilter.ACTIVE, SubscriptionFilter.EXPIRING, SubscriptionFilter.EXPIRED -> Sort.by("expiresAt")
+            SubscriptionFilter.ACTIVE, SubscriptionFilter.EXPIRING, SubscriptionFilter.EXPIRED, SubscriptionFilter.RENEWAL,
+            SubscriptionFilter.RELEASE_PENDING -> Sort.by("expiresAt")
             else -> Sort.by(Sort.Direction.DESC, "createdAt")
         }
         val result = subscriptions.search(
             businessId, statuses, filter == SubscriptionFilter.EXPIRING, clock.instant().plus(Duration.ofDays(expiringDays.coerceIn(1, 60))),
-            ProductService.likePattern(query), PageRequest.of(maxOf(page, 0), size.coerceIn(1, PageResponse.MAX_SIZE), sort),
+            filter == SubscriptionFilter.RELEASE_PENDING, ProductService.likePattern(query), PageRequest.of(maxOf(page, 0), size.coerceIn(1, PageResponse.MAX_SIZE), sort),
         )
         val customerById = customers.findAllById(result.content.map { it.customerId }.toSet()).associateBy { it.id }
         return PageResponse.of(result) { toResponse(it, customerById.getValue(it.customerId)) }
@@ -187,6 +190,10 @@ class SubscriptionService(
 
     @Transactional(readOnly = true)
     fun forOrder(businessId: UUID, orderId: UUID): CustomerSubscription? = subscriptions.findByOrderIdAndBusinessId(orderId, businessId)
+
+    @Transactional(readOnly = true)
+    fun forRenewalRequest(businessId: UUID, renewalRequestId: UUID): CustomerSubscription? =
+        subscriptions.subscriptionIdForRenewal(renewalRequestId)?.let { subscriptions.findByIdAndBusinessId(it, businessId) }
 
     @Transactional(readOnly = true)
     fun get(businessId: UUID, subscriptionId: UUID): SubscriptionResponse = toResponse(load(businessId, subscriptionId))
@@ -201,6 +208,54 @@ class SubscriptionService(
         audit.record(AuditActions.SUBSCRIPTION_EXPIRED, businessId = s.businessId, entityType = "SUBSCRIPTION", entityId = s.id, metadata = mapOf("product" to s.productNameSnapshot))
         return true
     }
+
+    /** El cliente aceptó renovar: la suscripción queda en renovación y conserva su cupo. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun markRenewalPending(s: CustomerSubscription) {
+        if (s.status == SubscriptionStatus.ACTIVE || s.status == SubscriptionStatus.EXPIRED) {
+            s.status = SubscriptionStatus.RENEWAL_PENDING
+            capacity.holdForRenewalIntent(s.businessId, s.id)
+        }
+    }
+
+    /**
+     * Renovación no concretada (rechazo o plazo de gracia vencido). Si el periodo pagado sigue
+     * vigente, el servicio continúa hasta su fecha; si ya terminó, vence y el cupo queda por liberar.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun settleUnrenewed(s: CustomerSubscription) {
+        if (s.status != SubscriptionStatus.RENEWAL_PENDING && s.status != SubscriptionStatus.ACTIVE) return
+        if (s.expiresAt!!.isAfter(clock.instant())) {
+            s.status = SubscriptionStatus.ACTIVE
+        } else {
+            s.status = SubscriptionStatus.EXPIRED
+            capacity.markReleasePending(s.businessId, s.id)
+        }
+    }
+
+    /**
+     * Amplía la vigencia tras un pago de renovación verificado. Si renueva antes de vencer, el
+     * nuevo periodo empieza al terminar el actual; si ya venció, empieza ahora.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun extend(s: CustomerSubscription, durationDays: Int, amount: java.math.BigDecimal): Pair<Instant, Instant> {
+        val now = clock.instant()
+        val previous = s.expiresAt!!
+        val base = if (previous.isAfter(now)) previous else now
+        val next = base.plus(Duration.ofDays(durationDays.toLong()))
+        capacity.keepForRenewal(s.businessId, s.productId, s.id)
+        // Renovación después del vencimiento: hubo un corte, el nuevo periodo empieza hoy.
+        if (!previous.isAfter(now)) s.startAt = now
+        s.expiresAt = next
+        s.durationDays = durationDays
+        s.contractedPrice = amount
+        s.lastRenewedAt = now
+        s.status = SubscriptionStatus.ACTIVE
+        return previous to next
+    }
+
+    @Transactional(readOnly = true)
+    fun entity(businessId: UUID, subscriptionId: UUID): CustomerSubscription = load(businessId, subscriptionId)
 
     private fun load(businessId: UUID, id: UUID) =
         subscriptions.findByIdAndBusinessId(id, businessId) ?: throw ApiException.notFound("La suscripción no existe.")

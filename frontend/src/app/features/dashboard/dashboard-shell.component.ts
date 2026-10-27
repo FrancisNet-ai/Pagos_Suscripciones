@@ -54,7 +54,7 @@ export class DashboardShellComponent {
       children: [
         { label: 'Suscripciones', route: '/panel/suscripciones' },
         { label: 'Próximos vencimientos', route: '/panel/suscripciones', queryParams: { filtro: 'EXPIRING' } },
-        { label: 'Renovaciones' },
+        { label: 'Renovaciones', route: '/panel/renovaciones' },
       ],
     },
     {
@@ -63,6 +63,7 @@ export class DashboardShellComponent {
         { label: 'Datos del negocio', route: '/panel/configuracion/negocio' },
         { label: 'Enlace público', route: '/panel/configuracion/enlace' },
         { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
+        { label: 'Avisos de renovación', route: '/panel/configuracion/renovaciones' },
         { label: 'Plan SaaS' },
       ],
     },

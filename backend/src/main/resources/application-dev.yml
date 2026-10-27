@@ -11,6 +11,9 @@ app:
     cookie-secure: ${APP_SESSION_COOKIE_SECURE:false}
   mail:
     log-links: true
+  renewals:
+    # Solo para desarrollo local. En producción se define APP_RENEWAL_TOKEN_SECRET.
+    token-secret: ${APP_RENEWAL_TOKEN_SECRET:dev-only-renewal-secret-change-me-0123456789}
 
 logging:
   level:

@@ -38,6 +38,7 @@ class Order(
     var incidentReason: String? = null,
     var cancellationReason: String? = null,
     var paidAt: Instant? = null,
+    @Column(updatable = false) val renewalRequestId: UUID? = null,
 ) : VersionedEntity()
 
 /** Copia histórica del producto en el momento de la compra. */

@@ -154,6 +154,27 @@ class CapacityService(
         return true
     }
 
+    /**
+     * Renovar NO ocupa un segundo cupo: reutiliza el de la suscripción. Si estaba pendiente de
+     * liberar vuelve a ocupado; si ya se había liberado, se ocupa uno nuevo solo si hay espacio.
+     */
+    @Transactional
+    fun keepForRenewal(businessId: UUID, productId: UUID, subscriptionId: UUID) {
+        val current = allocations.findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId, businessId)
+        when (current?.allocationStatus) {
+            AllocationStatus.OCCUPIED -> Unit
+            AllocationStatus.RELEASE_PENDING -> current.allocationStatus = AllocationStatus.OCCUPIED
+            else -> occupyForSubscription(businessId, productId, subscriptionId)
+        }
+    }
+
+    /** Cliente interesado en renovar: si el cupo estaba por liberarse, se mantiene reservado para él. */
+    @Transactional
+    fun holdForRenewalIntent(businessId: UUID, subscriptionId: UUID) {
+        val current = allocations.findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId, businessId)
+        if (current?.allocationStatus == AllocationStatus.RELEASE_PENDING) current.allocationStatus = AllocationStatus.OCCUPIED
+    }
+
     @Transactional(readOnly = true)
     fun allocationForSubscription(businessId: UUID, subscriptionId: UUID): CapacityAllocation? =
         allocations.findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId, businessId)

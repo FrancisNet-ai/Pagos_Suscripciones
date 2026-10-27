@@ -26,6 +26,10 @@ con los datos reales del pedido.
 separados, cupos que se liberan solo al confirmar el retiro del acceso, y reportes por periodo, producto
 y clientes recurrentes.
 
+**Fase 5 — Renovaciones: completada.** Enlace personal de renovación con respuesta Sí/No, cupo
+conservado al renovar, avisos antes y el día del vencimiento preparados para enviar por WhatsApp,
+mensaje de despedida, exclusión de avisos, plazo de gracia configurable y métricas de renovación.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

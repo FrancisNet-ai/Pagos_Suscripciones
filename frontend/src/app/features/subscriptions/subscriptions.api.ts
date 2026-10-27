@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Page } from '../../core/services/page';
 
 export type SubscriptionStatus = 'PENDING_ACTIVATION' | 'ACTIVE' | 'RENEWAL_PENDING' | 'EXPIRED' | 'CANCELLED' | 'ENDED';
-export type SubscriptionFilter = 'ALL' | 'PENDING_ACTIVATION' | 'ACTIVE' | 'EXPIRING' | 'EXPIRED' | 'CLOSED';
+export type SubscriptionFilter = 'ALL' | 'PENDING_ACTIVATION' | 'ACTIVE' | 'EXPIRING' | 'RENEWAL' | 'EXPIRED' | 'CLOSED' | 'RELEASE_PENDING';
 export type CapacityStatus = 'RESERVED' | 'OCCUPIED' | 'RELEASE_PENDING' | 'RELEASED' | 'EXPIRED';
 
 export interface Subscription {

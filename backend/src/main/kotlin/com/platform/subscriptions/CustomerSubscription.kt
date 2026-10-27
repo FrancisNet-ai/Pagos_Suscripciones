@@ -46,7 +46,8 @@ class CustomerSubscription(
     var notes: String? = null,
 ) : VersionedEntity()
 
-enum class SubscriptionFilter { ALL, PENDING_ACTIVATION, ACTIVE, EXPIRING, EXPIRED, CLOSED }
+/** RENEWAL = en proceso de renovación; RELEASE_PENDING = terminadas con el cupo aún por liberar. */
+enum class SubscriptionFilter { ALL, PENDING_ACTIVATION, ACTIVE, EXPIRING, RENEWAL, EXPIRED, CLOSED, RELEASE_PENDING }
 
 interface CustomerSubscriptionRepository : JpaRepository<CustomerSubscription, UUID> {
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): CustomerSubscription?
@@ -70,6 +71,8 @@ interface CustomerSubscriptionRepository : JpaRepository<CustomerSubscription, U
         where c.id = s.customerId and s.businessId = :businessId
           and s.status in :statuses
           and (:expiringOnly = false or s.expiresAt < :expiringBefore)
+          and (:releasePendingOnly = false or exists (select 1 from com.platform.capacity.CapacityAllocation a
+               where a.customerSubscriptionId = s.id and a.allocationStatus = com.platform.capacity.AllocationStatus.RELEASE_PENDING))
           and (lower(c.fullName) like :pattern escape '\' or c.phone like :pattern escape '\' or lower(s.productNameSnapshot) like :pattern escape '\')
         """,
     )
@@ -78,9 +81,13 @@ interface CustomerSubscriptionRepository : JpaRepository<CustomerSubscription, U
         statuses: Collection<SubscriptionStatus>,
         expiringOnly: Boolean,
         expiringBefore: Instant,
+        releasePendingOnly: Boolean,
         pattern: String,
         pageable: Pageable,
     ): Page<CustomerSubscription>
+
+    @Query(value = "select subscription_id from renewal_requests where id = :renewalRequestId", nativeQuery = true)
+    fun subscriptionIdForRenewal(renewalRequestId: UUID): UUID?
 
     /** Activas cuyo periodo terminó (tarea de vencimiento). */
     @Query("select s.id from CustomerSubscription s where s.status = 'ACTIVE' and s.expiresAt < :now order by s.expiresAt")

@@ -10,11 +10,14 @@
 * El estado «incidencia» de un pedido se modela con `orders.incident_reason` (no como estado aparte) para no mezclar el ciclo de pago con la revisión manual.
 * «Por vencer» en el panel = 3 días (primer recordatorio); en los filtros de clientes y suscripciones = 7 días para planificar.
 * Al vencer o cancelar una suscripción el cupo pasa a `RELEASE_PENDING` y solo se libera cuando el vendedor confirma que retiró el acceso.
+* Los avisos de renovación se preparan para envío manual: abrir WhatsApp no cuenta como enviado; el vendedor confirma con «Ya lo envié».
+* El token de renovación es un HMAC de la solicitud con `APP_RENEWAL_TOKEN_SECRET`; cambiar el secreto invalida los enlaces ya enviados.
 * El enlace del pedido usa un token aleatorio de 256 bits (solo se guarda su hash). Un reintento con la misma `Idempotency-Key` emite un enlace nuevo para el mismo pedido.
 
 ## Pendientes
 - [ ] Importación masiva de clientes desde CSV/Excel con vista previa (Fase 7).
-- [ ] Reportes de renovación (Fase 5).
+- [ ] Tareas del vendedor (`seller_tasks`) como entidad propia; hoy los pendientes se derivan del estado (cupos por liberar, avisos por enviar, pagos por verificar).
+- [ ] Envío automático de avisos de renovación con WhatsApp Business Platform (Fase 7); hoy el envío es manual.
 - [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
 - [ ] Playwright como suite versionada en el repositorio (hoy los flujos E2E se ejecutan como scripts de verificación).
 - [ ] Fase 6: aplicar `product_limit` del plan SaaS al crear productos.

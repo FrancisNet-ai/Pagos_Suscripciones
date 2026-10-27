@@ -29,5 +29,6 @@ export class SettingsLayoutComponent {
     { label: 'Datos y personalización', route: '/panel/configuracion/negocio' },
     { label: 'Enlace público', route: '/panel/configuracion/enlace' },
     { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
+    { label: 'Renovaciones', route: '/panel/configuracion/renovaciones' },
   ];
 }

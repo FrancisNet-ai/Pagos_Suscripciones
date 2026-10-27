@@ -25,6 +25,11 @@ class Business(
     var whatsappNumber: String? = null,
     @Column(nullable = false) var timeZone: String = "America/Lima",
     @Enumerated(EnumType.STRING) @Column(nullable = false) var status: BusinessStatus = BusinessStatus.ACTIVE,
+    /** Días antes del vencimiento para el primer recordatorio (0 = sin recordatorio previo). */
+    @Column(nullable = false) var reminderDaysBefore: Int = 3,
+    @Column(nullable = false) var reminderOnDueDay: Boolean = true,
+    /** Días tras el vencimiento en que se mantiene el cupo esperando la renovación. */
+    @Column(nullable = false) var renewalGraceDays: Int = 3,
 ) : VersionedEntity()
 
 interface BusinessRepository : JpaRepository<Business, UUID> {

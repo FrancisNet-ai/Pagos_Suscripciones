@@ -68,6 +68,10 @@ export class CustomerDetailPage implements OnInit {
     });
   }
 
+  protected toggleOptOut(c: CustomerDetail): void {
+    this.run(this.api.setOptOut(c.id, !c.notificationsOptedOut), () => undefined);
+  }
+
   protected onSubscriptionChanged(updated: Subscription): void {
     this.customer.update((c) => (c ? { ...c, subscriptions: c.subscriptions.map((s) => (s.id === updated.id ? updated : s)) } : c));
   }

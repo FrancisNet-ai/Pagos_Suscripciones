@@ -6,7 +6,7 @@
   } @else if (order(); as o) {
     <div class="mt-4 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="type-eyebrow">Pedido</p>
+        <p class="type-eyebrow">{{ o.kind === 'RENEWAL' ? 'Pedido de renovación' : 'Pedido' }}</p>
         <h1 class="type-h1 type-numeric mt-2">{{ o.orderNumber }}</h1>
         <p class="mt-1 text-sm text-[var(--text-muted)]">Creado el {{ date(o.createdAt) }}</p>
       </div>
