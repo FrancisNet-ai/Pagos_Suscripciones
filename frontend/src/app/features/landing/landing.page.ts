@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { IconComponent } from '../../shared/components/icon.component';
 import { BRAND } from '../../core/brand';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
 import { WaveArtComponent } from '../../shared/components/wave-art.component';
@@ -12,7 +13,7 @@ import { PlanCardComponent } from '../billing/plan-card.component';
 @Component({
   selector: 'app-landing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent],
+  imports: [RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent, IconComponent],
   templateUrl: './landing.page.html',
 })
 export class LandingPage {
@@ -20,7 +21,11 @@ export class LandingPage {
   protected readonly brand = BRAND;
   protected readonly year = new Date().getFullYear();
   /** Planes configurados por la plataforma; sin precios inventados en el código. */
-  protected readonly plans = toSignal(inject(BillingApi).publicPlans().pipe(catchError(() => of<Plan[]>([]))));
+  protected readonly plans = toSignal(
+    inject(BillingApi)
+      .publicPlans()
+      .pipe(catchError(() => of<Plan[]>([]))),
+  );
 
   protected readonly benefits = [
     {
@@ -49,9 +54,33 @@ export class LandingPage {
   ];
 
   protected readonly features = [
-    { group: 'Ventas', items: ['Tienda pública con tu logo y colores', 'Pedidos con código único', 'Verificación manual de pagos Yape y Plin', 'Mensaje prellenado a tu WhatsApp'] },
-    { group: 'Clientes', items: ['Registro de clientes que ya tenías', 'Historial de compras y renovaciones', 'Búsqueda por nombre o celular', 'Preferencias de comunicación'] },
-    { group: 'Control', items: ['Ingresos confirmados separados de pendientes', 'Suscripciones por vencer y vencidas', 'Reportes por periodo y producto', 'Auditoría de aprobaciones'] },
+    {
+      group: 'Ventas',
+      items: [
+        'Tienda pública con tu logo y colores',
+        'Pedidos con código único',
+        'Verificación manual de pagos Yape y Plin',
+        'Mensaje prellenado a tu WhatsApp',
+      ],
+    },
+    {
+      group: 'Clientes',
+      items: [
+        'Registro de clientes que ya tenías',
+        'Historial de compras y renovaciones',
+        'Búsqueda por nombre o celular',
+        'Preferencias de comunicación',
+      ],
+    },
+    {
+      group: 'Control',
+      items: [
+        'Ingresos confirmados separados de pendientes',
+        'Suscripciones por vencer y vencidas',
+        'Reportes por periodo y producto',
+        'Auditoría de aprobaciones',
+      ],
+    },
   ];
 
   protected readonly faqs = [
@@ -73,7 +102,7 @@ export class LandingPage {
     },
     {
       q: '¿Se envían recordatorios automáticos por WhatsApp?',
-      a: 'Al inicio, el panel prepara los recordatorios y tú los envías con un toque desde tu WhatsApp. El envío automático requiere una integración oficial con WhatsApp Business que se habilitará más adelante.',
+      a: 'Puedes enviar los avisos preparados desde tu WhatsApp. Si tu plan lo permite y conectas WhatsApp Business con sus credenciales y plantillas aprobadas, también puedes automatizarlos para los clientes que lo autorizaron.',
     },
   ];
 }

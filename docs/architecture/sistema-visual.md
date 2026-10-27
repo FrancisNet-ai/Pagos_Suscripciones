@@ -1,57 +1,75 @@
-# Sistema visual
+# Sistema visual de Nuvyra
 
-## Paleta y tokens
+Rediseño editorial del 27 de octubre de 2026, basado en la referencia visual proporcionada por el
+propietario. Se aplica sobre las fases 1–7 existentes. La marca sigue siendo **Nuvyra**; «Voga» en la
+referencia describe la dirección visual, no un cambio de nombre del producto.
 
-Definidos como variables CSS en `frontend/src/styles/tokens.css` y expuestos a Tailwind con `@theme`.
+## Identidad
 
 | Token | Valor | Uso |
 |---|---|---|
-| `--color-night` | `#0A1931` | Navegación oscura, cabeceras premium, botón principal, identidad |
-| `--color-corporate` | `#1A3D63` | Botones secundarios, elementos interactivos, zonas destacadas |
-| `--color-steel` | `#4A7EA7` | Acentos, indicadores, selección, gráficos discretos, foco |
-| `--color-mist` | `#B3CFE5` | Superficies suaves, separadores, apoyo |
-| `--color-snow` | `#F6FAFD` | Superficies claras, lectura, formularios |
-| `--color-shadow` | `#101014` | Secciones oscuras especiales, elementos editoriales |
+| night | `#0A1931` | Navegación, identidad y superficies oscuras |
+| corporate | `#1A3D63` | Acciones y acentos principales |
+| steel | `#4A7EA7` | Gráficos, detalles y estados de selección |
+| mist | `#B3CFE5` | Separadores, superficies y arte de apoyo |
+| snow | `#F6FAFD` | Fondo público y superficies de lectura |
+| shadow | `#101014` | Contrastes oscuros específicos |
 
-Derivados semánticos (para no usar los seis colores con la misma intensidad):
+Los textos pequeños usan tonos derivados más oscuros para alcanzar contraste AA. El panel combina
+un fondo azul muy claro, una barra lateral azul noche y superficies blancas discretas; la portada
+combina espacio claro a la izquierda y mármol fluido azul a la derecha.
 
-| Token semántico | Valor |
+## Tipografía y recursos
+
+- **Bodoni Moda:** logotipo tipográfico, titulares editoriales y mensajes destacados.
+- **Inter:** menús, paneles, formularios, tablas, importes y fechas; números tabulares.
+- **Playfair Display:** permanece disponible para compatibilidad con componentes existentes.
+- Las familias son las alternativas OFL ya empaquetadas mediante Fontsource. No se incorporan Voga
+  ni Bodoni FLF sin licencia de distribución comercial verificada.
+- `frontend/public/art/nuvyra-fluid.webp`: ilustración original generada para este rediseño, sin marcas,
+  texto ni controles. Se sirve desde el mismo origen; pesa aproximadamente 131 KiB y se reutiliza en
+  portada, acceso y portada predeterminada de la tienda. El original generado se conserva fuera del repositorio.
+- Los iconos son SVG lineales pequeños, decorativos y ocultos a lectores de pantalla; los controles
+  siempre conservan etiquetas de texto o nombres accesibles.
+
+## Organización
+
+`frontend/src/styles/tokens.css` conserva las variables compartidas. `base.css` contiene las bases
+existentes y `editorial.css` define las composiciones y componentes del rediseño, con bloques para
+marketing, acceso, paneles, tienda y comprador y sus adaptaciones responsivas.
+
+Los componentes compartidos de marca, ilustración, iconos, botones, campos, estados y gráficos evitan
+variaciones entre Nuvyra Dashboard, Store y Billing. Los paneles mantienen su navegación y autorización
+independientes para vendedores y SUPER_ADMIN.
+
+## Composiciones
+
+| Área | Tratamiento |
 |---|---|
-| `--surface-page` | `#F6FAFD` |
-| `--surface-raised` | `#FFFFFF` |
-| `--surface-inverse` | `#0A1931` |
-| `--text-strong` | `#0A1931` |
-| `--text-body` | `#1A3D63` con 85 % |
-| `--text-muted` | `#3B6A8F` (tono derivado de `#4A7EA7` para alcanzar 5.5:1 en texto pequeño) |
-| `--line-subtle` | `#B3CFE5` al 60 % |
-| `--focus-ring` | `#4A7EA7` |
-| `--success` / `--warning` / `--danger` | `#1F7A5A` / `#855C0E` / `#A23B3B` (desaturados para armonizar) |
+| Portada | Hero claro, titular editorial, arte fluido y piezas superpuestas de catálogo; beneficios abiertos, pasos, planes reales, FAQ y pie legal |
+| Acceso | Fondo fluido envolvente, identidad a la izquierda y formulario claro a la derecha; registro y recuperación comparten estructura |
+| Panel | Navegación compacta con iconos, cabecera contextual, indicadores Inter y gráfico de área basado en los ingresos reales |
+| Productos y clientes | Filas y tablas legibles, búsqueda y filtros agrupados, acciones explícitas y tarjetas móviles existentes |
+| Tienda | Marca del vendedor, portada propia o arte predeterminado, categorías y búsqueda derivadas del catálogo real, cuadrícula de productos |
+| Checkout y pedido | Superficie compacta, progreso de pedido/pago/verificación y datos reales de Yape/Plin |
+| Renovación | Estados diferenciados; el símbolo de confirmación solo aparece con `COMPLETED` |
+| Facturación e integraciones | Mismo sistema de campos, superficies y navegación; se conservan contratación, importación y WhatsApp existentes |
 
-Contraste verificado (WCAG): `#0A1931` sobre `#F6FAFD` ≈ 16.7:1; `#F6FAFD` sobre `#1A3D63` ≈ 10:1;
-`#4A7EA7` sobre `#F6FAFD` ≈ 4.1:1 (usar solo para texto grande o no esencial).
+Los planes y precios vienen de la API. La composición promocional de la portada se identifica como
+ilustración y no contiene ingresos ficticios. Las tiendas conservan el logotipo, la portada y el color
+configurados por el vendedor. No se añaden botones de autenticación social ni controles sin destino.
 
-## Tipografía
+## Accesibilidad y móvil
 
-| Rol | Deseada | En uso (licencia libre OFL) | Motivo |
-|---|---|---|---|
-| Display / titulares principales | Voga | **Playfair Display** | No se dispone de archivos de Voga con licencia verificada para SaaS. Playfair es una serif de alto contraste de apariencia editorial similar. |
-| Títulos secundarios / editorial | Bodoni FLF | **Bodoni Moda** | Bodoni FLF no tiene licencia de distribución web verificada. Bodoni Moda (OFL) es una Bodoni moderna optimizada para pantalla. |
-| Interfaz | Inter | **Inter** (OFL) | — |
+- Formatos comprobados a 360, 390, 768 y 1440 píxeles, con formularios de una columna en móvil.
+- Menús móviles con foco contenido, cierre por Escape y devolución del foco al botón que los abrió.
+- Objetivos táctiles principales de al menos 44 píxeles y estilos de foco visibles.
+- Gráfico con resumen y tabla equivalente para lectores de pantalla. La tabla se oculta mediante un
+  contenedor de 1 píxel, evitando que su tamaño intrínseco provoque desbordamientos o espacio vacío.
+- Mensajes de estado y errores conservan sus roles accesibles. La ilustración no comunica información esencial.
+- Transiciones breves y desactivadas con `prefers-reduced-motion`; el checkout no introduce animaciones.
 
-Las fuentes se empaquetan con `@fontsource-variable/*` (autoalojadas, sin llamadas a terceros).
-Para usar Voga o Bodoni FLF en el futuro basta con cambiar `--font-display` y `--font-editorial`
-en `tokens.css` una vez se adquiera una licencia web/app adecuada; los archivos comerciales no deben
-subirse a repositorios públicos.
+## Verificación
 
-Escala (fluida con `clamp`): display 2.75–5 rem · h1 2.25–3.25 rem · h2 1.75–2.25 rem · h3 1.25 rem ·
-cuerpo 1 rem · pequeño 0.875 rem · micro 0.75 rem. Importes y fechas con `font-variant-numeric: tabular-nums`.
-
-## Principios de composición
-
-* Editorial antes que "tarjetas": jerarquía tipográfica, espacios amplios, separadores de 1 px
-  (`--line-subtle`) y secciones abiertas. Contenedores solo para tablas, formularios, estados y gráficos.
-* Radios suaves (`6px` controles, `14px` paneles), sombras mínimas (`0 1px 2px rgb(10 25 49 / 6%)`).
-* Fondo decorativo de ondas azules (SVG inline) solo en landing y autenticación, con baja opacidad.
-* Transiciones de 150–220 ms con `ease-out`; respetar `prefers-reduced-motion`. Sin animaciones en el checkout.
-* Táctil: objetivos de al menos 44 × 44 px; formularios de una columna en móvil.
-* Foco visible siempre (`outline` de 2 px `--focus-ring`).
+Ver [capturas comparativas y ejecución de pruebas](../design-review/README.md). El rediseño no cambia
+contratos REST, migraciones ni reglas de cobro, cupos, autorización o mensajería.

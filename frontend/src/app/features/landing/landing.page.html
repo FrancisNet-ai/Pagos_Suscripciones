@@ -1,167 +1,228 @@
-<a href="#contenido" class="sr-only-focusable fixed left-4 top-4 z-50 rounded bg-snow px-4 py-2 text-night">Saltar al contenido</a>
-
-<!-- Portada -->
-<header class="relative isolate overflow-hidden bg-night text-snow">
-  <app-wave-art class="absolute inset-0 -z-10" [intensity]="0.9" />
-  <nav class="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8" aria-label="Principal">
-    <app-brand-mark tone="light" />
-    <div class="flex items-center gap-2 sm:gap-3">
-      @if (auth.isAuthenticated()) {
-        <a class="btn btn-light" [routerLink]="auth.homeRoute()">Ir a mi panel</a>
-      } @else {
-        <a class="btn btn-ghost-light hidden sm:inline-flex" routerLink="/ingresar">Iniciar sesión</a>
-        <a class="btn btn-light" routerLink="/registro">Crear cuenta</a>
-      }
-    </div>
-  </nav>
-
-  <div class="mx-auto grid max-w-6xl gap-12 px-5 pb-24 pt-14 sm:px-8 md:pb-32 md:pt-20 lg:grid-cols-[1.25fr_1fr] lg:items-end">
-    <div>
-      <p class="type-eyebrow !text-mist">Plataforma para vendedores de servicios digitales</p>
-      <h1 class="type-display mt-5 !text-snow">Tu negocio, <em class="font-normal italic text-mist">bajo control.</em></h1>
-      <p class="mt-7 max-w-xl text-lg leading-relaxed text-mist">
-        Publica tus productos, cobra por Yape y Plin a tus propias cuentas, verifica pagos y controla cada vencimiento y renovación desde un solo lugar.
-      </p>
-      <div class="mt-10 flex flex-col gap-3 sm:flex-row">
-        <a class="btn btn-light" routerLink="/registro">Crear mi negocio</a>
-        <a class="btn btn-ghost-light" href="#como-funciona">Ver cómo funciona</a>
+<div class="marketing-page">
+  <a
+    href="#contenido"
+    class="sr-only-focusable fixed left-4 top-4 z-50 rounded bg-snow px-4 py-2 text-night"
+    >Saltar al contenido</a
+  >
+  <header class="landing-hero" id="inicio">
+    <div class="hero-art" aria-hidden="true"><app-wave-art /></div>
+    <nav class="site-nav" aria-label="Principal">
+      <app-brand-mark />
+      <div class="site-nav-links">
+        <a href="#inicio">Inicio</a><a href="#beneficios">Soluciones</a
+        ><a href="#como-funciona">Cómo funciona</a><a href="#planes">Planes</a
+        ><a href="#preguntas">Ayuda</a>
       </div>
+      <div class="site-nav-actions">
+        @if (auth.isAuthenticated()) {
+          <a class="btn btn-primary" [routerLink]="auth.homeRoute()"
+            >Ir a mi panel <app-icon name="arrow"
+          /></a>
+        } @else {
+          <a class="btn btn-primary" routerLink="/ingresar">Iniciar sesión</a>
+          <a class="btn btn-secondary" routerLink="/registro">Crear cuenta</a>
+        }
+      </div>
+      <details class="mobile-site-menu">
+        <summary aria-label="Abrir navegación"><app-icon name="menu" /></summary>
+        <nav aria-label="Navegación móvil">
+          <a href="#beneficios">Soluciones</a><a href="#como-funciona">Cómo funciona</a
+          ><a href="#planes">Planes</a><a href="#preguntas">Ayuda</a>
+          @if (auth.isAuthenticated()) {
+            <a [routerLink]="auth.homeRoute()">Ir a mi panel</a>
+          } @else {
+            <a routerLink="/ingresar">Iniciar sesión</a><a routerLink="/registro">Crear cuenta</a>
+          }
+        </nav>
+      </details>
+    </nav>
+    <div class="hero-layout">
+      <div class="hero-copy">
+        <p class="type-eyebrow">Productos digitales.<br />Más posibilidades.</p>
+        <h1 class="type-display">Vende, crece<br />y <em>conecta.</em></h1>
+        <p>
+          Tu negocio digital, bajo control. Gestiona tus productos, clientes y pagos en un solo
+          lugar, con una tienda que lleva tu nombre.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" routerLink="/registro"
+            >Comenzar ahora <app-icon name="arrow"
+          /></a>
+          <a class="btn btn-secondary" href="#como-funciona">Conocer más</a>
+        </div>
+        <div class="hero-points">
+          <div class="hero-point">
+            <app-icon name="shield" /><span>Cobros directos<br />por Yape y Plin</span>
+          </div>
+          <div class="hero-point">
+            <app-icon name="box" /><span>Gestión simple<br />desde un solo lugar</span>
+          </div>
+          <div class="hero-point">
+            <app-icon name="renew" /><span>Renovaciones<br />bajo control</span>
+          </div>
+        </div>
+      </div>
+      <figure class="hero-composition" aria-label="Ilustración de un catálogo digital de Nuvyra">
+        <div class="catalog-cover" aria-hidden="true">
+          <p class="cover-name">Nuvyra</p>
+          <p class="cover-caption">Tu próximo paso.<br />Un mundo de posibilidades.</p>
+          <div class="cover-orbit"></div>
+        </div>
+        <div class="catalog-preview" aria-hidden="true">
+          <p class="catalog-preview-title">Tu catálogo digital <app-icon name="sparkle" /></p>
+          <div class="preview-product">
+            <div class="product-glyph"><app-icon name="play" /></div>
+            <div><strong>Entretenimiento</strong><span>Experiencias para disfrutar</span></div>
+          </div>
+          <div class="preview-product">
+            <div class="product-glyph education"><app-icon name="book" /></div>
+            <div><strong>Educación</strong><span>Ideas que abren caminos</span></div>
+          </div>
+          <div class="preview-product">
+            <div class="product-glyph software"><app-icon name="box" /></div>
+            <div><strong>Software y licencias</strong><span>Herramientas para crear</span></div>
+          </div>
+        </div>
+        <figcaption class="art-caption">Ilustración de catálogo · tú eliges qué vender</figcaption>
+      </figure>
     </div>
+  </header>
 
-    <figure class="border-l border-mist/30 pl-6 lg:mb-2">
-      <blockquote class="font-[family-name:var(--font-editorial)] text-2xl leading-snug text-snow">
-        “Cada cliente con su fecha. Cada pago con su comprobación. Cada renovación a tiempo.”
-      </blockquote>
-      <figcaption class="mt-4 text-sm text-mist">El control que tu negocio necesita, sin hojas de cálculo.</figcaption>
-    </figure>
-  </div>
-</header>
-
-<main id="contenido">
-  <!-- Propuesta de valor -->
-  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-28" aria-labelledby="valor-titulo">
-    <div class="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
-      <div>
-        <p class="type-eyebrow">Por qué {{ brand.name }}</p>
-        <h2 id="valor-titulo" class="type-h1 mt-4">Menos mensajes perdidos. Más ventas confirmadas.</h2>
-        <p class="mt-5 max-w-md">
-          Diseñado para quienes venden suscripciones, licencias y servicios digitales por WhatsApp y necesitan orden sin complicaciones.
+  <main id="contenido">
+    <section
+      id="beneficios"
+      class="marketing-section benefits-layout"
+      aria-labelledby="valor-titulo"
+    >
+      <div class="section-heading">
+        <p class="type-eyebrow">Hecho para tu negocio</p>
+        <h2 id="valor-titulo">Más tiempo para crecer.<br />Menos para organizar.</h2>
+        <p>
+          Deja atrás los mensajes perdidos y las fechas en hojas de cálculo. Conecta tus ventas, tus
+          clientes y tu próxima renovación.
         </p>
       </div>
-      <ol class="divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+      <ol>
         @for (benefit of benefits; track benefit.title; let i = $index) {
-          <li class="grid grid-cols-[3rem_1fr] gap-4 py-7">
-            <span class="type-numeric font-[family-name:var(--font-editorial)] text-2xl text-steel">0{{ i + 1 }}</span>
+          <li class="benefit-row">
+            <span class="benefit-number">0{{ i + 1 }}</span>
             <div>
-              <h3 class="text-lg font-semibold">{{ benefit.title }}</h3>
-              <p class="mt-1.5">{{ benefit.text }}</p>
+              <h3>{{ benefit.title }}</h3>
+              <p>{{ benefit.text }}</p>
             </div>
           </li>
         }
       </ol>
-    </div>
-  </section>
+    </section>
 
-  <!-- Cómo funciona -->
-  <section id="como-funciona" class="scroll-mt-8 bg-[color-mix(in_srgb,var(--color-mist)_22%,var(--color-snow))]" aria-labelledby="pasos-titulo">
-    <div class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-24">
-      <p class="type-eyebrow">Cómo funciona</p>
-      <h2 id="pasos-titulo" class="type-h2 mt-4 max-w-2xl">De tu primer producto a tu primera renovación, en cuatro pasos.</h2>
-      <ol class="relative mt-14 grid gap-10 before:absolute before:left-0 before:right-0 before:top-[1.125rem] before:hidden before:h-px before:bg-mist md:grid-cols-4 md:gap-8 md:before:block">
-        @for (step of steps; track step.title; let i = $index) {
-          <li class="relative">
-            <span class="relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-night text-sm font-semibold text-snow type-numeric">{{ i + 1 }}</span>
-            <h3 class="mt-5 text-lg font-semibold">{{ step.title }}</h3>
-            <p class="mt-1.5">{{ step.text }}</p>
-          </li>
-        }
-      </ol>
-    </div>
-  </section>
-
-  <!-- Características -->
-  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-28" aria-labelledby="caracteristicas-titulo">
-    <p class="type-eyebrow">Características</p>
-    <h2 id="caracteristicas-titulo" class="type-h1 mt-4 max-w-3xl">Todo lo necesario para vender, cobrar y renovar.</h2>
-    <div class="mt-14 grid gap-12 md:grid-cols-3 md:gap-10">
-      @for (feature of features; track feature.group) {
-        <div class="border-t-2 border-night pt-6">
-          <h3 class="font-[family-name:var(--font-editorial)] text-2xl">{{ feature.group }}</h3>
-          <ul class="mt-5 space-y-3">
-            @for (item of feature.items; track item) {
-              <li class="flex gap-3">
-                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-steel" aria-hidden="true"></span>
-                <span>{{ item }}</span>
-              </li>
-            }
-          </ul>
+    <section id="como-funciona" class="steps-band" aria-labelledby="pasos-titulo">
+      <div class="marketing-section">
+        <div class="section-heading">
+          <p class="type-eyebrow">Así de sencillo</p>
+          <h2 id="pasos-titulo">Tu negocio empieza contigo.<br />El orden, con Nuvyra.</h2>
         </div>
-      }
-    </div>
-  </section>
-
-  <!-- Planes -->
-  <section id="planes" class="bg-night text-snow" aria-labelledby="planes-titulo">
-    <div class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-24">
-      <div class="max-w-2xl">
-        <p class="type-eyebrow !text-mist">Planes</p>
-        <h2 id="planes-titulo" class="type-h1 mt-4 !text-snow">Paga por Nuvyra, no por tus ventas.</h2>
-        <p class="mt-5 text-mist">
-          Un precio fijo según los productos, clientes y funciones que necesites. Tus ventas siguen llegando completas a tus cuentas Yape y Plin.
-        </p>
+        <ol class="steps-grid">
+          @for (step of steps; track step.title; let i = $index) {
+            <li>
+              <span class="step-index">0{{ i + 1 }}</span>
+              <h3>{{ step.title }}</h3>
+              <p>{{ step.text }}</p>
+            </li>
+          }
+        </ol>
       </div>
-      @if (plans(); as list) {
-        @if (list.length > 0) {
-          <div class="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-            @for (p of list; track p.id) {
-              <app-plan-card [plan]="p" [dark]="true">
-                <a class="btn btn-light btn-block" routerLink="/registro" [queryParams]="{ plan: p.id }">Empezar con {{ p.name }}</a>
-              </app-plan-card>
-            }
-          </div>
-        } @else {
-          <div class="mt-10 border-t border-mist/30 pt-8">
-            <p class="text-mist">Los precios vigentes se publicarán aquí. Crea tu cuenta ahora y deja listo tu negocio.</p>
-            <a class="btn btn-light mt-5" routerLink="/registro">Crear mi cuenta</a>
-          </div>
+    </section>
+
+    <section class="marketing-section" aria-labelledby="funciones-titulo">
+      <div class="section-heading">
+        <p class="type-eyebrow">Cada detalle, conectado</p>
+        <h2 id="funciones-titulo">Todo lo que necesitas.<br />En el mismo lugar.</h2>
+      </div>
+      <div class="feature-grid">
+        @for (feature of features; track feature.group) {
+          <section class="feature-group">
+            <h3>{{ feature.group }}</h3>
+            <ul>
+              @for (item of feature.items; track item) {
+                <li>
+                  <app-icon name="check" /><span>{{ item }}</span>
+                </li>
+              }
+            </ul>
+          </section>
         }
-      }
-    </div>
-  </section>
-
-  <!-- Preguntas frecuentes -->
-  <section class="mx-auto max-w-3xl px-5 py-20 sm:px-8 md:py-28" aria-labelledby="faq-titulo">
-    <p class="type-eyebrow">Preguntas frecuentes</p>
-    <h2 id="faq-titulo" class="type-h2 mt-4">Lo que suelen preguntarnos</h2>
-    <div class="mt-10 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
-      @for (faq of faqs; track faq.q) {
-        <details class="group py-5">
-          <summary class="flex cursor-pointer list-none items-start justify-between gap-6 text-lg font-semibold text-night">
-            {{ faq.q }}
-            <span class="mt-1 text-steel transition-transform duration-200 group-open:rotate-45" aria-hidden="true">+</span>
-          </summary>
-          <p class="mt-3 pr-8">{{ faq.a }}</p>
-        </details>
-      }
-    </div>
-  </section>
-
-  <!-- Cierre -->
-  <section class="relative isolate overflow-hidden bg-shadow text-snow">
-    <app-wave-art class="absolute inset-0 -z-10 opacity-60" [intensity]="0.6" />
-    <div class="mx-auto max-w-6xl px-5 py-20 text-center sm:px-8 md:py-24">
-      <h2 class="type-h1 !text-snow">Empieza a ordenar tu negocio hoy.</h2>
-      <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-        <a class="btn btn-light" routerLink="/registro">Crear mi negocio</a>
-        <a class="btn btn-ghost-light" routerLink="/ingresar">Ya tengo cuenta</a>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
 
-<footer class="border-t border-[var(--line-subtle)]">
-  <div class="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
+    <section id="planes" class="pricing-section" aria-labelledby="planes-titulo">
+      <div class="marketing-section">
+        <div class="section-heading">
+          <p class="type-eyebrow">Un plan para tu siguiente paso</p>
+          <h2 id="planes-titulo">Invierte en tu negocio.<br />Conserva tus ventas.</h2>
+          <p>
+            Un precio fijo por Nuvyra. Tus compradores pagan directamente a tus cuentas Yape y Plin.
+          </p>
+        </div>
+        @if (plans(); as list) {
+          @if (list.length > 0) {
+            <div class="pricing-grid">
+              @for (p of list; track p.id) {
+                <app-plan-card [plan]="p"
+                  ><a
+                    class="btn btn-primary btn-block"
+                    routerLink="/registro"
+                    [queryParams]="{ plan: p.id }"
+                    >Empezar con {{ p.name }} <app-icon name="arrow" /></a
+                ></app-plan-card>
+              }
+            </div>
+          } @else {
+            <div class="mt-10 border-t border-mist pt-7">
+              <p>Los planes se publicarán aquí cuando estén disponibles.</p>
+              <a class="btn btn-primary mt-5" routerLink="/registro"
+                >Crear mi cuenta <app-icon name="arrow"
+              /></a>
+            </div>
+          }
+        } @else {
+          <p class="mt-8" role="status">Consultando planes…</p>
+        }
+      </div>
+    </section>
+
+    <section id="preguntas" class="marketing-section faq-section" aria-labelledby="faq-titulo">
+      <div class="section-heading">
+        <p class="type-eyebrow">Estamos para ayudarte</p>
+        <h2 id="faq-titulo">Respuestas claras.<br />Desde el comienzo.</h2>
+      </div>
+      <div class="mt-9">
+        @for (faq of faqs; track faq.q) {
+          <details>
+            <summary>{{ faq.q }} <span aria-hidden="true">+</span></summary>
+            <p>{{ faq.a }}</p>
+          </details>
+        }
+      </div>
+    </section>
+
+    <section class="closing-band" aria-labelledby="cierre-titulo">
+      <app-wave-art class="absolute inset-0 -z-10" />
+      <div class="marketing-section">
+        <p class="type-eyebrow !text-mist">El siguiente paso es tuyo</p>
+        <h2 id="cierre-titulo" class="type-h1 mt-4">Dale espacio a tu próximo logro.</h2>
+        <p class="mt-5">Tu negocio. Tus clientes. Tus posibilidades.</p>
+        <a class="btn btn-light mt-7 !rounded-full" routerLink="/registro"
+          >Comenzar con Nuvyra <app-icon name="arrow"
+        /></a>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
     <app-brand-mark />
-    <p class="text-[var(--text-muted)]">© {{ year }} {{ brand.name }}. {{ brand.tagline }}.</p>
-  </div>
-</footer>
+    <p>© {{ year }} {{ brand.name }}. {{ brand.tagline }}</p>
+    <nav aria-label="Información legal">
+      <a class="link" routerLink="/legal/condiciones">Condiciones</a
+      ><a class="link" routerLink="/legal/privacidad">Privacidad</a>
+    </nav>
+  </footer>
+</div>

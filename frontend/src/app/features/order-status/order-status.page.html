@@ -1,11 +1,26 @@
-<div [style]="theme()" class="min-h-dvh">
-  <main class="mx-auto max-w-lg px-5 pb-16 pt-6">
+<div [style]="theme()" class="buyer-stage">
+  <main class="buyer-card">
     @if (loadError(); as message) {
       <h1 class="type-h2 mt-10">No encontramos este pedido</h1>
       <p class="mt-3">{{ message }} Revisa que el enlace esté completo.</p>
     } @else if (order(); as o) {
+      <ol class="purchase-progress" aria-label="Progreso de compra">
+        <li><span>1</span>Pedido</li>
+        <li [attr.aria-current]="o.status === 'AWAITING_PAYMENT' ? 'step' : null">
+          <span>2</span>Pago
+        </li>
+        <li
+          [attr.aria-current]="
+            o.status === 'PAYMENT_REPORTED' || o.status === 'PAID' ? 'step' : null
+          "
+        >
+          <span>3</span>Verificación
+        </li>
+      </ol>
       <a [routerLink]="['/tienda', o.store.slug]" class="flex items-center gap-3 no-underline">
-        @if (o.store.logoUrl) { <img [src]="o.store.logoUrl" alt="" class="h-9 w-9 rounded-full object-cover" /> }
+        @if (o.store.logoUrl) {
+          <img [src]="o.store.logoUrl" alt="" class="h-9 w-9 rounded-full object-cover" />
+        }
         <span class="font-semibold text-night">{{ o.store.businessName }}</span>
       </a>
 
@@ -15,16 +30,26 @@
         <h1 class="type-h1 mt-2">{{ o.statusLabel }}</h1>
         @switch (o.status) {
           @case ('AWAITING_PAYMENT') {
-            <p class="mt-3">Tu pedido está registrado. Realiza el pago y luego registra el código de operación.</p>
+            <p class="mt-3">
+              Tu pedido está registrado. Realiza el pago y luego registra el código de operación.
+            </p>
           }
           @case ('PAYMENT_REPORTED') {
-            <p class="mt-3">Recibimos tu reporte. {{ o.store.businessName }} verificará la operación en su aplicación de {{ o.payment?.instructions?.methodLabel }} y confirmará tu pago.</p>
+            <p class="mt-3">
+              Recibimos tu reporte. {{ o.store.businessName }} verificará la operación en su
+              aplicación de {{ o.payment?.instructions?.methodLabel }} y confirmará tu pago.
+            </p>
           }
           @case ('PAID') {
-            <p class="mt-3">{{ o.store.businessName }} confirmó la recepción de tu pago. Coordina la entrega de tu servicio por WhatsApp.</p>
+            <p class="mt-3">
+              {{ o.store.businessName }} confirmó la recepción de tu pago. Coordina la entrega de tu
+              servicio por WhatsApp.
+            </p>
           }
           @case ('EXPIRED') {
-            <p class="mt-3">Este pedido venció sin pago. Si ya transferiste, escribe al vendedor por WhatsApp.</p>
+            <p class="mt-3">
+              Este pedido venció sin pago. Si ya transferiste, escribe al vendedor por WhatsApp.
+            </p>
           }
           @case ('CANCELLED') {
             <p class="mt-3">Este pedido fue cancelado.</p>
@@ -32,36 +57,68 @@
         }
       </section>
 
-      <dl class="mt-6 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-[0.9375rem]">
-        <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Producto</dt><dd class="text-right font-semibold text-night">{{ o.productName }}</dd></div>
+      <dl
+        class="mt-6 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-[0.9375rem]"
+      >
+        <div class="flex justify-between gap-4 py-3">
+          <dt class="text-[var(--text-muted)]">Producto</dt>
+          <dd class="text-right font-semibold text-night">{{ o.productName }}</dd>
+        </div>
         @if (o.productType === 'SUBSCRIPTION') {
-          <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Duración</dt><dd class="text-night">{{ o.durationDays | duration }}</dd></div>
+          <div class="flex justify-between gap-4 py-3">
+            <dt class="text-[var(--text-muted)]">Duración</dt>
+            <dd class="text-night">{{ o.durationDays | duration }}</dd>
+          </div>
         }
-        <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">A nombre de</dt><dd class="text-right text-night">{{ o.customerName }} · {{ o.customerPhoneMasked }}</dd></div>
-        <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Importe</dt><dd class="type-numeric text-lg font-semibold text-night">{{ o.amount | soles }}</dd></div>
+        <div class="flex justify-between gap-4 py-3">
+          <dt class="text-[var(--text-muted)]">A nombre de</dt>
+          <dd class="text-right text-night">{{ o.customerName }} · {{ o.customerPhoneMasked }}</dd>
+        </div>
+        <div class="flex justify-between gap-4 py-3">
+          <dt class="text-[var(--text-muted)]">Importe</dt>
+          <dd class="type-numeric text-lg font-semibold text-night">{{ o.amount | soles }}</dd>
+        </div>
       </dl>
 
       @if (o.canReportPayment && o.payment; as pay) {
         @let ins = pay.instructions;
         @if (pay.rejectionReason) {
-          <p class="notice notice-error mt-6" role="alert">El vendedor rechazó el reporte anterior: «{{ pay.rejectionReason }}». Revisa tu operación y vuelve a registrarla.</p>
+          <p class="notice notice-error mt-6" role="alert">
+            El vendedor rechazó el reporte anterior: «{{ pay.rejectionReason }}». Revisa tu
+            operación y vuelve a registrarla.
+          </p>
         }
 
         <!-- Instrucciones de pago -->
         <section class="mt-8" aria-labelledby="pagar-titulo">
-          <h2 id="pagar-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Paga {{ ins.amount | soles }} con {{ ins.methodLabel }}</h2>
+          <h2
+            id="pagar-titulo"
+            class="font-[family-name:var(--font-editorial)] text-2xl font-semibold"
+          >
+            Paga {{ ins.amount | soles }} con {{ ins.methodLabel }}
+          </h2>
           <div class="mt-4 overflow-hidden rounded-[var(--radius-panel)] bg-night text-snow">
             <div class="grid gap-4 p-5">
               <div>
-                <p class="text-xs uppercase tracking-[0.14em] text-mist">Titular declarado por el vendedor</p>
+                <p class="text-xs uppercase tracking-[0.14em] text-mist">
+                  Titular declarado por el vendedor
+                </p>
                 <p class="mt-1 text-xl font-semibold">{{ ins.holderName }}</p>
               </div>
               <div class="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <p class="text-xs uppercase tracking-[0.14em] text-mist">Celular {{ ins.methodLabel }}</p>
-                  <p class="type-numeric mt-1 text-2xl font-semibold tracking-wide">{{ localPhone(ins.phone) }}</p>
+                  <p class="text-xs uppercase tracking-[0.14em] text-mist">
+                    Celular {{ ins.methodLabel }}
+                  </p>
+                  <p class="type-numeric mt-1 text-2xl font-semibold tracking-wide">
+                    {{ localPhone(ins.phone) }}
+                  </p>
                 </div>
-                <button type="button" class="btn btn-light !min-h-10" (click)="copy('phone', ins.phone.replace('+51', ''))">
+                <button
+                  type="button"
+                  class="btn btn-light !min-h-10"
+                  (click)="copy('phone', ins.phone.replace('+51', ''))"
+                >
                   {{ copied() === 'phone' ? 'Copiado' : 'Copiar número' }}
                 </button>
               </div>
@@ -72,64 +129,135 @@
             </div>
             @if (ins.qrImageUrl) {
               <div class="flex justify-center bg-white p-5">
-                <img [src]="ins.qrImageUrl" [alt]="'Código QR de ' + ins.methodLabel + ' de ' + ins.holderName" class="h-48 w-48 object-contain" />
+                <img
+                  [src]="ins.qrImageUrl"
+                  [alt]="'Código QR de ' + ins.methodLabel + ' de ' + ins.holderName"
+                  class="h-48 w-48 object-contain"
+                />
               </div>
             }
           </div>
           <p class="notice notice-info mt-4" role="note">
-            Antes de confirmar en {{ ins.methodLabel }}, comprueba que el destinatario sea «{{ ins.holderName }}». Este nombre lo registró el vendedor; no fue validado por el banco.
+            Antes de confirmar en {{ ins.methodLabel }}, comprueba que el destinatario sea «{{
+              ins.holderName
+            }}». Este nombre lo registró el vendedor; no fue validado por el banco.
           </p>
           @if (o.reservedUntil) {
-            <p class="mt-3 text-sm font-semibold text-corporate">Tu cupo está reservado hasta las {{ time(o.reservedUntil) }}</p>
+            <p class="mt-3 text-sm font-semibold text-corporate">
+              Tu cupo está reservado hasta las {{ time(o.reservedUntil) }}
+            </p>
           }
         </section>
 
         <!-- Reporte del pago -->
-        <form class="mt-8 grid gap-5 border-t border-[var(--line-subtle)] pt-8" [formGroup]="form" (ngSubmit)="report()" novalidate>
-          <h2 class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">¿Ya pagaste?</h2>
-          @if (reportError(); as message) { <p class="notice notice-error" role="alert">{{ message }}</p> }
+        <form
+          class="mt-8 grid gap-5 border-t border-[var(--line-subtle)] pt-8"
+          [formGroup]="form"
+          (ngSubmit)="report()"
+          novalidate
+        >
+          <h2 class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">
+            ¿Ya pagaste?
+          </h2>
+          @if (reportError(); as message) {
+            <p class="notice notice-error" role="alert">{{ message }}</p>
+          }
           <div class="field">
             <label class="field-label" for="transactionReference">Código de operación</label>
-            <input id="transactionReference" class="input type-numeric" formControlName="transactionReference" autocomplete="off" inputmode="text"
-                   [attr.aria-invalid]="!!referenceError()" aria-describedby="reference-hint" />
-            <p id="reference-hint" class="field-hint">Lo encuentras en la constancia de {{ ins.methodLabel }}.</p>
-            @if (referenceError(); as e) { <p class="field-error">{{ e }}</p> }
+            <input
+              id="transactionReference"
+              class="input type-numeric"
+              formControlName="transactionReference"
+              autocomplete="off"
+              inputmode="text"
+              [attr.aria-invalid]="!!referenceError()"
+              aria-describedby="reference-hint"
+            />
+            <p id="reference-hint" class="field-hint">
+              Lo encuentras en la constancia de {{ ins.methodLabel }}.
+            </p>
+            @if (referenceError(); as e) {
+              <p class="field-error">{{ e }}</p>
+            }
           </div>
           <div class="field">
             <span class="field-label" id="receipt-label">Captura del comprobante (opcional)</span>
             <div class="flex flex-wrap items-center gap-3">
-              <label for="receipt" class="btn btn-secondary !min-h-10 cursor-pointer">{{ receipt() ? 'Cambiar captura' : 'Adjuntar captura' }}</label>
-              <span class="min-w-0 truncate text-sm text-[var(--text-muted)]">{{ receipt()?.name ?? 'Ningún archivo seleccionado' }}</span>
+              <label for="receipt" class="btn btn-secondary !min-h-10 cursor-pointer">{{
+                receipt() ? 'Cambiar captura' : 'Adjuntar captura'
+              }}</label>
+              <span class="min-w-0 truncate text-sm text-[var(--text-muted)]">{{
+                receipt()?.name ?? 'Ningún archivo seleccionado'
+              }}</span>
             </div>
-            <input id="receipt" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" aria-labelledby="receipt-label" (change)="onReceipt($event)" />
-            @if (receiptError(); as e) { <p class="field-error">{{ e }}</p> }
+            <input
+              id="receipt"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              class="sr-only"
+              aria-labelledby="receipt-label"
+              (change)="onReceipt($event)"
+            />
+            @if (receiptError(); as e) {
+              <p class="field-error">{{ e }}</p>
+            }
           </div>
-          <button class="btn btn-store btn-block !min-h-12 text-base" type="submit" [disabled]="reporting()">
-            @if (reporting()) { <span class="spinner" aria-hidden="true"></span> Enviando… } @else { Registrar mi pago }
+          <button
+            class="btn btn-store btn-block !min-h-12 text-base"
+            type="submit"
+            [disabled]="reporting()"
+          >
+            @if (reporting()) {
+              <span class="spinner" aria-hidden="true"></span> Enviando…
+            } @else {
+              Registrar mi pago
+            }
           </button>
-          <p class="text-center text-xs text-[var(--text-muted)]">Registrar el código no confirma el pago: el vendedor lo verificará.</p>
+          <p class="text-center text-xs text-[var(--text-muted)]">
+            Registrar el código no confirma el pago: el vendedor lo verificará.
+          </p>
         </form>
       } @else if (o.payment?.transactionReference && o.status === 'PAYMENT_REPORTED') {
-        <p class="mt-6 text-sm">Código de operación registrado: <strong class="type-numeric text-night">{{ o.payment!.transactionReference }}</strong></p>
+        <p class="mt-6 text-sm">
+          Código de operación registrado:
+          <strong class="type-numeric text-night">{{ o.payment!.transactionReference }}</strong>
+        </p>
       }
 
       <!-- WhatsApp -->
       @if (o.whatsappUrl) {
         <section class="mt-10">
-          <a class="btn btn-primary btn-block !min-h-12 text-base" [href]="o.whatsappUrl" target="_blank" rel="noopener noreferrer">
+          <a
+            class="btn btn-primary btn-block !min-h-12 text-base"
+            [href]="o.whatsappUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Escribir a {{ o.store.businessName }} por WhatsApp
           </a>
-          <p class="mt-2 text-center text-xs text-[var(--text-muted)]">Se abrirá WhatsApp con los datos de tu pedido. Tú decides si envías el mensaje.</p>
+          <p class="mt-2 text-center text-xs text-[var(--text-muted)]">
+            Se abrirá WhatsApp con los datos de tu pedido. Tú decides si envías el mensaje.
+          </p>
         </section>
       }
 
-      <div class="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line-subtle)] pt-6 text-sm">
-        <button type="button" class="link" (click)="load()" [disabled]="refreshing()">{{ refreshing() ? 'Actualizando…' : 'Actualizar estado' }}</button>
-        <button type="button" class="link" (click)="copy('link', pageUrl())">{{ copied() === 'link' ? 'Enlace copiado' : 'Copiar enlace de este pedido' }}</button>
+      <div
+        class="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line-subtle)] pt-6 text-sm"
+      >
+        <button type="button" class="link" (click)="load()" [disabled]="refreshing()">
+          {{ refreshing() ? 'Actualizando…' : 'Actualizar estado' }}
+        </button>
+        <button type="button" class="link" (click)="copy('link', pageUrl())">
+          {{ copied() === 'link' ? 'Enlace copiado' : 'Copiar enlace de este pedido' }}
+        </button>
       </div>
-      <p class="mt-2 text-xs text-[var(--text-muted)]">Guarda este enlace para consultar tu pedido. Es personal: no lo compartas.</p>
+      <p class="mt-2 text-xs text-[var(--text-muted)]">
+        Guarda este enlace para consultar tu pedido. Es personal: no lo compartas.
+      </p>
     } @else {
-      <div class="mt-10 h-48 animate-pulse rounded bg-mist/30" aria-busy="true"><span class="sr-only">Cargando pedido…</span></div>
+      <div class="mt-10 h-48 animate-pulse rounded bg-mist/30" aria-busy="true">
+        <span class="sr-only">Cargando pedido…</span>
+      </div>
     }
   </main>
 </div>

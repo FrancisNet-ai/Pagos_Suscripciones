@@ -1,81 +1,159 @@
 @if (error(); as e) {
   <main class="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 text-center">
-    <p class="font-[family-name:var(--font-display)] text-5xl text-mist">{{ e.status === 404 ? '404' : '¡Ups!' }}</p>
-    <h1 class="type-h2 mt-4">{{ e.status === 404 ? 'No encontramos esta tienda' : 'No pudimos cargar la tienda' }}</h1>
+    <p class="font-[family-name:var(--font-display)] text-5xl text-mist">
+      {{ e.status === 404 ? '404' : '¡Ups!' }}
+    </p>
+    <h1 class="type-h2 mt-4">
+      {{ e.status === 404 ? 'No encontramos esta tienda' : 'No pudimos cargar la tienda' }}
+    </h1>
     <p class="mt-3">{{ e.status === 404 ? 'Revisa que el enlace esté completo.' : e.message }}</p>
   </main>
 } @else if (store(); as s) {
-  <div [style]="theme()" class="min-h-dvh">
-    <!-- Portada -->
-    <header class="relative">
-      <div class="h-36 overflow-hidden sm:h-56" [style.background]="'linear-gradient(135deg, var(--store-accent), #0A1931)'">
-        @if (s.coverUrl) { <img [src]="s.coverUrl" alt="" class="h-full w-full object-cover" fetchpriority="high" /> }
-      </div>
-      <div class="mx-auto max-w-3xl px-5">
-        <div class="-mt-10 flex items-end gap-4 sm:-mt-12">
-          <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-snow bg-white shadow-[var(--shadow-hairline)] sm:h-24 sm:w-24">
-            @if (s.logoUrl) {
-              <img [src]="s.logoUrl" [alt]="'Logotipo de ' + s.businessName" class="h-full w-full object-cover" />
-            } @else {
-              <span class="font-[family-name:var(--font-display)] text-2xl text-night">{{ initials() }}</span>
-            }
-          </div>
-        </div>
-        <h1 class="type-h1 mt-4">{{ s.businessName }}</h1>
-        @if (s.description) { <p class="mt-3 max-w-2xl text-[1.0625rem]">{{ s.description }}</p> }
-        @if (s.paymentMethods.length) {
-          <p class="mt-4 text-sm text-[var(--text-muted)]">Pagos con {{ s.paymentMethods.length === 2 ? 'Yape o Plin' : s.paymentMethods[0].label }} · Sin registro</p>
+  <div [style]="theme()" class="store-page">
+    <header>
+      <nav class="store-nav" aria-label="Tienda">
+        <a href="#catalogo" class="store-identity">
+          @if (s.logoUrl) {
+            <img [src]="s.logoUrl" [alt]="'Logotipo de ' + s.businessName" />
+          } @else {
+            <span class="profile-avatar" aria-hidden="true">{{ initials() }}</span>
+          }
+          <span>{{ s.businessName }}</span></a
+        >
+        <a class="link" href="#catalogo">Ver productos</a>
+      </nav>
+      <div class="store-banner" [style.background-color]="'var(--store-accent)'">
+        @if (s.coverUrl) {
+          <img [src]="s.coverUrl" alt="" class="store-cover" fetchpriority="high" />
+        } @else {
+          <app-wave-art />
         }
+        <div class="store-banner-inner">
+          <!-- La portada es del vendedor: su nombre y su descripción; sin textos comerciales ajenos. -->
+          <p class="type-eyebrow !mt-0 !text-mist">Tienda en línea</p>
+          <h1 class="mt-4">{{ s.businessName }}</h1>
+          <p>
+            {{
+              s.description ||
+                'Elige un producto y compra sin crear una cuenta. Pagas por Yape o Plin directamente al vendedor.'
+            }}
+          </p>
+        </div>
       </div>
     </header>
-
-    <main class="mx-auto max-w-3xl px-5 pb-16 pt-8">
+    <main class="store-catalog" id="catalogo">
       @if (s.notice) {
-        <p class="notice notice-info" role="status">{{ s.notice }}</p>
+        <p class="notice notice-info mb-6" role="status">{{ s.notice }}</p>
       }
-
       @if (products().length === 0) {
         @if (s.acceptingOrders) {
-          <p class="py-16 text-center text-[var(--text-muted)]">Esta tienda aún no tiene productos publicados.</p>
+          <p class="py-16 text-center text-[var(--text-muted)]">
+            Esta tienda aún no tiene productos publicados.
+          </p>
         }
       } @else {
-        <h2 class="sr-only">Productos</h2>
-        <ul class="divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
-          @for (p of products(); track p.id) {
-            <li class="flex gap-4 py-6">
-              <div class="h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-panel)] bg-mist/30 sm:h-28 sm:w-28">
-                @if (p.imageUrl) { <img [src]="p.imageUrl" [alt]="p.name" class="h-full w-full object-cover" loading="lazy" decoding="async" /> }
-              </div>
-              <div class="min-w-0 flex-1">
-                @if (p.category) { <p class="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">{{ p.category }}</p> }
-                <h3 class="mt-0.5 text-lg font-semibold leading-snug text-night">{{ p.name }}</h3>
-                @if (p.description) { <p class="mt-1 line-clamp-3 text-[0.9375rem]">{{ p.description }}</p> }
-                <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <p class="type-numeric font-[family-name:var(--font-editorial)] text-2xl font-semibold text-night">{{ p.price | soles }}</p>
-                    <p class="text-sm text-[var(--text-muted)]">{{ p.productType === 'SUBSCRIPTION' ? 'Suscripción · ' + (p.durationDays | duration) : 'Pago único' }}</p>
-                  </div>
-                  @if (p.purchasable && s.acceptingOrders) {
-                    <a class="btn btn-store" [routerLink]="['/tienda', s.slug, 'comprar', p.id]" [attr.aria-label]="'Comprar ' + p.name">Comprar</a>
-                  }
-                </div>
-                @if (availabilityText(p); as text) {
-                  <p class="mt-2 text-sm font-semibold" [class.text-danger]="!p.purchasable" [class.text-corporate]="p.purchasable">{{ text }}</p>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold text-night">Explora el catálogo</h2>
+            <p class="mt-1 text-xs text-[var(--text-muted)]">
+              @if (s.paymentMethods.length) {
+                Pagos con
+                {{ s.paymentMethods.length === 2 ? 'Yape o Plin' : s.paymentMethods[0].label }} ·
+              }
+              Sin registro
+            </p>
+          </div>
+          <label class="w-full sm:w-64"
+            ><span class="sr-only">Buscar productos</span
+            ><input
+              type="search"
+              class="input !min-h-10 !text-sm"
+              placeholder="Encuentra tu próximo producto"
+              [value]="search()"
+              (input)="setSearch($event)"
+          /></label>
+        </div>
+        <nav class="store-filters" aria-label="Categorías de productos">
+          <button
+            type="button"
+            [attr.aria-pressed]="category() === null"
+            (click)="category.set(null)"
+          >
+            Todos
+          </button>
+          @for (c of categories(); track c) {
+            <button type="button" [attr.aria-pressed]="category() === c" (click)="category.set(c)">
+              {{ c }}
+            </button>
+          }
+        </nav>
+        @if (filteredProducts().length === 0) {
+          <p class="py-12 text-center text-sm" role="status">
+            No encontramos productos con esos filtros.
+          </p>
+          <button class="btn btn-secondary mx-auto block" type="button" (click)="clearFilters()">
+            Mostrar todos
+          </button>
+        }
+        <ul class="store-grid">
+          @for (p of filteredProducts(); track p.id) {
+            <li class="store-product">
+              <div class="store-product-image">
+                @if (p.imageUrl) {
+                  <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" decoding="async" />
+                } @else {
+                  <app-icon [name]="p.productType === 'SUBSCRIPTION' ? 'renew' : 'box'" />
                 }
               </div>
+              @if (p.category) {
+                <p class="mb-2 text-[.6rem] uppercase tracking-wider text-[var(--text-muted)]">
+                  {{ p.category }}
+                </p>
+              }
+              <h3>{{ p.name }}</h3>
+              @if (p.description) {
+                <p class="product-description line-clamp-3">{{ p.description }}</p>
+              }
+              <p class="store-price type-numeric">{{ p.price | soles }}</p>
+              <p class="store-duration">
+                {{
+                  p.productType === 'SUBSCRIPTION'
+                    ? 'Suscripción · ' + (p.durationDays | duration)
+                    : 'Pago único'
+                }}
+              </p>
+              @if (p.purchasable && s.acceptingOrders) {
+                <a
+                  class="btn btn-store"
+                  [routerLink]="['/tienda', s.slug, 'comprar', p.id]"
+                  [attr.aria-label]="'Comprar ' + p.name"
+                  >Comprar <app-icon name="arrow"
+                /></a>
+              }
+              @if (availabilityText(p); as text) {
+                <p
+                  class="store-availability"
+                  [class.text-danger]="!p.purchasable"
+                  [class.text-corporate]="p.purchasable"
+                >
+                  {{ text }}
+                </p>
+              }
             </li>
           }
         </ul>
       }
-
-      <footer class="mt-14 text-center text-xs text-[var(--text-muted)]">
-        Tienda gestionada con {{ brand.name }}. Los pagos se realizan directamente al vendedor.
+      <footer class="store-footer">
+        <p>{{ s.businessName }} · Los pagos llegan directamente al vendedor.</p>
+        <a routerLink="/" class="no-underline"
+          >Tienda gestionada con <strong>{{ brand.name }}</strong></a
+        >
       </footer>
     </main>
   </div>
 } @else {
-  <div class="mx-auto max-w-3xl px-5 py-10" aria-busy="true">
-    <div class="h-36 animate-pulse rounded bg-mist/30"></div>
+  <div class="mx-auto max-w-5xl px-5 py-10" aria-busy="true">
+    <div class="h-56 animate-pulse rounded-2xl bg-mist/30"></div>
     <div class="mt-6 h-8 w-1/2 animate-pulse rounded bg-mist/30"></div>
     <span class="sr-only">Cargando tienda…</span>
   </div>
