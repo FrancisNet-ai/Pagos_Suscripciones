@@ -89,7 +89,7 @@ compose.yaml      Entorno completo con Docker
 
 ## Desarrollo local
 
-Requisitos: Java 21, Node 22 con npm 11, Docker.
+Requisitos: JDK 21 o posterior (el backend se compila para Java 21), Node 22 o posterior con npm 11, PostgreSQL 17 (con Docker o instalado localmente).
 
 ```bash
 # 1. Base de datos

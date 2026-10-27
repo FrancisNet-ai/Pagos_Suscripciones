@@ -9,10 +9,14 @@ plugins {
 group = "com.nuvyra"
 version = "0.1.0"
 
+// Se compila para Java 21 (CI y las imágenes temurin:21) con cualquier JDK 21 o posterior.
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType<JavaCompile> {
+    options.release = 21
 }
 
 repositories {
@@ -53,6 +57,8 @@ dependencies {
 
 kotlin {
     compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        freeCompilerArgs.addAll("-Xjdk-release=21")
         freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
     }
 }
