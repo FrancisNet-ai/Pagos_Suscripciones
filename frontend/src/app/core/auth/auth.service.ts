@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
-import { BusinessSummary, LoginPayload, RegisterPayload, Role, SessionResponse } from './auth.models';
+import {
+  BusinessSummary,
+  LoginPayload,
+  RegisterPayload,
+  Role,
+  SessionResponse,
+  StaffPermission,
+} from './auth.models';
 
 const API = '/api/v1/auth';
 
@@ -18,6 +25,8 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this.sessionState() !== null);
   readonly user = computed(() => this.sessionState()?.user ?? null);
   readonly business = computed(() => this.sessionState()?.business ?? null);
+  /** Titular del negocio (los colaboradores no ven configuración, plan ni equipo). */
+  readonly isOwner = computed(() => this.business()?.role === 'OWNER');
 
   /** Se ejecuta al iniciar la aplicación: obtiene el token CSRF y recupera la sesión si existe. */
   async initialize(): Promise<void> {
@@ -64,6 +73,16 @@ export class AuthService {
   /** Limpia el estado local cuando el backend indica que la sesión ya no es válida. */
   clearLocalSession(): void {
     this.sessionState.set(null);
+  }
+
+  /** Solo decide qué se muestra: el backend valida cada petición del colaborador. */
+  can(permission: StaffPermission): boolean {
+    return this.business()?.permissions.includes(permission) ?? false;
+  }
+
+  /** Abre la sesión del colaborador que acaba de aceptar su invitación. */
+  startSession(session: SessionResponse): void {
+    this.sessionState.set(session);
   }
 
   hasRole(role: Role): boolean {

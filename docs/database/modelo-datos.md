@@ -105,6 +105,16 @@ erDiagram
 `businesses` añade `reminder_days_before` (0–15), `reminder_on_due_day` y `renewal_grace_days` (0–30).
 `orders.renewal_request_id` es obligatorio si y solo si `kind = 'RENEWAL'`.
 
+### Colaboradores (`V8__business_staff.sql`)
+
+| Tabla | Columnas clave | Notas |
+|---|---|---|
+| `business_members` (cambios) | `permissions` (lista separada por comas: `PRODUCTS`, `ORDERS`, `CUSTOMERS`, `RENEWALS`, `REPORTS`), `revoked_at` | Un único titular activo por negocio (índice único parcial); una cuenta pertenece a un solo negocio (`UNIQUE(user_id)`) |
+| `staff_invitations` | `id`, `business_id`, `email`, `full_name`, `permissions`, `token_hash` (SHA-256), `expires_at` (7 días), `status` (`PENDING`, `ACCEPTED`, `CANCELLED`), `invited_by`, `accepted_user_id`, `accepted_at` | Una invitación pendiente por correo y negocio; el enlace solo se muestra al titular al crearlo |
+
+El límite `saas_plans.admin_user_limit` cuenta al titular, a los colaboradores activos y a las invitaciones
+pendientes vigentes; las altas se serializan con un bloqueo consultivo por negocio.
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

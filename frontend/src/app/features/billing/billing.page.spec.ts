@@ -65,8 +65,14 @@ describe('BillingPage', () => {
     expect(choose.disabled).toBe(true);
   });
 
-  it('las líneas del plan no anuncian usuarios administradores (aún no existen colaboradores)', () => {
-    const lines = planLines(plan);
-    expect(lines).toEqual(['Hasta 10 productos activos', 'Clientes ilimitados', 'Reportes de ventas', 'Colores y portada propios en tu tienda']);
+  it('las líneas del plan indican cuántos usuarios admite (titular incluido)', () => {
+    expect(planLines(plan)).toEqual([
+      'Hasta 10 productos activos',
+      'Clientes ilimitados',
+      'Hasta 3 usuarios (titular incluido)',
+      'Reportes de ventas',
+      'Colores y portada propios en tu tienda',
+    ]);
+    expect(planLines({ ...plan, adminUserLimit: 1 })).toContain('Solo el titular');
   });
 });

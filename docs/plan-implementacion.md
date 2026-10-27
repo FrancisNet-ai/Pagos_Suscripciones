@@ -13,7 +13,7 @@ Cada fase termina con pruebas en verde y una versión utilizable de punta a punt
 | Seguridad | Sesiones opacas en cookie HttpOnly, CSRF, CORS cerrado, cabeceras, BCrypt, rate limiting en login/registro/recuperación |
 | Auth | Registro (usuario + negocio + slug + código empresarial + membresía OWNER), login, logout, refresh, `me`, recuperación de contraseña |
 | Multiempresa | `CurrentBusiness` resuelto en servidor, `GET /business/me`, prueba de aislamiento A/B |
-| Roles | `SUPER_ADMIN` (bootstrap por variables), `BUSINESS_OWNER`, `BUSINESS_STAFF` previsto |
+| Roles | `SUPER_ADMIN` (bootstrap por variables), `BUSINESS_OWNER`, `BUSINESS_STAFF` (colaboradores con permisos por sección) |
 | Auditoría | `audit_logs` para registro, login, logout, restablecimiento |
 | Frontend | Angular 21 standalone + signals + Tailwind 4, tokens de diseño, fuentes legales, landing, login, registro, recuperación, shell del panel con datos reales del negocio |
 | Infraestructura | Dockerfiles multi-stage, Nginx como proxy de mismo origen, Docker Compose |

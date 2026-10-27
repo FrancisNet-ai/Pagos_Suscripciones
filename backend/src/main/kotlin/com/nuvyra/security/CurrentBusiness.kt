@@ -1,6 +1,7 @@
 package com.nuvyra.security
 
 import com.nuvyra.businesses.BusinessRole
+import com.nuvyra.businesses.StaffPermission
 import com.nuvyra.common.error.ApiException
 import org.springframework.core.MethodParameter
 import org.springframework.security.core.context.SecurityContextHolder
@@ -15,7 +16,14 @@ import java.util.UUID
  * Negocio sobre el que actúa el usuario autenticado. Se obtiene SIEMPRE de la sesión y de
  * `business_members`, nunca de datos enviados por el cliente.
  */
-data class CurrentBusiness(val businessId: UUID, val userId: UUID, val role: BusinessRole)
+data class CurrentBusiness(
+    val businessId: UUID,
+    val userId: UUID,
+    val role: BusinessRole,
+    val permissions: Set<StaffPermission> = emptySet(),
+) {
+    val isOwner: Boolean get() = role == BusinessRole.OWNER
+}
 
 /** Usuario autenticado inyectable en controladores. */
 fun currentUserOrNull(): AuthenticatedUser? =
@@ -37,6 +45,6 @@ class CurrentBusinessArgumentResolver : HandlerMethodArgumentResolver {
         val user = currentUser()
         if (parameter.parameterType == AuthenticatedUser::class.java) return user
         val businessId = user.businessId ?: throw ApiException.forbidden("Tu cuenta no está asociada a ningún negocio.")
-        return CurrentBusiness(businessId, user.userId, user.businessRole!!)
+        return CurrentBusiness(businessId, user.userId, user.businessRole!!, user.permissions)
     }
 }

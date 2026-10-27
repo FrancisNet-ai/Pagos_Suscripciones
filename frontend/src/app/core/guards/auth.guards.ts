@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
-import { Role } from '../auth/auth.models';
+import { Role, StaffPermission } from '../auth/auth.models';
 
 /** Requiere sesión. La autorización real la aplica siempre el backend. */
 export const authGuard: CanActivateFn = (_route, state) => {
@@ -23,3 +23,18 @@ export function roleGuard(...roles: Role[]): CanActivateFn {
     return inject(Router).parseUrl(auth.isAuthenticated() ? auth.homeRoute() : '/ingresar');
   };
 }
+
+/** Pantallas exclusivas del titular (configuración, plan, equipo). */
+export const ownerGuard: CanActivateFn = () =>
+  inject(AuthService).isOwner() ? true : inject(Router).parseUrl('/panel');
+
+/** Sección del panel que requiere alguno de los permisos indicados. */
+export function permissionGuard(...permissions: StaffPermission[]): CanActivateFn {
+  return () => {
+    const auth = inject(AuthService);
+    return permissions.some((p) => auth.can(p)) ? true : inject(Router).parseUrl('/panel');
+  };
+}
+
+/** Elige entre dos rutas con la misma URL según sea titular o colaborador. */
+export const ownerMatch: CanMatchFn = () => inject(AuthService).isOwner();

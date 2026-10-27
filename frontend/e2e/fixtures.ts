@@ -61,7 +61,7 @@ export async function setup(browser: Browser, baseURL: string) {
         description: 'Plan exclusivo para pruebas del rediseño.',
         productLimit: 20,
         customerLimit: 100,
-        adminUserLimit: 1,
+        adminUserLimit: 3,
         featureReports: true,
         featureReminders: true,
         featureBranding: true,

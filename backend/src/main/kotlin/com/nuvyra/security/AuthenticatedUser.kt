@@ -1,6 +1,7 @@
 package com.nuvyra.security
 
 import com.nuvyra.businesses.BusinessRole
+import com.nuvyra.businesses.StaffPermission
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -25,6 +26,8 @@ data class AuthenticatedUser(
     val roles: Set<String>,
     val businessId: UUID?,
     val businessRole: BusinessRole?,
+    /** Secciones habilitadas en el negocio (todas para el titular). */
+    val permissions: Set<StaffPermission> = emptySet(),
 )
 
 class SessionAuthentication(val user: AuthenticatedUser) :

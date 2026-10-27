@@ -1,6 +1,8 @@
 package com.nuvyra.auth
 
+import com.nuvyra.businesses.BusinessRole
 import com.nuvyra.businesses.BusinessStatus
+import com.nuvyra.businesses.StaffPermission
 import com.nuvyra.common.validation.PeruvianMobile
 import com.nuvyra.saas.AccessSummary
 import jakarta.validation.constraints.AssertTrue
@@ -87,6 +89,9 @@ data class BusinessSummaryDto(
     val status: BusinessStatus,
     /** Si el plan permite usar las funciones comerciales y qué funciones incluye. */
     val access: AccessSummary,
+    /** OWNER (titular) o STAFF (colaborador) y las secciones que puede usar. */
+    val role: BusinessRole,
+    val permissions: Set<StaffPermission>,
 )
 
 data class SessionResponse(

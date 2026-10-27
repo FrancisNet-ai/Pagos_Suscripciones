@@ -123,6 +123,7 @@ export function planLines(p: Plan): string[] {
   return [
     p.productLimit ? (p.productLimit === 1 ? '1 producto activo' : `Hasta ${n.format(p.productLimit)} productos activos`) : 'Productos ilimitados',
     p.customerLimit ? (p.customerLimit === 1 ? '1 cliente' : `Hasta ${n.format(p.customerLimit)} clientes`) : 'Clientes ilimitados',
+    p.adminUserLimit === 1 ? 'Solo el titular' : `Hasta ${n.format(p.adminUserLimit)} usuarios (titular incluido)`,
     ...(p.featureReports ? [FEATURE_LABEL.REPORTS] : []),
     ...(p.featureReminders ? [FEATURE_LABEL.REMINDERS] : []),
     ...(p.featureBranding ? [FEATURE_LABEL.BRANDING] : []),

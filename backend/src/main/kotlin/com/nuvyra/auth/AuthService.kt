@@ -1,6 +1,8 @@
 package com.nuvyra.auth
 
 import com.nuvyra.businesses.Business
+import com.nuvyra.businesses.BusinessRole
+import com.nuvyra.businesses.StaffPermission
 import com.nuvyra.businesses.BusinessService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
@@ -79,7 +81,7 @@ class AuthService(
         // Elegir el plan genera su cobro; el plan se habilita cuando la plataforma verifica el pago.
         request.planId?.let { billing.checkout(business.id, user.id, it) }
         val session = sessionService.create(user.id, client.ip, client.userAgent)
-        return AuthResult(toResponse(user, setOf(Roles.BUSINESS_OWNER), business), session)
+        return AuthResult(toResponse(user, setOf(Roles.BUSINESS_OWNER), business, BusinessRole.OWNER, StaffPermission.entries.toSet()), session)
     }
 
     /** Sin @Transactional: el registro de intentos fallidos debe persistir aunque se lance el error. */
@@ -110,13 +112,16 @@ class AuthService(
     fun describe(principal: AuthenticatedUser): SessionResponse {
         val user = users.findById(principal.userId).orElseThrow { ApiException.unauthorized() }
         val business = principal.businessId?.let { businessService.get(it) }
-        return toResponse(user, principal.roles, business)
+        return toResponse(user, principal.roles, business, principal.businessRole, principal.permissions)
     }
 
-    private fun toResponse(user: User, roles: Set<String>, business: Business?) = SessionResponse(
+    private fun toResponse(user: User, roles: Set<String>, business: Business?, role: BusinessRole?, permissions: Set<StaffPermission>) = SessionResponse(
         user = UserDto(user.id, user.fullName, user.email, user.phone, roles),
         business = business?.let {
-            BusinessSummaryDto(it.id, it.uniqueCode, it.slug, it.businessName, it.status, AccessSummary.of(entitlements.access(it)))
+            BusinessSummaryDto(
+                it.id, it.uniqueCode, it.slug, it.businessName, it.status, AccessSummary.of(entitlements.access(it)),
+                role ?: BusinessRole.OWNER, permissions,
+            )
         },
     )
 

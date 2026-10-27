@@ -11,6 +11,7 @@ import {
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { StaffPermission } from '../../core/auth/auth.models';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
 import { IconComponent } from '../../shared/components/icon.component';
@@ -21,12 +22,15 @@ interface NavChild {
   /** Sin `route`: aún no implementado, se muestra deshabilitado. */
   route?: string;
   queryParams?: Record<string, string>;
+  /** Quién la ve: el titular siempre; un colaborador, si tiene este permiso. `OWNER`: solo el titular. */
+  access?: StaffPermission | 'OWNER';
 }
 
 interface NavItem {
   icon: string;
   label: string;
   route?: string;
+  access?: StaffPermission | 'OWNER';
   children?: NavChild[];
 }
 
@@ -55,53 +59,74 @@ export class DashboardShellComponent {
   }
   protected readonly loggingOut = signal(false);
 
-  protected readonly nav: NavItem[] = [
+  private readonly allNav: NavItem[] = [
     { icon: 'grid', label: 'Inicio', route: '/panel' },
-    { icon: 'box', label: 'Productos', route: '/panel/productos' },
+    { icon: 'box', label: 'Productos', route: '/panel/productos', access: 'PRODUCTS' },
     {
       icon: 'users',
       label: 'Clientes',
       children: [
-        { label: 'Todos', route: '/panel/clientes' },
-        { label: 'Registrar cliente', route: '/panel/clientes/nuevo' },
-        { label: 'Importar clientes', route: '/panel/clientes/importar' },
+        { label: 'Todos', route: '/panel/clientes', access: 'CUSTOMERS' },
+        { label: 'Registrar cliente', route: '/panel/clientes/nuevo', access: 'CUSTOMERS' },
+        { label: 'Importar clientes', route: '/panel/clientes/importar', access: 'CUSTOMERS' },
       ],
     },
     {
       icon: 'wallet',
       label: 'Ventas y pagos',
       children: [
-        { label: 'Pedidos', route: '/panel/ventas' },
-        { label: 'Por verificar', route: '/panel/ventas', queryParams: { filtro: 'TO_VERIFY' } },
-        { label: 'Reportes', route: '/panel/reportes' },
+        { label: 'Pedidos', route: '/panel/ventas', access: 'ORDERS' },
+        {
+          label: 'Por verificar',
+          route: '/panel/ventas',
+          queryParams: { filtro: 'TO_VERIFY' },
+          access: 'ORDERS',
+        },
+        { label: 'Reportes', route: '/panel/reportes', access: 'REPORTS' },
       ],
     },
     {
       icon: 'renew',
       label: 'Suscripciones y renovaciones',
       children: [
-        { label: 'Suscripciones', route: '/panel/suscripciones' },
+        { label: 'Suscripciones', route: '/panel/suscripciones', access: 'CUSTOMERS' },
         {
           label: 'Próximos vencimientos',
           route: '/panel/suscripciones',
           queryParams: { filtro: 'EXPIRING' },
+          access: 'CUSTOMERS',
         },
-        { label: 'Renovaciones', route: '/panel/renovaciones' },
+        { label: 'Renovaciones', route: '/panel/renovaciones', access: 'RENEWALS' },
       ],
     },
     {
       icon: 'settings',
       label: 'Configuración',
+      access: 'OWNER',
       children: [
         { label: 'Datos del negocio', route: '/panel/configuracion/negocio' },
         { label: 'Enlace público', route: '/panel/configuracion/enlace' },
         { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
         { label: 'Avisos de renovación', route: '/panel/configuracion/renovaciones' },
         { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
+        { label: 'Equipo', route: '/panel/configuracion/equipo' },
         { label: 'Mi plan', route: '/panel/plan' },
       ],
     },
   ];
+
+  /** El menú del colaborador solo muestra las secciones que el titular le habilitó. */
+  protected readonly nav = computed<NavItem[]>(() => {
+    if (this.auth.isOwner()) return this.allNav;
+    const allowed = (access?: StaffPermission | 'OWNER') =>
+      !access || (access !== 'OWNER' && this.auth.can(access));
+    return this.allNav
+      .filter((item) => allowed(item.access))
+      .map((item) =>
+        item.children ? { ...item, children: item.children.filter((c) => allowed(c.access)) } : item,
+      )
+      .filter((item) => !item.children || item.children.length > 0);
+  });
 
   /** Aviso persistente sobre el plan SaaS (sin plan, en gracia o por vencer). */
   protected readonly planBanner = computed<{
@@ -111,6 +136,16 @@ export class DashboardShellComponent {
   } | null>(() => {
     const access = this.auth.business()?.access;
     if (!access || this.url().startsWith('/panel/plan')) return null;
+    if (!this.auth.isOwner()) {
+      // El colaborador no gestiona el plan: solo se le explica por qué no puede hacer cambios.
+      return access.active
+        ? null
+        : {
+            tone: access.block === 'SUSPENDED' ? 'danger' : 'warning',
+            text: 'El plan del negocio no está vigente: el panel está en modo de solo lectura. Avísale al titular.',
+            action: '',
+          };
+    }
     if (access.block === 'SUSPENDED')
       return { tone: 'danger', text: access.message ?? '', action: 'Ver detalles' };
     if (!access.active)
@@ -141,7 +176,7 @@ export class DashboardShellComponent {
 
   protected readonly currentSection = computed(
     () =>
-      this.nav.find((item) =>
+      this.nav().find((item) =>
         item.route
           ? this.url() === item.route
           : item.children?.some((child) => child.route && this.url().startsWith(child.route)),
