@@ -14,10 +14,10 @@ type Tab = SaasPaymentStatus | 'ALL';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, SolesPipe, StatusBadgeComponent],
   template: `
-    <p class="type-eyebrow">Cobros de la plataforma</p>
+    <p class="type-eyebrow">Nuvyra Billing</p>
     <h1 class="type-h1 mt-3">Pagos SaaS</h1>
     <p class="mt-3 max-w-2xl">
-      Revisa en la aplicación de Yape o Plin de la plataforma que el dinero llegó antes de aprobar. Un comprobante nunca activa un plan por sí solo.
+      Revisa en la aplicación de Yape o Plin de Nuvyra que el dinero llegó antes de aprobar. Un comprobante nunca activa un plan por sí solo.
     </p>
 
     <nav class="mt-8 flex gap-1 overflow-x-auto border-b border-[var(--line-subtle)] pb-4" aria-label="Estado del pago">

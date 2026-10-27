@@ -15,7 +15,7 @@ app:
 logging:
   level:
     root: WARN
-    com.platform: INFO
+    com.nuvyra: INFO
 ---
 app:
   storage:

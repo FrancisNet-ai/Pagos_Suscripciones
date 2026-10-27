@@ -7,7 +7,7 @@ La especificación pide arrancar como monolito modular, sin microservicios, Redi
 salvo necesidad demostrable. El equipo es pequeño y el dominio todavía evoluciona.
 
 ## Decisión
-Un único servicio Spring Boot con paquetes por funcionalidad (`com.platform.<módulo>`). Los módulos
+Un único servicio Spring Boot con paquetes por funcionalidad (`com.nuvyra.<módulo>`). Los módulos
 se comunican solo por servicios públicos. Las tareas programadas corren dentro del mismo proceso.
 
 ## Consecuencias

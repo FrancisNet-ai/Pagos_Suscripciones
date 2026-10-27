@@ -130,10 +130,10 @@ Botón 3 · enlace: {{ renewUrlBase }}{{ v[0] }}</p>
         <section class="border-t border-[var(--line-subtle)] pt-6 text-sm" aria-labelledby="webhook-titulo">
           <h3 id="webhook-titulo" class="font-semibold text-night">Estados de entrega y respuestas</h3>
           @if (d.webhooksAvailable) {
-            <p class="mt-2">La plataforma recibe los avisos de Meta en <span class="break-all font-mono text-xs">{{ d.webhookUrl }}</span>: verás si el mensaje se entregó
+            <p class="mt-2">Nuvyra recibe los avisos de Meta en <span class="break-all font-mono text-xs">{{ d.webhookUrl }}</span>: verás si el mensaje se entregó
               y las respuestas Sí/No se registran solas. Si el cliente escribe «BAJA», deja de recibir avisos.</p>
           } @else {
-            <p class="mt-2">La plataforma aún no tiene configurada la recepción de webhooks. Los avisos se envían, pero los estados de entrega y las respuestas por botón
+            <p class="mt-2">Nuvyra aún no tiene configurada la recepción de webhooks. Los avisos se envían, pero los estados de entrega y las respuestas por botón
               no se registrarán; el cliente puede responder desde el enlace del mensaje.</p>
           }
         </section>

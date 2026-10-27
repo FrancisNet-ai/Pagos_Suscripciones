@@ -60,8 +60,8 @@ export class LandingPage {
       a: 'No. Solo indican su nombre y celular, eligen Yape o Plin y registran su código de operación. Nunca les pedimos contraseña.',
     },
     {
-      q: '¿La plataforma recibe el dinero de mis ventas?',
-      a: 'No. Tus compradores pagan directamente a las cuentas Yape o Plin que tú configures. Tu suscripción a la plataforma es un cobro separado.',
+      q: '¿Nuvyra recibe el dinero de mis ventas?',
+      a: 'No. Tus compradores pagan directamente a las cuentas Yape o Plin que tú configures. Tu suscripción a Nuvyra es un cobro separado.',
     },
     {
       q: '¿Los pagos se verifican automáticamente?',

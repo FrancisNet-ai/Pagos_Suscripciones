@@ -1,6 +1,7 @@
 # Pendientes y decisiones técnicas
 
 ## Decisiones vigentes
+* Nombre del producto: **Nuvyra** («Tu negocio, bajo control.»), sustituye al nombre provisional anterior. Paquete `com.nuvyra`, base de datos y proyecto Compose `nuvyra`. Pendiente: verificar marca y dominio antes del lanzamiento y renombrar el repositorio a `nuvyra-platform`.
 * [ADR-001](decisions/ADR-001-monolito-modular.md) Monolito modular.
 * [ADR-002](decisions/ADR-002-multiempresa-business-id.md) Multiempresa por `business_id` resuelto en servidor.
 * [ADR-003](decisions/ADR-003-sesiones-cookie-httponly.md) Sesiones opacas en cookie HttpOnly + CSRF.
