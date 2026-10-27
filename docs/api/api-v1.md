@@ -338,3 +338,15 @@ Enlace usado, cancelado, vencido o inexistente → `410 INVITATION_INVALID`.
 
 Cualquier otra ruta del negocio (configuración, Yape/Plin, WhatsApp, `/billing/**`, equipo) es exclusiva del
 titular → `403 STAFF_FORBIDDEN`.
+
+## Pendientes — implementado
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/tasks?view=ALL\|MINE\|UNASSIGNED` | Sincroniza y devuelve los pendientes abiertos que el usuario puede atender (`type`, `typeLabel`, `since`, `dueAt`, `overdue`, `assignee`, cliente, producto, pedido, monto, `detail`), los totales `counts { open, mine, unassigned, overdue }` y los miembros asignables por tipo |
+| `GET` | `/tasks/summary` | Solo los totales (para el menú) |
+| `PUT` | `/tasks/{id}/assignee` | `{ userId }` o `{ userId: null }`. El titular asigna a cualquier miembro con acceso a ese tipo; un colaborador solo toma la tarea para sí o suelta la suya (`403`). Tarea resuelta o ajena → `404` |
+
+Tipos y permisos: `VERIFY_PAYMENT` y `REVIEW_INCIDENT` → `ORDERS`; `ACTIVATE_SERVICE` → `CUSTOMERS`;
+`RELEASE_ACCESS` → `CUSTOMERS` o `RENEWALS` (solo cuando el acceso ya terminó); `SEND_RENEWAL_NOTICE` → `RENEWALS`
+(excluye los avisos que enviará la integración oficial de WhatsApp). No hay endpoint para cerrar una tarea.

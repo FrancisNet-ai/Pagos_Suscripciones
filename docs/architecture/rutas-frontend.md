@@ -11,6 +11,7 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/recuperar` | `auth/forgot-password` | solo invitados | 1 |
 | `/restablecer?token=` | `auth/reset-password` | público | 1 |
 | `/panel` | `dashboard` (shell con menú lateral); inicio propio del colaborador | `BUSINESS_OWNER`, `BUSINESS_STAFF` | 1 |
+| `/panel/pendientes` | `tasks` (pendientes con responsable y plazo) | owner y colaboradores (según sus secciones) | pendientes |
 | `/panel/productos` | `products` | owner o permiso `PRODUCTS` | 2 |
 | `/panel/productos/nuevo`, `/panel/productos/:id` | `products` | owner o `PRODUCTS` | 2 |
 | `/panel/clientes`, `/panel/clientes/nuevo`, `/panel/clientes/:id` | `customers` | owner o `CUSTOMERS` | 4 |

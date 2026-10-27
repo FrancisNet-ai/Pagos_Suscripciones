@@ -56,7 +56,12 @@
                 ariaCurrentWhenActive="page"
                 [routerLinkActiveOptions]="{ exact: item.route === '/panel' }"
                 class="sidebar-link"
-                ><app-icon [name]="item.icon" /><span>{{ item.label }}</span></a
+                ><app-icon [name]="item.icon" /><span>{{ item.label }}</span>
+                @if (item.route === '/panel/pendientes' && (tasks.counts()?.open ?? 0) > 0) {
+                  <span class="nav-count" [attr.aria-label]="tasks.counts()!.open + ' pendientes'">{{
+                    tasks.counts()!.open
+                  }}</span>
+                }</a
               >
             } @else {
               <details [open]="isSectionActive(item)">

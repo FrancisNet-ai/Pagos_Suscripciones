@@ -47,6 +47,14 @@ const SHORTCUTS: Shortcut[] = [
         ></a>
       }
       <ul class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <li>
+          <a routerLink="/panel/pendientes" class="dashboard-surface block h-full no-underline">
+            <span class="surface-heading">
+              <span class="font-semibold text-night">Pendientes</span><app-icon name="check" />
+            </span>
+            <span class="mt-2 block text-sm text-[var(--text-muted)]">Pagos, activaciones, cupos y avisos que esperan atención.</span>
+          </a>
+        </li>
         @for (s of shortcuts(); track s.route) {
           <li>
             <a [routerLink]="s.route" class="dashboard-surface block h-full no-underline">

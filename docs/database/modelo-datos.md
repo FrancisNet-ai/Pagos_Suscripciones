@@ -115,6 +115,12 @@ erDiagram
 El límite `saas_plans.admin_user_limit` cuenta al titular, a los colaboradores activos y a las invitaciones
 pendientes vigentes; las altas se serializan con un bloqueo consultivo por negocio.
 
+### Pendientes (`V9__seller_tasks.sql`)
+
+| Tabla | Columnas clave | Notas |
+|---|---|---|
+| `seller_tasks` | `id`, `business_id`, `task_type` (`VERIFY_PAYMENT`, `REVIEW_INCIDENT`, `ACTIVATE_SERVICE`, `RELEASE_ACCESS`, `SEND_RENEWAL_NOTICE`), `entity_id` (pago, suscripción, cupo o aviso), `status` (`OPEN`, `RESOLVED`), `since`, `due_at`, `assigned_to`, `assigned_at`, `resolved_at` | Una tarea abierta por necesidad (índice único parcial); sincronización idempotente con bloqueo consultivo por negocio |
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

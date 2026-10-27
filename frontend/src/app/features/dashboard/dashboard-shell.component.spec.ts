@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { SessionResponse, StaffPermission } from '../../core/auth/auth.models';
@@ -15,7 +17,7 @@ function session(role: 'OWNER' | 'STAFF', permissions: StaffPermission[]): Sessi
 }
 
 function render(s: SessionResponse) {
-  TestBed.configureTestingModule({ imports: [DashboardShellComponent], providers: [provideRouter([])] });
+  TestBed.configureTestingModule({ imports: [DashboardShellComponent], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
   TestBed.inject(AuthService).startSession(s);
   const fixture = TestBed.createComponent(DashboardShellComponent);
   fixture.detectChanges();
@@ -28,6 +30,7 @@ describe('DashboardShellComponent', () => {
     const links = render(session('STAFF', ['ORDERS']));
     expect(links).toContain('Pedidos');
     expect(links).toContain('Por verificar');
+    expect(links).toContain('Pendientes');
     expect(links).not.toContain('Productos');
     expect(links).not.toContain('Reportes');
     expect(links).not.toContain('Equipo');
