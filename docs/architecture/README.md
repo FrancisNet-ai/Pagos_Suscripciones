@@ -117,8 +117,13 @@ Ver [ADR-003](../decisions/ADR-003-sesiones-cookie-httponly.md).
 |---|---|---|
 | `SUPER_ADMIN` | `users.platform_role` | `ROLE_SUPER_ADMIN` |
 | `BUSINESS_OWNER` | `business_members.role = OWNER` | `ROLE_BUSINESS_OWNER` |
-| `BUSINESS_STAFF` | `business_members.role = STAFF` (futuro) | `ROLE_BUSINESS_STAFF` |
+| `BUSINESS_STAFF` | `business_members.role = STAFF` + `permissions` | `ROLE_BUSINESS_STAFF` |
 | Comprador final | sin cuenta | anónimo |
+
+El colaborador entra al panel del negocio con las secciones que el titular le habilita. `StaffAccessInterceptor`
+valida cada petición en el servidor (ruta + método → permiso); lo que no tiene regla es exclusivo del titular:
+datos y personalización del negocio, Yape/Plin, WhatsApp, Mi plan, equipo y los cambios de la política de
+avisos. Revocar un acceso desactiva la cuenta y cierra sus sesiones al instante.
 
 El superadministrador inicial se crea al arrancar solo si se definen las variables
 `APP_BOOTSTRAP_SUPER_ADMIN_EMAIL` y `APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD`.

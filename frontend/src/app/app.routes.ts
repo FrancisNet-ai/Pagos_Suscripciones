@@ -1,5 +1,12 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, roleGuard } from './core/guards/auth.guards';
+import {
+  authGuard,
+  guestGuard,
+  ownerGuard,
+  ownerMatch,
+  permissionGuard,
+  roleGuard,
+} from './core/guards/auth.guards';
 
 export const routes: Routes = [
   {
@@ -59,82 +66,107 @@ export const routes: Routes = [
     loadComponent: () => import('./features/renewals/renewal-public.page').then((m) => m.RenewalPublicPage),
   },
   {
+    path: 'invitacion/:token',
+    title: 'Únete al equipo',
+    loadComponent: () => import('./features/staff/accept-invitation.page').then((m) => m.AcceptInvitationPage),
+  },
+  {
     path: 'panel',
-    canActivate: [authGuard, roleGuard('BUSINESS_OWNER')],
+    canActivate: [authGuard, roleGuard('BUSINESS_OWNER', 'BUSINESS_STAFF')],
     loadComponent: () => import('./features/dashboard/dashboard-shell.component').then((m) => m.DashboardShellComponent),
     children: [
       {
         path: '',
         title: 'Inicio',
+        canMatch: [ownerMatch],
         loadComponent: () => import('./features/dashboard/dashboard-home.page').then((m) => m.DashboardHomePage),
       },
       {
+        path: '',
+        title: 'Inicio',
+        loadComponent: () => import('./features/dashboard/staff-home.page').then((m) => m.StaffHomePage),
+      },
+      {
         path: 'productos',
+        canActivate: [permissionGuard('PRODUCTS')],
         title: 'Productos',
         loadComponent: () => import('./features/products/products-list.page').then((m) => m.ProductsListPage),
       },
       {
         path: 'productos/nuevo',
+        canActivate: [permissionGuard('PRODUCTS')],
         title: 'Nuevo producto',
         loadComponent: () => import('./features/products/product-form.page').then((m) => m.ProductFormPage),
       },
       {
         path: 'productos/:id',
+        canActivate: [permissionGuard('PRODUCTS')],
         title: 'Producto',
         loadComponent: () => import('./features/products/product-form.page').then((m) => m.ProductFormPage),
       },
       {
         path: 'ventas',
+        canActivate: [permissionGuard('ORDERS')],
         title: 'Pedidos',
         loadComponent: () => import('./features/orders/orders-list.page').then((m) => m.OrdersListPage),
       },
       {
         path: 'ventas/:id',
+        canActivate: [permissionGuard('ORDERS')],
         title: 'Pedido',
         loadComponent: () => import('./features/orders/order-detail.page').then((m) => m.OrderDetailPage),
       },
       {
         path: 'reportes',
+        canActivate: [permissionGuard('REPORTS')],
         title: 'Reportes',
         loadComponent: () => import('./features/reports/reports.page').then((m) => m.ReportsPage),
       },
       {
         path: 'clientes',
+        canActivate: [permissionGuard('CUSTOMERS')],
         title: 'Clientes',
         loadComponent: () => import('./features/customers/customers-list.page').then((m) => m.CustomersListPage),
       },
       {
         path: 'clientes/nuevo',
+        canActivate: [permissionGuard('CUSTOMERS')],
         title: 'Registrar cliente',
         loadComponent: () => import('./features/customers/customer-new.page').then((m) => m.CustomerNewPage),
       },
       {
         path: 'clientes/importar',
+        canActivate: [permissionGuard('CUSTOMERS')],
         title: 'Importar clientes',
         loadComponent: () => import('./features/imports/customer-import.page').then((m) => m.CustomerImportPage),
       },
       {
         path: 'clientes/:id',
+        canActivate: [permissionGuard('CUSTOMERS')],
         title: 'Cliente',
         loadComponent: () => import('./features/customers/customer-detail.page').then((m) => m.CustomerDetailPage),
       },
       {
         path: 'renovaciones',
+        canActivate: [permissionGuard('RENEWALS')],
         title: 'Renovaciones',
         loadComponent: () => import('./features/renewals/renewals.page').then((m) => m.RenewalsPage),
       },
       {
         path: 'suscripciones',
+        canActivate: [permissionGuard('CUSTOMERS')],
         title: 'Suscripciones',
         loadComponent: () => import('./features/subscriptions/subscriptions.page').then((m) => m.SubscriptionsPage),
       },
       {
         path: 'plan',
+        canActivate: [ownerGuard],
         title: 'Mi plan',
         loadComponent: () => import('./features/billing/billing.page').then((m) => m.BillingPage),
       },
       {
         path: 'configuracion',
+        canActivate: [ownerGuard],
         loadComponent: () => import('./features/settings/settings-layout.component').then((m) => m.SettingsLayoutComponent),
         children: [
           { path: '', pathMatch: 'full', redirectTo: 'negocio' },
@@ -157,6 +189,11 @@ export const routes: Routes = [
             path: 'whatsapp',
             title: 'WhatsApp Business',
             loadComponent: () => import('./features/whatsapp/whatsapp-settings.page').then((m) => m.WhatsAppSettingsPage),
+          },
+          {
+            path: 'equipo',
+            title: 'Equipo',
+            loadComponent: () => import('./features/staff/team.page').then((m) => m.TeamPage),
           },
           {
             path: 'cobros',

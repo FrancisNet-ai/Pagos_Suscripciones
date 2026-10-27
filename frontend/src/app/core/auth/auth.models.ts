@@ -8,6 +8,10 @@ export interface SessionUser {
   roles: Role[];
 }
 
+export type BusinessRole = 'OWNER' | 'STAFF';
+/** Secciones que el titular habilita a cada colaborador. */
+export type StaffPermission = 'PRODUCTS' | 'ORDERS' | 'CUSTOMERS' | 'RENEWALS' | 'REPORTS';
+
 export interface BusinessSummary {
   id: string;
   uniqueCode: string;
@@ -15,6 +19,9 @@ export interface BusinessSummary {
   businessName: string;
   status: 'ACTIVE' | 'SUSPENDED';
   access: AccessSummary;
+  role: BusinessRole;
+  /** El titular recibe todas; un colaborador, solo las que le habilitaron. */
+  permissions: StaffPermission[];
 }
 
 export type AccessBlock = 'SUSPENDED' | 'NO_PLAN' | 'PENDING_PAYMENT' | 'EXPIRED' | 'CANCELLED';

@@ -35,5 +35,6 @@ export class SettingsLayoutComponent {
     { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
     { label: 'Renovaciones', route: '/panel/configuracion/renovaciones' },
     { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
+    { label: 'Equipo', route: '/panel/configuracion/equipo' },
   ];
 }

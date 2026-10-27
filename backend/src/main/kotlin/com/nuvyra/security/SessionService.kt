@@ -90,6 +90,7 @@ class SessionService(
             roles = roles,
             businessId = membership?.businessId,
             businessRole = membership?.role,
+            permissions = membership?.permissions.orEmpty(),
         )
     }
 

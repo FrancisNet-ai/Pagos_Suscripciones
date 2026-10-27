@@ -86,10 +86,13 @@ class SecurityConfig(
                     .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                     .requestMatchers("/api/docs", "/api/docs/**", "/swagger-ui/**").permitAll()
                     .requestMatchers("/api/v1/admin/**").hasRole(Roles.SUPER_ADMIN)
+                    // Exclusivo del titular: su plan SaaS y su equipo.
+                    .requestMatchers("/api/v1/billing/**", "/api/v1/business/me/staff/**").hasRole(Roles.BUSINESS_OWNER)
+                    // Titular y colaboradores; las secciones de cada colaborador las valida StaffAccessInterceptor.
                     .requestMatchers("/api/v1/business/**", "/api/v1/products/**", "/api/v1/orders/**", "/api/v1/payments/**",
-                        "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**", "/api/v1/renewals/**", "/api/v1/billing/**",
+                        "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**", "/api/v1/renewals/**",
                     )
-                    .hasRole(Roles.BUSINESS_OWNER)
+                    .hasAnyRole(Roles.BUSINESS_OWNER, Roles.BUSINESS_STAFF)
                     .requestMatchers("/error").permitAll()
                     .anyRequest().authenticated()
             }

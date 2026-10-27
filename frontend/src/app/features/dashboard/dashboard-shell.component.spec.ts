@@ -1,0 +1,43 @@
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { SessionResponse, StaffPermission } from '../../core/auth/auth.models';
+import { AuthService } from '../../core/auth/auth.service';
+import { DashboardShellComponent } from './dashboard-shell.component';
+
+function session(role: 'OWNER' | 'STAFF', permissions: StaffPermission[]): SessionResponse {
+  return {
+    user: { id: 'u', fullName: 'Luis Apoyo', email: 'luis@ejemplo.pe', phone: '+51987654321', roles: [role === 'OWNER' ? 'BUSINESS_OWNER' : 'BUSINESS_STAFF'] },
+    business: {
+      id: 'b', uniqueCode: 'NV-1', slug: 'norte', businessName: 'Norte Digital', status: 'ACTIVE', role, permissions,
+      access: { active: true, block: null, message: null, subscriptionStatus: 'ACTIVE', planName: 'Crece', expiresAt: null, usableUntil: null, features: [] },
+    },
+  };
+}
+
+function render(s: SessionResponse) {
+  TestBed.configureTestingModule({ imports: [DashboardShellComponent], providers: [provideRouter([])] });
+  TestBed.inject(AuthService).startSession(s);
+  const fixture = TestBed.createComponent(DashboardShellComponent);
+  fixture.detectChanges();
+  const el = fixture.nativeElement as HTMLElement;
+  return Array.from(el.querySelectorAll('#panel-nav a')).map((a) => a.textContent?.trim() ?? '');
+}
+
+describe('DashboardShellComponent', () => {
+  it('el colaborador solo ve sus secciones, sin configuración ni plan', () => {
+    const links = render(session('STAFF', ['ORDERS']));
+    expect(links).toContain('Pedidos');
+    expect(links).toContain('Por verificar');
+    expect(links).not.toContain('Productos');
+    expect(links).not.toContain('Reportes');
+    expect(links).not.toContain('Equipo');
+    expect(links).not.toContain('Mi plan');
+  });
+
+  it('el titular ve todo, incluido el equipo', () => {
+    const links = render(session('OWNER', ['PRODUCTS', 'ORDERS', 'CUSTOMERS', 'RENEWALS', 'REPORTS']));
+    expect(links).toContain('Productos');
+    expect(links).toContain('Equipo');
+    expect(links).toContain('Mi plan');
+  });
+});

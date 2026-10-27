@@ -41,13 +41,13 @@
     </div>
     @if (auth.business(); as business) {
       <div class="sidebar-business">
-        <p>Tu espacio de trabajo</p>
+        <p>{{ auth.isOwner() ? 'Tu espacio de trabajo' : 'Colaborador' }}</p>
         <p>{{ business.businessName }}</p>
       </div>
     }
     <nav class="sidebar-nav" aria-label="Secciones">
       <ul>
-        @for (item of nav; track item.label) {
+        @for (item of nav(); track item.label) {
           <li>
             @if (item.route) {
               <a
@@ -123,7 +123,9 @@
         <strong>Nuvyra Dashboard</strong><span class="context-divider">/</span
         ><span class="context-name">{{ currentSection() }}</span>
       </p>
-      <a class="btn btn-secondary" routerLink="/panel/plan"><app-icon name="wallet" />Mi plan</a>
+      @if (auth.isOwner()) {
+        <a class="btn btn-secondary" routerLink="/panel/plan"><app-icon name="wallet" />Mi plan</a>
+      }
     </div>
     <main id="panel-contenido" class="workspace-main">
       @if (planBanner(); as b) {
@@ -138,10 +140,12 @@
           "
           role="status"
         >
-          <span>{{ b.text }}</span
-          ><a routerLink="/panel/plan" class="font-semibold underline underline-offset-4">{{
-            b.action
-          }}</a>
+          <span>{{ b.text }}</span>
+          @if (b.action) {
+            <a routerLink="/panel/plan" class="font-semibold underline underline-offset-4">{{
+              b.action
+            }}</a>
+          }
         </div>
       }
       <router-outlet />

@@ -61,9 +61,12 @@ Respuesta `201` (y cookie de sesión):
 ```json
 {
   "user": { "id": "…", "fullName": "Ana Torres", "email": "ana@ejemplo.pe", "phone": "+51987654321", "roles": ["BUSINESS_OWNER"] },
-  "business": { "id": "…", "uniqueCode": "NEG-7K2M9QXA", "slug": "digital-streaming-peru", "businessName": "Digital Streaming Perú", "status": "ACTIVE" }
+  "business": { "id": "…", "uniqueCode": "NEG-7K2M9QXA", "slug": "digital-streaming-peru", "businessName": "Digital Streaming Perú", "status": "ACTIVE",
+                "access": { "…": "…" }, "role": "OWNER", "permissions": ["PRODUCTS", "ORDERS", "CUSTOMERS", "RENEWALS", "REPORTS"] }
 }
 ```
+
+`business.role` es `OWNER` o `STAFF`; `permissions` son las secciones habilitadas (el titular recibe todas).
 
 `POST /auth/login` `{ "email": "…", "password": "…" }` → `200` misma forma que `/auth/me`.
 Credenciales inválidas → `401 INVALID_CREDENTIALS` (mismo mensaje para correo inexistente y clave errónea).
@@ -296,3 +299,42 @@ la integración; no requiere acción) y `failureReason`. `POST …/sent` y `…/
 
 Columnas reconocidas (sin importar tildes ni mayúsculas): `nombre`*, `celular`*, `producto`, `inicio`,
 `duracion_dias` o `vencimiento`, `precio`, `estado` (activa, vencida, cancelada), `notas`.
+
+## Colaboradores — implementado
+
+### Equipo (solo OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/business/me/staff` | `members` (titular y colaboradores, con `permissions`, `status`, `revokedAt`), `invitations` pendientes, `seatsUsed`, `seatLimit` (`null` sin plan vigente) y `permissionOptions` |
+| `POST` | `/business/me/staff/invitations` | `{ fullName, email, permissions[] }` → `201 { invitation, link, emailSent, team }`. El enlace se devuelve **solo aquí**; se envía por correo si hay SMTP. Errores: correo con cuenta existente o invitación pendiente (`VALIDATION_ERROR`), `SEAT_LIMIT_REACHED` (409) |
+| `POST` | `/business/me/staff/invitations/{id}/renew` | Enlace nuevo y 7 días más; el anterior deja de funcionar |
+| `DELETE` | `/business/me/staff/invitations/{id}` | Cancela la invitación y libera el lugar |
+| `PUT` | `/business/me/staff/{memberId}/permissions` | `{ permissions[] }` (al menos una). Efecto inmediato en la siguiente petición del colaborador |
+| `POST` | `/business/me/staff/{memberId}/revoke` | Revoca la membresía, desactiva la cuenta y cierra sus sesiones |
+| `POST` | `/business/me/staff/{memberId}/reactivate` | Restituye el acceso si el plan aún tiene lugar |
+
+El acceso del titular no se modifica (`409 OWNER_IMMUTABLE`).
+
+### Invitación (público, token)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/invitations/{token}` | Negocio, nombre, correo, secciones y vencimiento |
+| `POST` | `/public/invitations/{token}/accept` | `{ fullName, phone, password, acceptTerms, acceptPrivacy }` → crea la cuenta `BUSINESS_STAFF`, inicia sesión (cookie) y responde como `/auth/me` |
+
+Enlace usado, cancelado, vencido o inexistente → `410 INVITATION_INVALID`.
+
+### Permisos del colaborador
+
+| Permiso | Endpoints |
+|---|---|
+| (ninguno) | `GET /business/me` |
+| `PRODUCTS` | `/products/**` (el listado `GET /products` también con `CUSTOMERS`) |
+| `ORDERS` | `/orders/**`, `/payments/**` |
+| `CUSTOMERS` | `/customers/**` (incluida la importación), `/subscriptions/**` |
+| `RENEWALS` | `/renewals/**` (ajustes solo lectura), `GET /subscriptions` y `POST /subscriptions/{id}/release-capacity` |
+| `REPORTS` | `/reports/**` |
+
+Cualquier otra ruta del negocio (configuración, Yape/Plin, WhatsApp, `/billing/**`, equipo) es exclusiva del
+titular → `403 STAFF_FORBIDDEN`.

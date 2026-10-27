@@ -47,6 +47,11 @@ lo autorizaron, webhooks firmados con estados de entrega y respuestas Sí/No por
 clientes desde CSV o Excel con vista previa, y CI con GitHub Actions. Pagos automáticos: no aplican
 mientras Yape y Plin no ofrezcan una API oficial.
 
+**Colaboradores (`BUSINESS_STAFF`): completado.** El titular invita a su equipo con un enlace de un solo uso,
+elige qué secciones ve cada colaborador (catálogo, pedidos y pagos, clientes, renovaciones, reportes) y
+puede cambiar permisos o revocar el acceso al instante. La configuración, los cobros, el plan y el equipo
+son siempre del titular. El número de usuarios respeta el límite del plan.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Rediseño editorial
