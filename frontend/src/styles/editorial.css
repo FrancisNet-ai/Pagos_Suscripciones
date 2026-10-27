@@ -746,6 +746,17 @@
   .sidebar-link span {
     flex: 1;
   }
+  .sidebar-link span.nav-count {
+    flex: none;
+    min-width: 22px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #a9cfe9;
+    color: #0b1a2c;
+    font-size: 0.7rem;
+    font-weight: 650;
+    text-align: center;
+  }
   .sidebar-link .nav-chevron {
     width: 12px;
     height: 12px;

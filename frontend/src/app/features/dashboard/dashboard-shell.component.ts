@@ -16,6 +16,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
 import { IconComponent } from '../../shared/components/icon.component';
 import { formatDate } from '../billing/billing.api';
+import { TasksApi } from '../tasks/tasks.api';
 
 interface NavChild {
   label: string;
@@ -49,6 +50,7 @@ interface NavItem {
 })
 export class DashboardShellComponent {
   protected readonly auth = inject(AuthService);
+  protected readonly tasks = inject(TasksApi);
   private readonly router = inject(Router);
   protected readonly menuOpen = signal(false);
   private readonly menuTrigger = viewChild<ElementRef<HTMLButtonElement>>('menuTrigger');
@@ -61,6 +63,7 @@ export class DashboardShellComponent {
 
   private readonly allNav: NavItem[] = [
     { icon: 'grid', label: 'Inicio', route: '/panel' },
+    { icon: 'check', label: 'Pendientes', route: '/panel/pendientes' },
     { icon: 'box', label: 'Productos', route: '/panel/productos', access: 'PRODUCTS' },
     {
       icon: 'users',
@@ -202,6 +205,7 @@ export class DashboardShellComponent {
       .subscribe((e) => {
         if (this.menuOpen()) this.closeMenu();
         this.url.set(e.urlAfterRedirects);
+        this.tasks.refreshCounts();
       });
   }
 

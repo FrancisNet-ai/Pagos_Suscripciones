@@ -68,6 +68,7 @@ object AuditActions {
     const val STAFF_PERMISSIONS_UPDATED = "STAFF_PERMISSIONS_UPDATED"
     const val STAFF_REVOKED = "STAFF_REVOKED"
     const val STAFF_REACTIVATED = "STAFF_REACTIVATED"
+    const val TASK_ASSIGNED = "TASK_ASSIGNED"
 }
 
 @Service

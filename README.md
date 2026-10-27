@@ -52,6 +52,10 @@ elige qué secciones ve cada colaborador (catálogo, pedidos y pagos, clientes, 
 puede cambiar permisos o revocar el acceso al instante. La configuración, los cobros, el plan y el equipo
 son siempre del titular. El número de usuarios respeta el límite del plan.
 
+**Pendientes: completado.** Una bandeja con lo que los clientes esperan del vendedor (pagos por verificar,
+servicios por activar, accesos por retirar, avisos por enviar), con responsable, antigüedad y plazo. Cada
+pendiente se cierra solo cuando la acción se completa; nunca se marca como hecho a mano.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Rediseño editorial

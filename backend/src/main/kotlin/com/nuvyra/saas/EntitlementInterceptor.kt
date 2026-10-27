@@ -26,6 +26,7 @@ class EntitlementInterceptor(private val entitlements: EntitlementService) : Han
         val PATHS = listOf(
             "/api/v1/business/**", "/api/v1/products/**", "/api/v1/orders/**", "/api/v1/payments/**",
             "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**", "/api/v1/renewals/**",
+            "/api/v1/tasks/**",
         )
 
         val EXEMPT = listOf(

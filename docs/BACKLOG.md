@@ -19,10 +19,10 @@
 * La importación guarda la vista previa y aplica exactamente esas filas; cada fila se escribe en su propia transacción.
 * Los avisos de renovación se preparan para envío manual: abrir WhatsApp no cuenta como enviado; el vendedor confirma con «Ya lo envié».
 * El token de renovación es un HMAC de la solicitud con `APP_RENEWAL_TOKEN_SECRET`; cambiar el secreto invalida los enlaces ya enviados.
+* Pendientes (`seller_tasks`): se abren y se resuelven al sincronizar con el estado de los datos; no existe «marcar como hecha», porque la tarea solo se cierra cuando la acción se completa en su pantalla. Lo que aportan es el responsable, desde cuándo esperan y un plazo sugerido (12–24 h).
 * El enlace del pedido usa un token aleatorio de 256 bits (solo se guarda su hash). Un reintento con la misma `Idempotency-Key` emite un enlace nuevo para el mismo pedido.
 
 ## Pendientes
-- [ ] Tareas del vendedor (`seller_tasks`) como entidad propia; hoy los pendientes se derivan del estado (cupos por liberar, avisos por enviar, pagos por verificar).
 - [ ] *Embedded Signup* de Meta para conectar WhatsApp sin copiar identificadores ni tokens (requiere app verificada como Tech Provider).
 - [ ] Plantillas de WhatsApp para confirmaciones de pedido y de pago (hoy solo recordatorios y despedida).
 - [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
@@ -31,6 +31,7 @@
 - [ ] Playwright como suite versionada en el repositorio (hoy los flujos E2E se ejecutan como scripts de verificación).
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
 - [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.
+- [ ] Historial de pendientes resueltos con quién los resolvió (hoy se guarda la fecha de resolución, no el autor).
 - [ ] Varios negocios por cuenta (hoy un usuario pertenece a un solo negocio, como titular o colaborador).
 - [ ] Permisos más finos para colaboradores (p. ej., verificar pagos sin ver ingresos del pedido).
 - [ ] Acceso de soporte a datos de compradores con motivo y auditoría (hoy el SUPER_ADMIN no tiene ningún acceso a ellos).

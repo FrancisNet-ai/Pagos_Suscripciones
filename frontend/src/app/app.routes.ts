@@ -87,6 +87,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/staff-home.page').then((m) => m.StaffHomePage),
       },
       {
+        path: 'pendientes',
+        title: 'Pendientes',
+        loadComponent: () => import('./features/tasks/tasks.page').then((m) => m.TasksPage),
+      },
+      {
         path: 'productos',
         canActivate: [permissionGuard('PRODUCTS')],
         title: 'Productos',

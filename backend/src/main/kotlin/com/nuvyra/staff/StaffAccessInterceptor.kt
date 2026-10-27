@@ -55,6 +55,8 @@ class StaffAccessInterceptor : HandlerInterceptor {
             Rule("/api/v1/customers/**", null, StaffPermission.CUSTOMERS),
             Rule("/api/v1/renewals/**", null, StaffPermission.RENEWALS),
             Rule("/api/v1/reports/**", null, StaffPermission.REPORTS),
+            // Pendientes: el servicio muestra a cada colaborador solo los tipos de sus secciones.
+            Rule("/api/v1/tasks/**", null),
         )
 
         /** Cambios siempre del titular, aunque el colaborador tenga la sección: la política de avisos del negocio. */
@@ -66,6 +68,7 @@ class StaffAccessInterceptor : HandlerInterceptor {
         val PATHS = listOf(
             "/api/v1/business/**", "/api/v1/products/**", "/api/v1/orders/**", "/api/v1/payments/**",
             "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**", "/api/v1/renewals/**",
+            "/api/v1/tasks/**",
         )
     }
 }
