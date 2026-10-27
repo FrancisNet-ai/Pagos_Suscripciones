@@ -11,6 +11,8 @@ import com.platform.payments.CustomerPayment
 import com.platform.payments.CustomerPaymentRepository
 import com.platform.payments.PaymentStatus
 import com.platform.products.ProductService
+import com.platform.subscriptions.SubscriptionLabels
+import com.platform.subscriptions.SubscriptionService
 import com.platform.whatsapp.ManualWhatsAppLinkProvider
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -28,6 +30,7 @@ class OrderService(
     private val payments: CustomerPaymentRepository,
     private val consents: CustomerConsentRepository,
     private val capacity: CapacityService,
+    private val subscriptions: SubscriptionService,
     private val audit: AuditService,
 ) {
     /** Ventas del negocio. Las fechas se interpretan en la zona horaria del negocio. */
@@ -77,6 +80,7 @@ class OrderService(
         val order = load(businessId, orderId)
         val history = payments.findByOrderIdOrderByCreatedAtDesc(order.id)
         val allocation = capacity.reservationFor(businessId, order.id)
+        val subscription = subscriptions.forOrder(businessId, order.id)
         val remindersConsent = consents.findByCustomerIdOrderByCreatedAtDesc(order.customerId)
             .firstOrNull { it.purpose == ConsentPurpose.RENEWAL_REMINDERS }?.let { it.granted && it.revokedAt == null } ?: false
         return OrderDetail(
@@ -99,6 +103,8 @@ class OrderService(
             incidentReason = order.incidentReason,
             cancellationReason = order.cancellationReason,
             renewalRemindersConsent = remindersConsent,
+            subscriptionId = subscription?.id,
+            subscriptionStatus = subscription?.let { SubscriptionLabels.of(it.status) },
             createdAt = order.createdAt,
             paidAt = order.paidAt,
         )

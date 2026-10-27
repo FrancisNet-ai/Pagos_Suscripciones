@@ -73,6 +73,22 @@ class StoreFixture(private val mockMvc: MockMvc) {
         return mockMvc.perform(request)
     }
 
+    /** Compra, reporta y verifica un pedido. Devuelve el id del pedido. */
+    fun paidOrder(store: Store, phone: String = "987654321", productId: String = store.productId): String {
+        val token = idFrom(order(store.slug, productId, phone).andReturn().response.contentAsString, "publicToken")
+        report(token, reference = "R" + (System.nanoTime() % 100_000_000)).andReturn()
+        val (orderId, paymentId) = latestPaymentId(store.seller)
+        val status = mockMvc.perform(post("/api/v1/payments/$paymentId/verify").with(csrf()).cookie(store.seller)).andReturn().response.status
+        check(status == 200) { "No se pudo verificar el pago ($status)" }
+        return orderId
+    }
+
+    fun createProduct(seller: Cookie, json: String): String {
+        val id = idFrom(mockMvc.perform(post("/api/v1/products").with(csrf()).cookie(seller).contentType(MediaType.APPLICATION_JSON).content(json)).andReturn().response.contentAsString)
+        publish(seller, id)
+        return id
+    }
+
     /** Id del pago más reciente del pedido, visto desde el panel del vendedor. */
     fun latestPaymentId(seller: Cookie): Pair<String, String> {
         val list = mockMvc.perform(get("/api/v1/orders").cookie(seller)).andReturn().response.contentAsString

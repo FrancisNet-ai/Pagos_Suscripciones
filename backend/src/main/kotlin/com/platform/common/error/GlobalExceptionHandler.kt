@@ -25,7 +25,8 @@ class GlobalExceptionHandler {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @ExceptionHandler(ApiException::class)
-    fun handleApi(ex: ApiException): ProblemDetail = ProblemDetails.of(ex.status, ex.code, ex.message, ex.fieldErrors)
+    fun handleApi(ex: ApiException): ProblemDetail =
+        ProblemDetails.of(ex.status, ex.code, ex.message, ex.fieldErrors).apply { ex.extra.forEach { (k, v) -> setProperty(k, v) } }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(ex: MethodArgumentNotValidException): ProblemDetail {

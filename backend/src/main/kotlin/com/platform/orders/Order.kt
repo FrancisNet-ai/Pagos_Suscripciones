@@ -81,6 +81,7 @@ interface OrderRepository : JpaRepository<Order, UUID> {
     ): Page<Order>
 
     fun countByBusinessIdAndStatus(businessId: UUID, status: OrderStatus): Long
+    fun countByBusinessIdAndCustomerIdAndStatus(businessId: UUID, customerId: UUID, status: OrderStatus): Long
 
     /** Pedidos sin pago reportado más antiguos que el límite (tarea de expiración). */
     @Query("select o.id from Order o where o.status = 'AWAITING_PAYMENT' and o.createdAt < :before order by o.createdAt")

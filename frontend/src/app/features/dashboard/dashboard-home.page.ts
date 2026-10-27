@@ -6,23 +6,25 @@ import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, map, of, startWith } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/services/api-error';
-import { Business } from '../settings/settings.api';
+import { BarChartComponent, BarPoint } from '../../shared/components/bar-chart.component';
+import { SolesPipe } from '../../shared/pipes/soles.pipe';
+import { Dashboard, ReportsApi } from '../reports/reports.api';
+import { Business, SettingsApi } from '../settings/settings.api';
 
 interface Setup {
   paymentConfigured: boolean;
   publishedProducts: number;
-  toVerify: number;
 }
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; business: Business; setup: Setup };
+  | { status: 'ready'; business: Business; setup: Setup; dashboard: Dashboard };
 
 @Component({
   selector: 'app-dashboard-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, SolesPipe, BarChartComponent],
   templateUrl: './dashboard-home.page.html',
 })
 export class DashboardHomePage {
@@ -33,16 +35,17 @@ export class DashboardHomePage {
 
   protected readonly state = toSignal(
     forkJoin({
-      business: this.http.get<Business>('/api/v1/business/me'),
+      business: inject(SettingsApi).getBusiness(),
       methods: this.http.get<{ enabled: boolean }[]>('/api/v1/business/me/payment-methods'),
       published: this.http.get<{ totalItems: number }>('/api/v1/products', { params: { filter: 'PUBLISHED', size: 1 } }),
-      orders: this.http.get<{ toVerify: number }>('/api/v1/orders/summary'),
+      dashboard: inject(ReportsApi).dashboard(),
     }).pipe(
       map(
-        ({ business, methods, published, orders }): LoadState => ({
+        ({ business, methods, published, dashboard }): LoadState => ({
           status: 'ready',
           business,
-          setup: { paymentConfigured: methods.some((m) => m.enabled), publishedProducts: published.totalItems, toVerify: orders.toVerify },
+          dashboard,
+          setup: { paymentConfigured: methods.some((m) => m.enabled), publishedProducts: published.totalItems },
         }),
       ),
       catchError((e: unknown) => of<LoadState>({ status: 'error', message: ApiError.from(e).message })),
@@ -52,6 +55,18 @@ export class DashboardHomePage {
   );
 
   protected readonly firstName = computed(() => this.auth.user()?.fullName.split(' ')[0] ?? '');
+
+  protected readonly chart = computed<BarPoint[]>(() => {
+    const s = this.state();
+    if (s.status !== 'ready') return [];
+    const days = s.dashboard.last30Days;
+    return days.map((d, i) => ({
+      label: new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long' }).format(new Date(`${d.date}T12:00:00`)),
+      tick: d.date.slice(8, 10),
+      value: Number(d.amount),
+      highlight: i === days.length - 1,
+    }));
+  });
 
   protected storeUrl(slug: string): string {
     return `${window.location.origin}/tienda/${slug}`;
@@ -64,14 +79,17 @@ export class DashboardHomePage {
     }
   }
 
-  /** Fecha en la zona horaria del negocio (por defecto America/Lima). */
-  protected formatDate(iso: string, timeZone: string): string {
-    return new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(new Date(iso));
+  protected setupComplete(s: Setup, b: Business): boolean {
+    return s.paymentConfigured && s.publishedProducts > 0 && !!b.logoUrl;
   }
 
-  protected formatPhone(phone: string | null): string {
-    if (!phone) return 'Sin configurar';
-    const local = phone.replace(/^\+51/, '');
-    return `+51 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
+  protected time(iso: string): string {
+    const d = new Date(iso);
+    const sameDay = d.toDateString() === new Date().toDateString();
+    return new Intl.DateTimeFormat('es-PE', sameDay ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short' }).format(d);
+  }
+
+  protected monthName(): string {
+    return new Intl.DateTimeFormat('es-PE', { month: 'long' }).format(new Date());
   }
 }

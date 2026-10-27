@@ -86,6 +86,31 @@ export const routes: Routes = [
         loadComponent: () => import('./features/orders/order-detail.page').then((m) => m.OrderDetailPage),
       },
       {
+        path: 'reportes',
+        title: 'Reportes · Panel',
+        loadComponent: () => import('./features/reports/reports.page').then((m) => m.ReportsPage),
+      },
+      {
+        path: 'clientes',
+        title: 'Clientes · Panel',
+        loadComponent: () => import('./features/customers/customers-list.page').then((m) => m.CustomersListPage),
+      },
+      {
+        path: 'clientes/nuevo',
+        title: 'Registrar cliente · Panel',
+        loadComponent: () => import('./features/customers/customer-new.page').then((m) => m.CustomerNewPage),
+      },
+      {
+        path: 'clientes/:id',
+        title: 'Cliente · Panel',
+        loadComponent: () => import('./features/customers/customer-detail.page').then((m) => m.CustomerDetailPage),
+      },
+      {
+        path: 'suscripciones',
+        title: 'Suscripciones · Panel',
+        loadComponent: () => import('./features/subscriptions/subscriptions.page').then((m) => m.SubscriptionsPage),
+      },
+      {
         path: 'configuracion',
         loadComponent: () => import('./features/settings/settings-layout.component').then((m) => m.SettingsLayoutComponent),
         children: [

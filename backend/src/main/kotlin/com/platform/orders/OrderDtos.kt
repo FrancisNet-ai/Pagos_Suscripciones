@@ -76,6 +76,8 @@ data class OrderDetail(
     val incidentReason: String?,
     val cancellationReason: String?,
     val renewalRemindersConsent: Boolean,
+    val subscriptionId: UUID?,
+    val subscriptionStatus: String?,
     val createdAt: Instant?,
     val paidAt: Instant?,
 )

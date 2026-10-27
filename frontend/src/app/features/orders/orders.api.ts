@@ -56,6 +56,8 @@ export interface OrderDetail {
   incidentReason: string | null;
   cancellationReason: string | null;
   renewalRemindersConsent: boolean;
+  subscriptionId: string | null;
+  subscriptionStatus: string | null;
   createdAt: string;
   paidAt: string | null;
 }

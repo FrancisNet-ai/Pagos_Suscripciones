@@ -114,6 +114,50 @@ class CapacityService(
         }
     }
 
+    /**
+     * Ocupa un cupo directamente (suscripciones registradas a mano por el vendedor). Respeta la
+     * capacidad: si no hay espacio, el vendedor debe ampliar la capacidad antes de registrarla.
+     */
+    @Transactional
+    fun occupyForSubscription(businessId: UUID, productId: UUID, subscriptionId: UUID): CapacityAllocation? {
+        val product = products.lockByIdAndBusinessId(productId, businessId) ?: throw ApiException.notFound("El producto no existe.")
+        if (!product.capacityEnabled) return null
+        if (availability(product).soldOut) {
+            throw ApiException(HttpStatus.CONFLICT, "PRODUCT_SOLD_OUT", "No hay cupos libres en este producto. Amplía su capacidad para registrar a este cliente.")
+        }
+        return allocations.save(
+            CapacityAllocation(businessId, productId, AllocationStatus.OCCUPIED, customerSubscriptionId = subscriptionId),
+        )
+    }
+
+    /** Vincula el cupo del pedido con la suscripción creada al verificar el pago. */
+    @Transactional
+    fun linkOrderToSubscription(businessId: UUID, orderId: UUID, subscriptionId: UUID) {
+        allocations.findByOrderIdAndBusinessId(orderId, businessId)?.customerSubscriptionId = subscriptionId
+    }
+
+    /**
+     * El servicio terminó o se canceló, pero el acceso puede seguir asignado en el servicio externo:
+     * el cupo sigue contando como ocupado hasta que el vendedor confirme que lo retiró.
+     */
+    @Transactional
+    fun markReleasePending(businessId: UUID, subscriptionId: UUID) {
+        val allocation = allocations.findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId, businessId) ?: return
+        if (allocation.allocationStatus == AllocationStatus.OCCUPIED) allocation.allocationStatus = AllocationStatus.RELEASE_PENDING
+    }
+
+    /** El vendedor confirma que retiró el acceso: el cupo queda disponible. Devuelve `false` si no había cupo. */
+    @Transactional
+    fun releaseForSubscription(businessId: UUID, subscriptionId: UUID): Boolean {
+        val allocation = allocations.findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId, businessId) ?: return false
+        release(businessId, allocation.id)
+        return true
+    }
+
+    @Transactional(readOnly = true)
+    fun allocationForSubscription(businessId: UUID, subscriptionId: UUID): CapacityAllocation? =
+        allocations.findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId, businessId)
+
     @Transactional(readOnly = true)
     fun reservationFor(businessId: UUID, orderId: UUID): CapacityAllocation? =
         allocations.findByOrderIdAndBusinessId(orderId, businessId)

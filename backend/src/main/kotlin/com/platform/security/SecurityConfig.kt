@@ -84,7 +84,9 @@ class SecurityConfig(
                     .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                     .requestMatchers("/api/docs", "/api/docs/**", "/swagger-ui/**").permitAll()
                     .requestMatchers("/api/v1/admin/**").hasRole(Roles.SUPER_ADMIN)
-                    .requestMatchers("/api/v1/business/**", "/api/v1/products/**", "/api/v1/orders/**", "/api/v1/payments/**")
+                    .requestMatchers("/api/v1/business/**", "/api/v1/products/**", "/api/v1/orders/**", "/api/v1/payments/**",
+                        "/api/v1/customers/**", "/api/v1/subscriptions/**", "/api/v1/reports/**",
+                    )
                     .hasRole(Roles.BUSINESS_OWNER)
                     .requestMatchers("/error").permitAll()
                     .anyRequest().authenticated()

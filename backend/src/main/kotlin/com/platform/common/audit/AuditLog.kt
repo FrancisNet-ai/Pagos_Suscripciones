@@ -25,5 +25,6 @@ class AuditLog(
 
 interface AuditLogRepository : JpaRepository<AuditLog, UUID> {
     fun findByBusinessIdOrderByCreatedAtDesc(businessId: UUID): List<AuditLog>
+    fun findTop12ByBusinessIdOrderByCreatedAtDesc(businessId: UUID): List<AuditLog>
     fun findByActorIdOrderByCreatedAtDesc(actorId: UUID): List<AuditLog>
 }

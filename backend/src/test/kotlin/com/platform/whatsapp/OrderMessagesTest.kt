@@ -52,3 +52,12 @@ class OrderMessagesTest {
         assertThat(prepared.manualUrl).isEqualTo("https://wa.me/51912345678?text=Hola")
     }
 }
+
+class ActivityTextTest {
+    @Test
+    fun `la actividad muestra importes con dos decimales`() {
+        org.assertj.core.api.Assertions.assertThat(
+            com.platform.reports.ActivityText.of("PAYMENT_VERIFIED", mapOf("orderNumber" to "ORD-2026-000001", "amount" to 15.0)),
+        ).isEqualTo("Pago verificado de ORD-2026-000001 · S/ 15.00")
+    }
+}

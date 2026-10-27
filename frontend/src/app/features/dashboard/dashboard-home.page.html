@@ -1,110 +1,159 @@
-<section aria-labelledby="inicio-titulo" class="mx-auto max-w-5xl">
+<section aria-labelledby="inicio-titulo" class="mx-auto max-w-6xl">
   <p class="type-eyebrow">Inicio</p>
   <h1 id="inicio-titulo" class="type-h1 mt-3">Hola, {{ firstName() }}.</h1>
 
   @let s = state();
   @if (s.status === 'loading') {
     <div class="mt-10 space-y-4" aria-busy="true" aria-live="polite">
-      <div class="h-5 w-2/3 animate-pulse rounded bg-mist/40"></div>
-      <div class="h-5 w-1/2 animate-pulse rounded bg-mist/30"></div>
-      <span class="sr-only">Cargando datos del negocio…</span>
+      <div class="h-24 w-2/3 animate-pulse rounded bg-mist/40"></div>
+      <div class="h-44 animate-pulse rounded bg-mist/25"></div>
+      <span class="sr-only">Cargando indicadores…</span>
     </div>
   } @else if (s.status === 'error') {
     <p class="notice notice-error mt-8" role="alert">{{ s.message }}</p>
   } @else {
-          @let business = s.business;
-          <p class="mt-3 max-w-2xl text-lg">
-            Este es el espacio de <strong class="font-semibold text-night">{{ business.businessName }}</strong>.
-            Desde aquí gestionas tu tienda, tus productos y los pagos que te reportan tus compradores.
-          </p>
+    @let d = s.dashboard;
+    @let business = s.business;
 
-          @if (s.setup.toVerify > 0) {
-            <a routerLink="/panel/ventas" [queryParams]="{ filtro: 'TO_VERIFY' }"
-               class="mt-6 flex items-center justify-between gap-4 rounded-[var(--radius-panel)] border border-warning/40 bg-warning-soft px-5 py-4 text-warning no-underline">
-              <span><strong class="type-numeric">{{ s.setup.toVerify }}</strong> {{ s.setup.toVerify === 1 ? 'pago reportado espera' : 'pagos reportados esperan' }} tu verificación.</span>
-              <span class="font-semibold">Revisar →</span>
-            </a>
-          }
+    @if (business.status === 'SUSPENDED') {
+      <p class="notice notice-error mt-6" role="alert">Tu negocio está suspendido. Las compras nuevas están bloqueadas; contacta a soporte para reactivarlo.</p>
+    }
+    @if (d.pendingVerification.count > 0) {
+      <a routerLink="/panel/ventas" [queryParams]="{ filtro: 'TO_VERIFY' }"
+         class="mt-6 flex items-center justify-between gap-4 rounded-[var(--radius-panel)] border border-warning/40 bg-warning-soft px-5 py-4 text-warning no-underline">
+        <span><strong class="type-numeric">{{ d.pendingVerification.count }}</strong> {{ d.pendingVerification.count === 1 ? 'pago reportado espera' : 'pagos reportados esperan' }} tu verificación ({{ d.pendingVerification.amount | soles }}).</span>
+        <span class="shrink-0 font-semibold">Revisar →</span>
+      </a>
+    }
 
-          @if (business.status === 'SUSPENDED') {
-            <p class="notice notice-error mt-6" role="alert">Tu negocio está suspendido. Las compras nuevas están bloqueadas; contacta a soporte para reactivarlo.</p>
-          }
+    <!-- Ingresos -->
+    <div class="mt-10 grid gap-10 border-b border-[var(--line-subtle)] pb-10 lg:grid-cols-[1.2fr_2fr]">
+      <div>
+        <p class="text-sm font-semibold text-[var(--text-muted)]">Ingresos confirmados de {{ monthName() }}</p>
+        <p class="type-numeric mt-2 font-[family-name:var(--font-display)] text-5xl leading-none text-night sm:text-6xl">{{ d.confirmedMonth.amount | soles }}</p>
+        <p class="mt-2 text-sm">{{ d.confirmedMonth.count }} {{ d.confirmedMonth.count === 1 ? 'venta pagada' : 'ventas pagadas' }} este mes · solo pagos verificados</p>
+        <dl class="mt-8 grid grid-cols-2 gap-6">
+          <div>
+            <dt class="text-sm text-[var(--text-muted)]">Hoy</dt>
+            <dd class="type-numeric mt-1 text-2xl font-semibold text-night">{{ d.confirmedToday.amount | soles }}</dd>
+            <dd class="text-xs text-[var(--text-muted)]">{{ d.confirmedToday.count }} {{ d.confirmedToday.count === 1 ? 'venta' : 'ventas' }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm text-[var(--text-muted)]">Por verificar</dt>
+            <dd class="type-numeric mt-1 text-2xl font-semibold text-warning">{{ d.pendingVerification.amount | soles }}</dd>
+            <dd class="text-xs text-[var(--text-muted)]">no suma a ingresos hasta aprobarse</dd>
+          </div>
+        </dl>
+      </div>
+      <div>
+        <div class="flex items-baseline justify-between gap-3">
+          <p class="text-sm font-semibold text-[var(--text-muted)]">Últimos 30 días</p>
+          <a routerLink="/panel/reportes" class="link text-sm">Ver reportes</a>
+        </div>
+        <div class="mt-3"><app-bar-chart [points]="chart()" caption="Ingresos confirmados de los últimos 30 días" /></div>
+      </div>
+    </div>
 
-          <!-- Enlace público -->
-          <div class="relative isolate mt-10 overflow-hidden rounded-[var(--radius-panel)] bg-night px-6 py-8 text-snow sm:px-10">
-            <p class="type-eyebrow !text-mist">Tu enlace público</p>
-            <p class="mt-3 break-all font-[family-name:var(--font-editorial)] text-2xl text-snow sm:text-3xl">{{ storeUrl(business.slug) }}</p>
-            <p class="mt-3 max-w-xl text-sm text-mist">
-              @if (s.setup.publishedProducts > 0 && s.setup.paymentConfigured) {
-                Tu tienda está recibiendo pedidos. Compártela por WhatsApp, redes sociales o donde vendas.
-              } @else {
-                Ya está reservado para tu negocio. Para recibir pedidos, habilita Yape o Plin y publica al menos un producto.
+    <!-- Clientes y suscripciones -->
+    <dl class="grid grid-cols-2 gap-x-6 gap-y-8 border-b border-[var(--line-subtle)] py-10 sm:grid-cols-3 lg:grid-cols-6">
+      <div>
+        <dt class="text-sm text-[var(--text-muted)]">Clientes</dt>
+        <dd class="type-numeric mt-1 text-3xl font-semibold text-night"><a routerLink="/panel/clientes" class="no-underline">{{ d.customers }}</a></dd>
+      </div>
+      <div>
+        <dt class="text-sm text-[var(--text-muted)]">Suscripciones activas</dt>
+        <dd class="type-numeric mt-1 text-3xl font-semibold text-night"><a routerLink="/panel/suscripciones" [queryParams]="{ filtro: 'ACTIVE' }" class="no-underline">{{ d.subscriptions.active }}</a></dd>
+      </div>
+      <div>
+        <dt class="text-sm text-[var(--text-muted)]">Por vencer (3 días)</dt>
+        <dd class="type-numeric mt-1 text-3xl font-semibold" [class.text-warning]="d.subscriptions.expiringSoon > 0" [class.text-night]="!d.subscriptions.expiringSoon">
+          <a routerLink="/panel/suscripciones" [queryParams]="{ filtro: 'EXPIRING' }" class="no-underline">{{ d.subscriptions.expiringSoon }}</a>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-sm text-[var(--text-muted)]">Vencidas</dt>
+        <dd class="type-numeric mt-1 text-3xl font-semibold" [class.text-danger]="d.subscriptions.expired > 0" [class.text-night]="!d.subscriptions.expired">
+          <a routerLink="/panel/suscripciones" [queryParams]="{ filtro: 'EXPIRED' }" class="no-underline">{{ d.subscriptions.expired }}</a>
+        </dd>
+      </div>
+      <div>
+        <dt class="text-sm text-[var(--text-muted)]">Por activar</dt>
+        <dd class="type-numeric mt-1 text-3xl font-semibold text-night"><a routerLink="/panel/suscripciones" [queryParams]="{ filtro: 'PENDING_ACTIVATION' }" class="no-underline">{{ d.subscriptions.pendingActivation }}</a></dd>
+      </div>
+      <div>
+        <dt class="text-sm text-[var(--text-muted)]">Cupos por liberar</dt>
+        <dd class="type-numeric mt-1 text-3xl font-semibold text-night">{{ d.subscriptions.capacityReleasePending }}</dd>
+      </div>
+    </dl>
+
+    <div class="grid gap-12 py-10 lg:grid-cols-[1.4fr_1fr]">
+      <section aria-labelledby="actividad-titulo">
+        <h2 id="actividad-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Actividad reciente</h2>
+        @if (d.recentActivity.length === 0) {
+          <p class="mt-4 text-[var(--text-muted)]">Aquí verás pedidos, pagos y activaciones a medida que ocurran.</p>
+        } @else {
+          <ol class="mt-4 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+            @for (a of d.recentActivity; track $index) {
+              <li class="flex items-baseline justify-between gap-4 py-3 text-[0.9375rem]">
+                <span class="text-night">{{ a.text }}</span>
+                <time class="type-numeric shrink-0 text-xs text-[var(--text-muted)]" [attr.datetime]="a.at">{{ time(a.at) }}</time>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+
+      <div class="grid content-start gap-10">
+        <section aria-labelledby="agotados-titulo">
+          <h2 id="agotados-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Productos agotados</h2>
+          @if (d.soldOutProducts.length === 0) {
+            <p class="mt-4 text-[var(--text-muted)]">Ningún producto publicado está agotado.</p>
+          } @else {
+            <ul class="mt-4 grid gap-2">
+              @for (p of d.soldOutProducts; track p.id) {
+                <li><a [routerLink]="['/panel/productos', p.id]" class="link">{{ p.name }}</a> <span class="text-sm text-[var(--text-muted)]">· {{ p.capacity }} cupos ocupados</span></li>
               }
-            </p>
-            <div class="mt-6 flex flex-wrap items-center gap-3">
-              <button type="button" class="btn btn-light" (click)="copyStoreUrl(business.slug)">Copiar enlace</button>
-              <a class="btn btn-ghost-light" [href]="'/tienda/' + business.slug" target="_blank" rel="noopener">Ver mi tienda</a>
-              <span class="text-sm text-mist" role="status" aria-live="polite">{{ copied() ? 'Enlace copiado' : '' }}</span>
-            </div>
+            </ul>
+          }
+        </section>
+
+        <!-- Enlace público -->
+        <section class="rounded-[var(--radius-panel)] bg-night px-6 py-6 text-snow" aria-labelledby="enlace-titulo">
+          <p id="enlace-titulo" class="type-eyebrow !text-mist">Tu enlace público</p>
+          <p class="mt-2 break-all font-[family-name:var(--font-editorial)] text-xl text-snow">{{ storeUrl(business.slug) }}</p>
+          @if (!(s.setup.publishedProducts > 0 && s.setup.paymentConfigured)) {
+            <p class="mt-2 text-sm text-mist">Para recibir pedidos, habilita Yape o Plin y publica al menos un producto.</p>
+          }
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <button type="button" class="btn btn-light !min-h-10" (click)="copyStoreUrl(business.slug)">Copiar enlace</button>
+            <a class="btn btn-ghost-light !min-h-10" [href]="'/tienda/' + business.slug" target="_blank" rel="noopener">Ver tienda</a>
+            <span class="text-sm text-mist" role="status" aria-live="polite">{{ copied() ? 'Enlace copiado' : '' }}</span>
           </div>
+        </section>
 
-          <div class="mt-14 grid gap-14 lg:grid-cols-[1.1fr_1fr]">
-            <!-- Datos del negocio -->
-            <section aria-labelledby="datos-titulo">
-              <h2 id="datos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Datos del negocio</h2>
-              <dl class="mt-6 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
-                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
-                  <dt class="text-sm text-[var(--text-muted)]">Código empresarial</dt>
-                  <dd class="type-numeric font-semibold text-night">{{ business.uniqueCode }}</dd>
-                </div>
-                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
-                  <dt class="text-sm text-[var(--text-muted)]">Slug público</dt>
-                  <dd class="break-all text-night">{{ business.slug }}</dd>
-                </div>
-                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
-                  <dt class="text-sm text-[var(--text-muted)]">WhatsApp</dt>
-                  <dd class="type-numeric text-night">{{ formatPhone(business.whatsappNumber) }}</dd>
-                </div>
-                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
-                  <dt class="text-sm text-[var(--text-muted)]">Zona horaria</dt>
-                  <dd class="text-night">{{ business.timeZone }}</dd>
-                </div>
-                <div class="grid grid-cols-[9rem_1fr] gap-4 py-3.5">
-                  <dt class="text-sm text-[var(--text-muted)]">Creado</dt>
-                  <dd class="type-numeric text-night">{{ formatDate(business.createdAt, business.timeZone) }}</dd>
-                </div>
-              </dl>
-            </section>
-
-            <!-- Primeros pasos -->
-            <section aria-labelledby="pasos-titulo">
-              <h2 id="pasos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Primeros pasos</h2>
-              @let setup = s.setup;
-              <ol class="mt-6 space-y-5">
-                @for (step of [
-                  { done: true, title: 'Cuenta y negocio creados', text: 'Tu enlace y código empresarial ya están asignados.', link: null, cta: '' },
-                  { done: setup.paymentConfigured, title: 'Configurar Yape y Plin', text: 'El titular y el número que verán tus compradores.', link: '/panel/configuracion/cobros', cta: 'Configurar cobros' },
-                  { done: setup.publishedProducts > 0, title: 'Publicar tus productos', text: setup.publishedProducts > 0 ? setup.publishedProducts + ' producto(s) publicado(s).' : 'Precio en soles, duración y cupos opcionales.', link: '/panel/productos', cta: 'Ir a productos' },
-                  { done: !!business.logoUrl, title: 'Personalizar tu tienda', text: 'Logotipo, portada, color y descripción.', link: '/panel/configuracion/negocio', cta: 'Personalizar' }
-                ]; track step.title) {
-                  <li class="flex gap-4">
-                    @if (step.done) {
-                      <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-xs text-snow" aria-hidden="true">✓</span>
-                    } @else {
-                      <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
-                    }
-                    <div>
-                      <p class="font-semibold text-night">{{ step.title }} <span class="sr-only">{{ step.done ? '(completado)' : '(pendiente)' }}</span></p>
-                      <p class="text-sm">{{ step.text }}</p>
-                      @if (!step.done && step.link) {
-                        <a class="link mt-1 inline-block text-sm" [routerLink]="step.link">{{ step.cta }}</a>
-                      }
-                    </div>
-                  </li>
-                }
-              </ol>
-
-            </section>
-          </div>
+        @if (!setupComplete(s.setup, business)) {
+          <section aria-labelledby="pasos-titulo">
+            <h2 id="pasos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Primeros pasos</h2>
+            <ol class="mt-4 space-y-4">
+              @for (step of [
+                { done: s.setup.paymentConfigured, title: 'Configurar Yape y Plin', link: '/panel/configuracion/cobros' },
+                { done: s.setup.publishedProducts > 0, title: 'Publicar tus productos', link: '/panel/productos' },
+                { done: !!business.logoUrl, title: 'Personalizar tu tienda', link: '/panel/configuracion/negocio' }
+              ]; track step.title) {
+                <li class="flex items-center gap-3">
+                  @if (step.done) {
+                    <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-xs text-snow" aria-hidden="true">✓</span>
+                    <span class="text-night">{{ step.title }} <span class="sr-only">(completado)</span></span>
+                  } @else {
+                    <span class="inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
+                    <a class="link" [routerLink]="step.link">{{ step.title }}</a>
+                  }
+                </li>
+              }
+            </ol>
+          </section>
+        }
+      </div>
+    </div>
   }
 </section>

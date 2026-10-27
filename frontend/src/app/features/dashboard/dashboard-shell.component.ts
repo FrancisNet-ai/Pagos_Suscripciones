@@ -34,15 +34,29 @@ export class DashboardShellComponent {
   protected readonly nav: NavItem[] = [
     { label: 'Inicio', route: '/panel' },
     { label: 'Productos', route: '/panel/productos' },
-    { label: 'Clientes', children: [{ label: 'Todos' }, { label: 'Registrar cliente' }] },
+    {
+      label: 'Clientes',
+      children: [
+        { label: 'Todos', route: '/panel/clientes' },
+        { label: 'Registrar cliente', route: '/panel/clientes/nuevo' },
+      ],
+    },
     {
       label: 'Ventas y pagos',
       children: [
         { label: 'Pedidos', route: '/panel/ventas' },
         { label: 'Por verificar', route: '/panel/ventas', queryParams: { filtro: 'TO_VERIFY' } },
+        { label: 'Reportes', route: '/panel/reportes' },
       ],
     },
-    { label: 'Suscripciones y renovaciones', children: [{ label: 'Próximos vencimientos' }, { label: 'Renovaciones' }] },
+    {
+      label: 'Suscripciones y renovaciones',
+      children: [
+        { label: 'Suscripciones', route: '/panel/suscripciones' },
+        { label: 'Próximos vencimientos', route: '/panel/suscripciones', queryParams: { filtro: 'EXPIRING' } },
+        { label: 'Renovaciones' },
+      ],
+    },
     {
       label: 'Configuración',
       children: [

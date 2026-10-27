@@ -21,6 +21,11 @@ celular, pedidos `ORD-AAAA-NNNNNN`, instrucciones Yape/Plin con titular declarad
 comprobante privado, verificación manual auditada, cupos reservados sin sobreventa y enlace a WhatsApp
 con los datos reales del pedido.
 
+**Fase 4 — Gestión comercial: completada.** Panel con ingresos confirmados y pendientes, clientes
+(incluidos los que ya tenías antes de la plataforma), suscripciones con pago, activación y vencimiento
+separados, cupos que se liberan solo al confirmar el retiro del acceso, y reportes por periodo, producto
+y clientes recurrentes.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

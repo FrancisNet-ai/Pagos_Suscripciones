@@ -119,6 +119,9 @@
             <p class="type-numeric mt-1 font-[family-name:var(--font-editorial)] text-3xl text-night">{{ item.unitPrice | soles }}</p>
             <p class="text-xs text-[var(--text-muted)]">Precio al momento de la compra.</p>
           }
+          @if (o.subscriptionStatus) {
+            <p class="mt-3 text-sm">Suscripción: <a class="link" [routerLink]="['/panel/clientes', o.customerId]">{{ o.subscriptionStatus }}</a></p>
+          }
           @if (o.capacityStatus) {
             <p class="mt-3 text-sm">Cupo: <strong class="text-night">{{ o.capacityStatus === 'OCCUPIED' ? 'ocupado' : o.capacityStatus === 'RESERVED' ? 'reservado' : 'liberado' }}</strong></p>
           }

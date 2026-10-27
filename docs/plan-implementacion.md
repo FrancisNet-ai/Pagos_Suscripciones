@@ -57,9 +57,18 @@ las Fases 3 y 5.
 Pendiente para la Fase 4: crear la suscripción del comprador (`customer_subscriptions`) al verificar un
 pago de un producto `SUBSCRIPTION` (incluidos los pedidos ya pagados en esta fase).
 
-## Fase 4 — Gestión comercial
-Dashboard con indicadores reales, clientes y clientes antiguos, suscripciones (pago ≠ activación ≠
-vencimiento), historial, reportes por periodo/producto/estado/renovación.
+## Fase 4 — Gestión comercial ✅
+
+| Entregable | Detalle |
+|---|---|
+| Migración | `V4__customer_subscriptions.sql` (+ relleno idempotente para pedidos ya pagados; `capacity_allocations.customer_subscription_id`) |
+| Suscripciones | Creación al verificar el pago (`PENDING_ACTIVATION`), activación con fecha real, cancelación, vencimiento automático, liberación de cupo solo con confirmación del vendedor (`ENDED`) |
+| Clientes | Lista con búsqueda y filtros (activos, por vencer, vencidos), detalle con suscripciones y compras, edición, registro de clientes antiguos con suscripción opcional y detección de duplicados |
+| Dashboard | Ingresos confirmados del mes y del día, pendiente de verificar, clientes, suscripciones por estado, cupos por liberar, productos agotados, gráfico de 30 días, actividad reciente |
+| Reportes | Por periodo, producto, estado de pedido y clientes recurrentes; dinero confirmado separado de pendiente; históricos manuales informativos |
+| Pruebas | Backend 111 (incluye relleno de migración y aislamiento); frontend 52; flujo Playwright: compras → verificación → activación → cliente antiguo → panel y reportes |
+
+Las renovaciones (solicitudes, enlaces, respuestas y reportes de renovación) son la Fase 5.
 
 ## Fase 5 — Renovaciones y disponibilidad
 Tareas programadas idempotentes (vencimientos, solicitudes de renovación, expiración de reservas),

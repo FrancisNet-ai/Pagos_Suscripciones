@@ -27,6 +27,7 @@ class CapacityAllocation(
     var reservedUntil: Instant? = null,
     var releasedAt: Instant? = null,
     @Column(updatable = false) val orderId: UUID? = null,
+    var customerSubscriptionId: UUID? = null,
 ) : VersionedEntity()
 
 interface UsageRow {
@@ -38,6 +39,12 @@ interface UsageRow {
 interface CapacityAllocationRepository : JpaRepository<CapacityAllocation, UUID> {
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): CapacityAllocation?
     fun findByOrderIdAndBusinessId(orderId: UUID, businessId: UUID): CapacityAllocation?
+    fun findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId: UUID, businessId: UUID): CapacityAllocation?
+
+    @Query(
+        "select count(a) from CapacityAllocation a where a.businessId = :businessId and a.allocationStatus = com.platform.capacity.AllocationStatus.RELEASE_PENDING",
+    )
+    fun countReleasePending(businessId: UUID): Long
 
     /** Uso actual por producto: ocupados (incluye liberaciones pendientes) y reservas vigentes. */
     @Query(

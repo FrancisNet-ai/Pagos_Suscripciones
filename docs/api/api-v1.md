@@ -157,14 +157,45 @@ Errores: `DUPLICATE_REFERENCE` (mismo código vigente en el negocio y método), 
 | `POST` | `/payments/{id}/reject` | `{ reason }` (5–300) — el comprador puede volver a reportar |
 | `GET` | `/payments/{id}/receipt` | Comprobante privado (`Cache-Control: no-store`), cada acceso auditado |
 
+## Fase 4 — implementado
+
+### Clientes (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/customers?query=&filter=ALL\|ACTIVE\|EXPIRING\|EXPIRED&page=` | Búsqueda por nombre o celular; `EXPIRING` = vence en 7 días |
+| `POST` | `/customers` | `{ fullName, phone, notes, subscription? }` — cliente antiguo; `409 CUSTOMER_EXISTS` incluye `customerId` |
+| `GET` / `PUT` | `/customers/{id}` | Detalle con suscripciones y pedidos; edición de nombre y notas |
+| `POST` | `/customers/{id}/subscriptions` | Suscripción antigua: `{ productId, startDate, durationDays, contractedPrice, status: ACTIVE\|EXPIRED\|CANCELLED, notes }` |
+
+Una suscripción antigua no crea pedido ni pago: su importe es histórico y **no** suma a ingresos. Si
+está activa y el producto controla cupos, ocupa un cupo (`409 PRODUCT_SOLD_OUT` si no hay espacio).
+Duplicados (mismo cliente, producto e inicio) → `409 DUPLICATE_SUBSCRIPTION`.
+
+### Suscripciones (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/subscriptions?filter=ALL\|PENDING_ACTIVATION\|ACTIVE\|EXPIRING\|EXPIRED\|CLOSED&query=&days=7&page=` | |
+| `GET` | `/subscriptions/expiring?days=3` | Activas que vencen pronto |
+| `POST` | `/subscriptions/{id}/activate` | `{ startAt? }` — inicio real (pago ≠ activación); calcula el vencimiento |
+| `POST` | `/subscriptions/{id}/cancel` | `{ reason }` — el cupo queda pendiente de liberar |
+| `POST` | `/subscriptions/{id}/release-capacity` | Confirma que se retiró el acceso: libera el cupo (`EXPIRED` → `ENDED`) |
+
+Al verificar el pago de un producto `SUBSCRIPTION` se crea la suscripción en `PENDING_ACTIVATION`.
+`SubscriptionExpirationJob` (cada 10 min) marca `EXPIRED` las activas vencidas; el cupo pasa a
+`RELEASE_PENDING` y sigue contando como ocupado hasta la confirmación del vendedor.
+
+### Reportes (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/reports/dashboard` | Ingresos confirmados (hoy, mes), pendiente de verificar, clientes, suscripciones (activas, por vencer en 3 días, vencidas, por activar, cupos por liberar), productos agotados, serie de 30 días, actividad reciente |
+| `GET` | `/reports/sales?from=&to=` | Confirmado vs. pendiente, por día, por producto, pedidos por estado, clientes recurrentes (≥ 2 compras pagadas), suscripciones antiguas registradas (informativo) |
+
+Fechas y agrupaciones en la zona horaria del negocio. Ingresos = solo pagos `VERIFIED`.
+
 ## Fases siguientes — contratos orientativos
-
-### Clientes y suscripciones (Fase 4)
-
-* `GET /customers?query=&filter=ALL|ACTIVE|EXPIRING|EXPIRED&page=` · `POST /customers` · `GET /customers/{id}` · `PUT /customers/{id}`
-* `GET /subscriptions?status=&page=` · `POST /subscriptions/manual` · `POST /subscriptions/{id}/activate` `{ startAt }`
-* `GET /subscriptions/expiring?days=3`
-* `GET /reports/dashboard` · `GET /reports/sales?from=&to=&groupBy=day|product|status`
 
 ### Renovaciones (Fase 5)
 

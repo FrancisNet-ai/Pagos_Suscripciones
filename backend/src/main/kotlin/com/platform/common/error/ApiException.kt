@@ -10,6 +10,8 @@ open class ApiException(
     val code: String,
     override val message: String,
     val fieldErrors: List<FieldErrorDto> = emptyList(),
+    /** Datos adicionales seguros para el cliente (p. ej. el id de un recurso existente). */
+    val extra: Map<String, Any> = emptyMap(),
 ) : RuntimeException(message) {
     companion object {
         fun notFound(message: String = "El recurso solicitado no existe.") =
