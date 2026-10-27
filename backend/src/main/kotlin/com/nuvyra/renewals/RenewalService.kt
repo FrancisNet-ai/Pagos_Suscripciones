@@ -283,9 +283,12 @@ class RenewalService(
     }
 
     @Transactional
-    fun skip(businessId: UUID, notificationId: UUID) {
+    fun skip(businessId: UUID, actorId: UUID, notificationId: UUID) {
         val n = notifications.findByIdAndBusinessId(notificationId, businessId) ?: throw ApiException.notFound("El aviso no existe.")
-        if (n.actionable) n.deliveryStatus = DeliveryStatus.SKIPPED
+        if (n.actionable) {
+            n.deliveryStatus = DeliveryStatus.SKIPPED
+            audit.record(AuditActions.NOTIFICATION_SKIPPED, actorId = actorId, businessId = businessId, entityType = "NOTIFICATION", entityId = n.id)
+        }
     }
 
     @Transactional(readOnly = true)

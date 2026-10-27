@@ -59,3 +59,24 @@ data class AssignableMember(val userId: UUID, val fullName: String, val owner: B
 data class SellerTaskList(val items: List<SellerTaskItem>, val counts: TaskCounts, val members: List<AssignableMember>)
 
 data class AssignTaskRequest(val userId: UUID?)
+
+enum class TaskResolutionAction(val label: String) {
+    PAYMENT_VERIFIED("Pago verificado"),
+    PAYMENT_REJECTED("Pago rechazado"),
+    ORDER_CANCELLED("Pedido cancelado"),
+    SUBSCRIPTION_ACTIVATED("Servicio activado"),
+    SUBSCRIPTION_CANCELLED("Servicio cancelado"),
+    CAPACITY_RELEASED("Acceso retirado y cupo liberado"),
+    NOTIFICATION_SENT("Aviso enviado manualmente"),
+    NOTIFICATION_SKIPPED("Aviso omitido"),
+    NOTIFICATIONS_OPT_OUT("Avisos desactivados"),
+    STATE_CHANGED("Cerrado por cambio de estado"),
+}
+
+data class ResolvedSellerTask(
+    val task: SellerTaskItem,
+    val resolvedAt: Instant,
+    val resolvedBy: TaskAssignee?,
+    val resolutionAction: TaskResolutionAction,
+    val resolutionLabel: String,
+)

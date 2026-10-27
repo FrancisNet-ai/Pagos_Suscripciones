@@ -345,8 +345,24 @@ titular → `403 STAFF_FORBIDDEN`.
 |---|---|---|
 | `GET` | `/tasks?view=ALL\|MINE\|UNASSIGNED` | Sincroniza y devuelve los pendientes abiertos que el usuario puede atender (`type`, `typeLabel`, `since`, `dueAt`, `overdue`, `assignee`, cliente, producto, pedido, monto, `detail`), los totales `counts { open, mine, unassigned, overdue }` y los miembros asignables por tipo |
 | `GET` | `/tasks/summary` | Solo los totales (para el menú) |
+| `GET` | `/tasks/history?page=0&size=20` | Historial paginado de tareas cerradas visibles para el usuario. Devuelve `items { task, resolvedAt, resolvedBy { userId, fullName } \| null, resolutionAction, resolutionLabel }`, `page`, `size`, `totalItems` y `totalPages`; tamaño máximo 100 |
 | `PUT` | `/tasks/{id}/assignee` | `{ userId }` o `{ userId: null }`. El titular asigna a cualquier miembro con acceso a ese tipo; un colaborador solo toma la tarea para sí o suelta la suya (`403`). Tarea resuelta o ajena → `404` |
 
 Tipos y permisos: `VERIFY_PAYMENT` y `REVIEW_INCIDENT` → `ORDERS`; `ACTIVATE_SERVICE` → `CUSTOMERS`;
 `RELEASE_ACCESS` → `CUSTOMERS` o `RENEWALS` (solo cuando el acceso ya terminó); `SEND_RENEWAL_NOTICE` → `RENEWALS`
 (excluye los avisos que enviará la integración oficial de WhatsApp). No hay endpoint para cerrar una tarea.
+
+El historial aplica el mismo aislamiento por negocio y por sección que los pendientes abiertos. La
+identidad y los permisos siempre proceden de la sesión. Se conserva al autor de la acción auditada,
+aunque sea distinto del responsable asignado o de quien consulta el historial. Las acciones manuales
+cierran las tareas existentes en la misma transacción; si la operación se revierte, la resolución también.
+Una nueva incidencia del mismo recurso puede abrir una nueva tarea y conserva el cierre anterior.
+
+`resolutionAction`: `PAYMENT_VERIFIED`, `PAYMENT_REJECTED`, `SUBSCRIPTION_ACTIVATED`,
+`SUBSCRIPTION_CANCELLED`, `CAPACITY_RELEASED`, `NOTIFICATION_SENT`, `NOTIFICATION_SKIPPED`,
+`NOTIFICATIONS_OPT_OUT`, `ORDER_CANCELLED` o `STATE_CHANGED`.
+Este último indica que la necesidad dejó de existir sin evidencia de una de esas acciones: no demuestra
+un envío ni una entrega. Los registros históricos sin autor se conservan con `resolvedBy: null`.
+Para cierres sincronizados sin evidencia, `resolvedAt` es el momento de detección del cambio de estado.
+El historial registra las tareas que llegaron a abrirse; la auditoría general conserva además las acciones
+realizadas sin una tarea previa.

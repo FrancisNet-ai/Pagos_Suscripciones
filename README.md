@@ -55,6 +55,8 @@ son siempre del titular. El número de usuarios respeta el límite del plan.
 **Pendientes: completado.** Una bandeja con lo que los clientes esperan del vendedor (pagos por verificar,
 servicios por activar, accesos por retirar, avisos por enviar), con responsable, antigüedad y plazo. Cada
 pendiente se cierra solo cuando la acción se completa; nunca se marca como hecho a mano.
+El historial conserva el autor real, la acción y su fecha, diferenciándolos del responsable asignado.
+Los cierres anteriores o sin evidencia de autor se muestran como tales.
 
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
@@ -109,6 +111,11 @@ En desarrollo, el enlace de recuperación de contraseña se escribe en el log de
 cd backend && ./gradlew test          # unitarias + integración (requiere Docker para Testcontainers)
 cd frontend && npx ng test --watch=false
 ```
+
+Playwright está versionado en `frontend/e2e` y se ejecuta en GitHub Actions después de las pruebas
+de backend y frontend. El trabajo E2E usa PostgreSQL 17 desechable, el JAR compilado y Chromium
+para escritorio y móvil; conserva informes, capturas, trazas de fallos y logs durante siete días.
+Para ejecutarlo localmente, ver [la guía de pruebas E2E](docs/testing/e2e.md).
 
 ## Docker Compose
 

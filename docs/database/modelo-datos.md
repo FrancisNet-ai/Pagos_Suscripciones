@@ -121,6 +121,14 @@ pendientes vigentes; las altas se serializan con un bloqueo consultivo por negoc
 |---|---|---|
 | `seller_tasks` | `id`, `business_id`, `task_type` (`VERIFY_PAYMENT`, `REVIEW_INCIDENT`, `ACTIVATE_SERVICE`, `RELEASE_ACCESS`, `SEND_RENEWAL_NOTICE`), `entity_id` (pago, suscripción, cupo o aviso), `status` (`OPEN`, `RESOLVED`), `since`, `due_at`, `assigned_to`, `assigned_at`, `resolved_at` | Una tarea abierta por necesidad (índice único parcial); sincronización idempotente con bloqueo consultivo por negocio |
 
+### Historial de pendientes (`V10__seller_task_resolution_history.sql`)
+
+`seller_tasks` incorpora `resolved_by` (FK a `users`), `resolution_action` y `resolution_audit_id`
+(FK a `audit_logs`). La resolución auditada conserva la fecha de la acción y se confirma o revierte
+en su misma transacción. No se deduce el autor de `assigned_to`; los cierres anteriores o sin
+evidencia permanecen sin autor. Se indexa el historial por negocio/fecha y la búsqueda de evidencia
+por negocio/tipo de entidad/entidad/fecha. Una tarea abierta no puede contener datos de resolución.
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

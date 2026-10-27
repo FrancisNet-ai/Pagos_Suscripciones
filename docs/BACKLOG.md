@@ -20,6 +20,7 @@
 * Los avisos de renovación se preparan para envío manual: abrir WhatsApp no cuenta como enviado; el vendedor confirma con «Ya lo envié».
 * El token de renovación es un HMAC de la solicitud con `APP_RENEWAL_TOKEN_SECRET`; cambiar el secreto invalida los enlaces ya enviados.
 * Pendientes (`seller_tasks`): se abren y se resuelven al sincronizar con el estado de los datos; no existe «marcar como hecha», porque la tarea solo se cierra cuando la acción se completa en su pantalla. Lo que aportan es el responsable, desde cuándo esperan y un plazo sugerido (12–24 h).
+* Historial de pendientes: las acciones auditadas cierran la tarea dentro de la misma transacción, conservando el autor real, la acción y la fecha. El responsable asignado no acredita la resolución. Los cierres sin evidencia y los registros anteriores se muestran sin autor, nunca se atribuyen al lector de la bandeja.
 * El enlace del pedido usa un token aleatorio de 256 bits (solo se guarda su hash). Un reintento con la misma `Idempotency-Key` emite un enlace nuevo para el mismo pedido.
 
 ## Pendientes
@@ -28,10 +29,10 @@
 - [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
 - [ ] Despliegue continuo (CD) cuando exista un entorno de producción.
 - [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
-- [ ] Playwright como suite versionada en el repositorio (hoy los flujos E2E se ejecutan como scripts de verificación).
+- [x] Playwright versionado y ejecutado en CI, con PostgreSQL desechable, recorridos de escritorio/móvil e informe de diagnóstico.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
 - [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.
-- [ ] Historial de pendientes resueltos con quién los resolvió (hoy se guarda la fecha de resolución, no el autor).
+- [x] Historial paginado de pendientes resueltos con autor y evidencia de auditoría, limitado al negocio y los permisos actuales.
 - [ ] Varios negocios por cuenta (hoy un usuario pertenece a un solo negocio, como titular o colaborador).
 - [ ] Permisos más finos para colaboradores (p. ej., verificar pagos sin ver ingresos del pedido).
 - [ ] Acceso de soporte a datos de compradores con motivo y auditoría (hoy el SUPER_ADMIN no tiene ningún acceso a ellos).
