@@ -15,13 +15,15 @@ Las capturas usan datos locales E2E identificados, sin ventas ni clientes reales
 
 ## En GitHub Actions
 
-El flujo `.github/workflows/ci.yml` tiene tres trabajos:
+El flujo `.github/workflows/ci.yml` comprueba estos entornos:
 
-1. **Backend:** pruebas JUnit/Testcontainers y `bootJar`; publica temporalmente el JAR.
-2. **Frontend:** instalación con lockfile, pruebas unitarias y compilación de producción.
-3. **E2E:** espera a ambos, crea PostgreSQL 17, aplica Flyway al iniciar el JAR, crea el SUPER_ADMIN
+1. **Backend:** pruebas JUnit/Testcontainers y `bootJar` en Java 21 y Java 26; publica un JAR por JDK.
+2. **Windows:** verifica el wrapper `.bat` y compila el backend con Java 26, sin Docker.
+3. **Frontend:** Node 24.20 y npm 11.19, instalación con lockfile, pruebas unitarias y build de producción.
+4. **E2E:** espera a las pruebas Linux y frontend, crea PostgreSQL 17, aplica Flyway al iniciar el JAR, crea el SUPER_ADMIN
    local de pruebas e inicia Angular con su proxy. Espera al health check y a la API a través de Angular
    antes de ejecutar `npm run e2e`.
+   Ejecuta sobre Java 26 el artefacto compilado en Java 21, verificando también el uso entre versiones.
 
 El trabajo E2E fija Ubuntu 24.04 para mantener estables las dependencias de Chromium e instala solo
 su variante headless. Usa las bibliotecas de Chrome incluidas en la imagen del runner, sin reinstalar
@@ -40,7 +42,7 @@ deben tratarse como material de diagnóstico del repositorio.
 
 ## En local
 
-Requisitos: JDK 21, Node 22 compatible con Angular 21, Docker/PostgreSQL 17 y dependencias instaladas.
+Requisitos: JDK 21 o 26, Node 24 con npm 11.19, Docker/PostgreSQL 17 y dependencias instaladas.
 Crear una base **desechable**, configurar `DB_URL`, `DB_USER` y `DB_PASSWORD`, y definir las siguientes
 variables exclusivamente en la terminal de pruebas:
 

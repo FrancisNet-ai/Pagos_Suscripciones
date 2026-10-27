@@ -1,0 +1,3 @@
+# Mantener LF en Unix y los CRLF oficiales del .bat, también en los ZIP descargados de GitHub.
+/backend/gradlew text eol=lf
+/backend/gradlew.bat -text whitespace=cr-at-eol

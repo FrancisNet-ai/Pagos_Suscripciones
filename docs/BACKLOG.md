@@ -7,6 +7,7 @@
 * [ADR-003](decisions/ADR-003-sesiones-cookie-httponly.md) Sesiones opacas en cookie HttpOnly + CSRF.
 * [ADR-004](decisions/ADR-004-tipografias.md) Playfair Display / Bodoni Moda en lugar de Voga / Bodoni FLF hasta tener licencia.
 * [ADR-005](decisions/ADR-005-pagos-manuales-yape-plin.md) Verificación manual de Yape/Plin.
+* [ADR-006](decisions/ADR-006-java26-node24.md) Desarrollo con Java 26 y Node 24; artefacto compatible con Java 21 LTS y comprobaciones en ambos JDK.
 * La raíz del repositorio cumple el papel de la carpeta `digital-saas/` de la especificación.
 * El estado «incidencia» de un pedido se modela con `orders.incident_reason` (no como estado aparte) para no mezclar el ciclo de pago con la revisión manual.
 * «Por vencer» en el panel = 3 días (primer recordatorio); en los filtros de clientes y suscripciones = 7 días para planificar.
