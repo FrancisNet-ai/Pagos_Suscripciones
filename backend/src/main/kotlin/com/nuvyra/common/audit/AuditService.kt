@@ -1,6 +1,7 @@
 package com.nuvyra.common.audit
 
 import org.springframework.stereotype.Service
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
@@ -43,6 +44,7 @@ object AuditActions {
     const val RENEWAL_EXPIRED = "RENEWAL_EXPIRED"
     const val RENEWAL_ORDER_CREATED = "RENEWAL_ORDER_CREATED"
     const val NOTIFICATION_SENT = "NOTIFICATION_SENT"
+    const val NOTIFICATION_SKIPPED = "NOTIFICATION_SKIPPED"
     const val NOTIFICATIONS_OPT_OUT = "NOTIFICATIONS_OPT_OUT"
     const val RENEWAL_SETTINGS_UPDATED = "RENEWAL_SETTINGS_UPDATED"
     const val SAAS_PLAN_CREATED = "SAAS_PLAN_CREATED"
@@ -71,11 +73,15 @@ object AuditActions {
     const val TASK_ASSIGNED = "TASK_ASSIGNED"
 }
 
+/** Evidencia inmutable de una acción; los módulos interesados reaccionan dentro de la transacción. */
+data class AuditRecordedEvent(val entry: AuditLog)
+
 @Service
 class AuditService(
     private val repository: AuditLogRepository,
     private val objectMapper: ObjectMapper,
     private val clock: Clock,
+    private val events: ApplicationEventPublisher,
 ) {
     /** Se une a la transacción actual: si la operación se revierte, su auditoría también. */
     @Transactional(propagation = Propagation.REQUIRED)
@@ -88,7 +94,7 @@ class AuditService(
         metadata: Map<String, Any?> = emptyMap(),
         ipAddress: String? = null,
     ) {
-        repository.save(
+        val entry = repository.save(
             AuditLog(
                 actorId = actorId,
                 businessId = businessId,
@@ -100,5 +106,6 @@ class AuditService(
                 createdAt = clock.instant(),
             ),
         )
+        events.publishEvent(AuditRecordedEvent(entry))
     }
 }

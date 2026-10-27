@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, of, tap } from 'rxjs';
+import { Page } from '../../core/services/page';
 
 export type TaskType =
   | 'VERIFY_PAYMENT'
@@ -48,6 +49,14 @@ export interface TaskList {
   members: AssignableMember[];
 }
 
+export interface ResolvedTask {
+  task: SellerTask;
+  resolvedAt: string;
+  resolvedBy: { userId: string; fullName: string } | null;
+  resolutionAction: string;
+  resolutionLabel: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TasksApi {
   private readonly http = inject(HttpClient);
@@ -55,7 +64,15 @@ export class TasksApi {
   readonly counts = signal<TaskCounts | null>(null);
 
   list(view: TaskView): Observable<TaskList> {
-    return this.http.get<TaskList>('/api/v1/tasks', { params: { view } }).pipe(tap((l) => this.counts.set(l.counts)));
+    return this.http
+      .get<TaskList>('/api/v1/tasks', { params: { view } })
+      .pipe(tap((l) => this.counts.set(l.counts)));
+  }
+
+  history(page = 0): Observable<Page<ResolvedTask>> {
+    return this.http.get<Page<ResolvedTask>>('/api/v1/tasks/history', {
+      params: { page, size: 20 },
+    });
   }
 
   refreshCounts(): void {

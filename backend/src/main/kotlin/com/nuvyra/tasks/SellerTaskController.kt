@@ -25,6 +25,14 @@ class SellerTaskController(private val service: SellerTaskService) {
     @Operation(summary = "Totales para el menú: abiertos, asignados a mí, sin asignar y vencidos")
     fun summary(current: CurrentBusiness) = service.counts(current)
 
+    @GetMapping("/history")
+    @Operation(summary = "Historial paginado de pendientes cerrados, con autor y acción real cuando existe auditoría")
+    fun history(
+        current: CurrentBusiness,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+    ) = service.history(current, page, size)
+
     @PutMapping("/{id}/assignee")
     @Operation(summary = "Asigna o libera la tarea (`userId: null`). Un colaborador solo puede tomarla o soltarla")
     fun assign(current: CurrentBusiness, @PathVariable id: UUID, @RequestBody body: AssignTaskRequest) =

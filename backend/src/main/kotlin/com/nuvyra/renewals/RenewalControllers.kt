@@ -81,7 +81,7 @@ class RenewalController(private val service: RenewalService) {
 
     @PostMapping("/notifications/{id}/skip")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun skip(current: CurrentBusiness, @PathVariable id: UUID) = service.skip(current.businessId, id)
+    fun skip(current: CurrentBusiness, @PathVariable id: UUID) = service.skip(current.businessId, current.userId, id)
 
     @GetMapping("/settings")
     fun settings(current: CurrentBusiness) = service.settings(current.businessId)
