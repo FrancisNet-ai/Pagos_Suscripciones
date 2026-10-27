@@ -8,10 +8,12 @@ COPY src src
 RUN ./gradlew bootJar --no-daemon -x test
 
 FROM eclipse-temurin:21-jre
-RUN groupadd --system app && useradd --system --gid app --home /app app
+RUN groupadd --system app && useradd --system --gid app --home /app app \
+    && mkdir -p /app/data/media && chown -R app:app /app/data
 WORKDIR /app
 COPY --from=build --chown=app:app /app/build/libs/app.jar app.jar
 USER app
 EXPOSE 8080
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=prod \
+    APP_STORAGE_LOCAL_DIR=/app/data/media
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-Duser.timezone=UTC", "-jar", "app.jar"]

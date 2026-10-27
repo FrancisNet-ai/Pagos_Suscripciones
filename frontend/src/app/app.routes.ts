@@ -46,6 +46,43 @@ export const routes: Routes = [
         title: 'Inicio · Panel',
         loadComponent: () => import('./features/dashboard/dashboard-home.page').then((m) => m.DashboardHomePage),
       },
+      {
+        path: 'productos',
+        title: 'Productos · Panel',
+        loadComponent: () => import('./features/products/products-list.page').then((m) => m.ProductsListPage),
+      },
+      {
+        path: 'productos/nuevo',
+        title: 'Nuevo producto · Panel',
+        loadComponent: () => import('./features/products/product-form.page').then((m) => m.ProductFormPage),
+      },
+      {
+        path: 'productos/:id',
+        title: 'Producto · Panel',
+        loadComponent: () => import('./features/products/product-form.page').then((m) => m.ProductFormPage),
+      },
+      {
+        path: 'configuracion',
+        loadComponent: () => import('./features/settings/settings-layout.component').then((m) => m.SettingsLayoutComponent),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'negocio' },
+          {
+            path: 'negocio',
+            title: 'Configuración · Panel',
+            loadComponent: () => import('./features/settings/business-settings.page').then((m) => m.BusinessSettingsPage),
+          },
+          {
+            path: 'enlace',
+            title: 'Enlace público · Panel',
+            loadComponent: () => import('./features/settings/store-link.page').then((m) => m.StoreLinkPage),
+          },
+          {
+            path: 'cobros',
+            title: 'Yape y Plin · Panel',
+            loadComponent: () => import('./features/settings/payment-methods.page').then((m) => m.PaymentMethodsPage),
+          },
+        ],
+      },
     ],
   },
   {

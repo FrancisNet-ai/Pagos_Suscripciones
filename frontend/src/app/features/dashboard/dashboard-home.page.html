@@ -66,25 +66,31 @@
             <!-- Primeros pasos -->
             <section aria-labelledby="pasos-titulo">
               <h2 id="pasos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Primeros pasos</h2>
+              @let setup = s.setup;
               <ol class="mt-6 space-y-5">
-                <li class="flex gap-4">
-                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-xs text-snow" aria-hidden="true">✓</span>
-                  <div><p class="font-semibold text-night">Cuenta y negocio creados</p><p class="text-sm">Tu enlace y código empresarial ya están asignados.</p></div>
-                </li>
-                <li class="flex gap-4">
-                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
-                  <div><p class="font-semibold text-night">Configurar Yape y Plin</p><p class="text-sm">Registrarás el titular y el número que verán tus compradores.</p></div>
-                </li>
-                <li class="flex gap-4">
-                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
-                  <div><p class="font-semibold text-night">Publicar tus productos</p><p class="text-sm">Precio en soles, duración y cupos opcionales.</p></div>
-                </li>
-                <li class="flex gap-4">
-                  <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
-                  <div><p class="font-semibold text-night">Compartir tu tienda</p><p class="text-sm">Envía tu enlace por WhatsApp y redes sociales.</p></div>
-                </li>
+                @for (step of [
+                  { done: true, title: 'Cuenta y negocio creados', text: 'Tu enlace y código empresarial ya están asignados.', link: null, cta: '' },
+                  { done: setup.paymentConfigured, title: 'Configurar Yape y Plin', text: 'El titular y el número que verán tus compradores.', link: '/panel/configuracion/cobros', cta: 'Configurar cobros' },
+                  { done: setup.publishedProducts > 0, title: 'Publicar tus productos', text: setup.publishedProducts > 0 ? setup.publishedProducts + ' producto(s) publicado(s).' : 'Precio en soles, duración y cupos opcionales.', link: '/panel/productos', cta: 'Ir a productos' },
+                  { done: !!business.logoUrl, title: 'Personalizar tu tienda', text: 'Logotipo, portada, color y descripción.', link: '/panel/configuracion/negocio', cta: 'Personalizar' }
+                ]; track step.title) {
+                  <li class="flex gap-4">
+                    @if (step.done) {
+                      <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success text-xs text-snow" aria-hidden="true">✓</span>
+                    } @else {
+                      <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 rounded-full border border-mist" aria-hidden="true"></span>
+                    }
+                    <div>
+                      <p class="font-semibold text-night">{{ step.title }} <span class="sr-only">{{ step.done ? '(completado)' : '(pendiente)' }}</span></p>
+                      <p class="text-sm">{{ step.text }}</p>
+                      @if (!step.done && step.link) {
+                        <a class="link mt-1 inline-block text-sm" [routerLink]="step.link">{{ step.cta }}</a>
+                      }
+                    </div>
+                  </li>
+                }
               </ol>
-              <p class="mt-6 text-sm text-[var(--text-muted)]">Estas secciones se activarán en tu panel conforme se habiliten.</p>
+
             </section>
           </div>
   }

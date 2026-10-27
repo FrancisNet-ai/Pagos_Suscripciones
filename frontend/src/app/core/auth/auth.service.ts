@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
-import { LoginPayload, RegisterPayload, Role, SessionResponse } from './auth.models';
+import { BusinessSummary, LoginPayload, RegisterPayload, Role, SessionResponse } from './auth.models';
 
 const API = '/api/v1/auth';
 
@@ -54,6 +54,11 @@ export class AuthService {
 
   confirmPasswordReset(token: string, newPassword: string): Observable<void> {
     return this.http.post<void>(`${API}/password-reset/confirm`, { token, newPassword });
+  }
+
+  /** Refleja en la sesión los cambios del negocio (nombre, enlace) hechos desde Configuración. */
+  updateBusinessSummary(changes: Partial<BusinessSummary>): void {
+    this.sessionState.update((s) => (s?.business ? { ...s, business: { ...s.business, ...changes } } : s));
   }
 
   /** Limpia el estado local cuando el backend indica que la sesión ya no es válida. */

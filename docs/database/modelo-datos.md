@@ -68,12 +68,13 @@ erDiagram
 | `saas_invoices` | `id`, `business_id`, `subscription_id`, `invoice_number`, `amount`, `period_start`, `period_end`, `status` (`OPEN`, `PAID`, `VOID`), `due_at` |
 | `saas_payments` | `id`, `invoice_id`, `amount`, `method`, `transaction_reference`, `receipt_url`, `status`, `reported_at`, `verified_at`, `verified_by` |
 
-### Catálogo y cupos (Fase 2)
+### Catálogo y cupos (Fase 2 — `V2__catalog_and_payment_methods.sql`)
 
 | Tabla | Columnas clave | Notas |
 |---|---|---|
 | `products` | `id`, `business_id`, `name`, `description`, `category`, `product_type` (`SUBSCRIPTION`, `ONE_TIME`), `price`, `duration_days`, `image_url`, `capacity_enabled`, `capacity`, `publication_status` (`DRAFT`, `PUBLISHED`, `ARCHIVED`), `is_available`, `version`, timestamps | `CHECK(product_type <> 'SUBSCRIPTION' OR duration_days > 0)`, `CHECK(NOT capacity_enabled OR capacity > 0)`; índice `(business_id, publication_status)` |
-| `capacity_allocations` | `id`, `business_id`, `product_id`, `customer_subscription_id`, `order_id`, `allocation_status` (`RESERVED`, `OCCUPIED`, `RELEASE_PENDING`, `RELEASED`, `EXPIRED`), `reserved_until`, `released_at`, `version` | Disponibilidad = `capacity − count(RESERVED vigentes + OCCUPIED + RELEASE_PENDING)` calculada bajo `SELECT … FOR UPDATE` sobre `products` |
+| `business_payment_methods` | `id`, `business_id`, `method` (`YAPE`, `PLIN`), `holder_name`, `phone`, `qr_image_url`, `is_enabled` | `UNIQUE(business_id, method)`; titular **declarado** por el vendedor |
+| `capacity_allocations` | `id`, `business_id`, `product_id`, `allocation_status` (+ `order_id` y `customer_subscription_id` en Fases 3–4) (`RESERVED`, `OCCUPIED`, `RELEASE_PENDING`, `RELEASED`, `EXPIRED`), `reserved_until`, `released_at`, `version` | Disponibilidad = `capacity − count(RESERVED vigentes + OCCUPIED + RELEASE_PENDING)` calculada bajo `SELECT … FOR UPDATE` sobre `products` |
 
 ### Tienda, pedidos y pagos (Fase 3)
 
@@ -84,7 +85,6 @@ erDiagram
 | `order_number_sequences` | `business_id`, `year`, `last_value` | Numeración legible por negocio y año con bloqueo de fila |
 | `orders` | `id`, `order_number`, `business_id`, `customer_id`, `kind` (`PURCHASE`, `RENEWAL`), `renewal_request_id`, `status` (`AWAITING_PAYMENT`, `PAYMENT_REPORTED`, `PAID`, `CANCELLED`, `EXPIRED`, `INCIDENT`), `total_amount`, `currency`, `idempotency_key`, timestamps | `UNIQUE(business_id, order_number)`, `UNIQUE(business_id, idempotency_key)` |
 | `order_items` | `id`, `order_id`, `product_id`, `product_name_snapshot`, `product_type_snapshot`, `unit_price_snapshot`, `duration_snapshot`, `quantity` | Copia histórica inmutable |
-| `business_payment_methods` | `id`, `business_id`, `method` (`YAPE`, `PLIN`), `holder_name`, `phone`, `qr_image_url`, `is_enabled` | `UNIQUE(business_id, method)` |
 | `customer_payments` | `id`, `business_id`, `order_id`, `payment_method_id`, `method_snapshot`, `holder_name_snapshot`, `receiver_phone_snapshot`, `amount`, `transaction_reference`, `receipt_url`, `status` (`PENDING`, `REPORTED`, `PENDING_VERIFICATION`, `VERIFIED`, `REJECTED`, `CANCELLED`, `REFUNDED`), `reported_at`, `verified_at`, `verified_by`, `rejection_reason`, `version` | Índice único parcial `(business_id, method_snapshot, transaction_reference) WHERE status IN ('PENDING_VERIFICATION','VERIFIED')` para detectar referencias duplicadas |
 
 ### Suscripciones y renovaciones (Fases 4–5)

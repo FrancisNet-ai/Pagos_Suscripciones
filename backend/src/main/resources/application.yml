@@ -74,6 +74,8 @@ app:
   mail:
     from: ${APP_MAIL_FROM:no-reply@localhost}
     log-links: false
+  storage:
+    local-dir: ${APP_STORAGE_LOCAL_DIR:./data/media}
   bootstrap:
     super-admin-email: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:}
     super-admin-password: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:}

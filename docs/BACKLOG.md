@@ -9,6 +9,10 @@
 * La raíz del repositorio cumple el papel de la carpeta `digital-saas/` de la especificación.
 
 ## Pendientes
+- [ ] Fase 3: crear reservas de cupo desde el checkout y marcar reservas vencidas (`EXPIRED`) con tarea programada; transferencias tardías como incidencia.
+- [ ] Fase 6: aplicar `product_limit` del plan SaaS al crear productos.
+- [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
+- [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.
 - [ ] Fase 6: selección de plan y pago SaaS en el registro; bloqueo por falta de suscripción vigente.
 - [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).
 - [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.

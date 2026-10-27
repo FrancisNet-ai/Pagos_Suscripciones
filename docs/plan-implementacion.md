@@ -23,10 +23,22 @@ Cada fase termina con pruebas en verde y una versión utilizable de punta a punt
 planes de la Fase 6). Mientras tanto el negocio queda creado sin suscripción SaaS y el bloqueo por
 falta de plan se activará en la Fase 6.
 
-## Fase 2 — Negocios y productos
-Configuración del negocio (datos, logo, portada, color, slug, WhatsApp, zona horaria), métodos Yape/Plin,
-CRUD de productos con tipos `SUBSCRIPTION`/`ONE_TIME`, publicación/archivo, imágenes validadas, cupos
-(`capacity_allocations`, disponibilidad con bloqueo pesimista).
+## Fase 2 — Negocios y productos ✅
+
+| Entregable | Detalle |
+|---|---|
+| Migración | `V2__catalog_and_payment_methods.sql`: `business_payment_methods`, `products`, `capacity_allocations` |
+| Configuración | Datos, descripción, color, WhatsApp, zona horaria, logo y portada; cambio de slug con verificación de disponibilidad |
+| Yape / Plin | Titular declarado, celular receptor, QR opcional y habilitación, independientes entre sí |
+| Productos | CRUD, `SUBSCRIPTION`/`ONE_TIME`, precio en soles, duración, disponibilidad, publicar/despublicar/archivar, imagen, búsqueda, filtros y paginación |
+| Cupos | `CapacityService`: disponibilidad (ocupados + reservas vigentes), reserva con `SELECT … FOR UPDATE`, ocupación, liberación idempotente; no se reduce la capacidad por debajo del uso |
+| Imágenes | Validación por firma de bytes y dimensiones, nombres aleatorios, borrado tras commit, volumen Docker `media` |
+| Frontend | Configuración (3 pestañas), catálogo responsive, formulario de producto, menú con secciones activas, «Primeros pasos» con datos reales |
+| Pruebas | Backend 74 (incluye concurrencia del último cupo con 8 hilos y aislamiento entre negocios); frontend 37; flujo Playwright completo |
+
+Las reservas se crean desde el checkout (Fase 3). Una reserva vencida deja de contar automáticamente;
+el proceso programado que la marca como `EXPIRED` y la gestión de transferencias tardías llegan con
+las Fases 3 y 5.
 
 ## Fase 3 — Tienda y checkout
 Tienda pública por slug, catálogo, compra sin registro, clientes por negocio, consentimientos, pedidos

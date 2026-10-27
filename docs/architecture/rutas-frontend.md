@@ -17,7 +17,7 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/panel/ventas`, `/panel/ventas/:id` | `orders` + `payments` | owner | 3 |
 | `/panel/suscripciones` | `subscriptions` | owner | 4 |
 | `/panel/renovaciones` | `renewals` | owner | 5 |
-| `/panel/configuracion` (negocio, pagos, WhatsApp, plan) | `settings` | owner | 2 / 6 |
+| `/panel/configuracion/negocio`, `/enlace`, `/cobros` (plan SaaS en Fase 6) | `settings` | owner | 2 / 6 |
 | `/tienda/:slug` | `storefront` | público | 3 |
 | `/tienda/:slug/comprar/:productId` | `checkout` | público | 3 |
 | `/pedido/:publicToken` | `checkout/order-status` | público | 3 |

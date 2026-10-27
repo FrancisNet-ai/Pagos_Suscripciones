@@ -1,6 +1,7 @@
 package com.platform.common.error
 
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.multipart.MaxUploadSizeExceededException
+import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
@@ -51,6 +53,16 @@ class GlobalExceptionHandler {
     @ExceptionHandler(OptimisticLockingFailureException::class)
     fun handleOptimisticLock(ex: OptimisticLockingFailureException): ProblemDetail =
         ProblemDetails.of(HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION", "El registro fue modificado por otra operación. Recarga e inténtalo de nuevo.")
+
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleIntegrity(ex: DataIntegrityViolationException): ProblemDetail {
+        log.warn("Violación de integridad: {}", ex.mostSpecificCause.message)
+        return ProblemDetails.of(HttpStatus.CONFLICT, "CONFLICT", "La operación entra en conflicto con datos existentes. Recarga e inténtalo de nuevo.")
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException::class)
+    fun handleMissingPart(ex: MissingServletRequestPartException): ProblemDetail =
+        ProblemDetails.of(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", "Adjunta un archivo.")
 
     @ExceptionHandler(MaxUploadSizeExceededException::class)
     fun handleUploadSize(ex: MaxUploadSizeExceededException): ProblemDetail =

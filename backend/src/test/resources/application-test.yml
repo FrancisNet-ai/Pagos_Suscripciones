@@ -9,3 +9,7 @@ logging:
   level:
     root: WARN
     com.platform: INFO
+---
+app:
+  storage:
+    local-dir: ${java.io.tmpdir}/platform-test-media

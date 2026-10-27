@@ -41,18 +41,30 @@
               <a
                 [routerLink]="item.route"
                 routerLinkActive="!bg-white/10 !text-snow before:!bg-mist"
-                [routerLinkActiveOptions]="{ exact: true }"
+                [routerLinkActiveOptions]="{ exact: item.route === '/panel' }"
                 class="relative flex min-h-11 items-center rounded-md px-3 text-[0.9375rem] font-medium text-mist no-underline transition-colors before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded before:bg-transparent hover:bg-white/5 hover:text-snow"
               >{{ item.label }}</a>
             } @else {
-              <details class="group">
-                <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-md px-3 text-[0.9375rem] font-medium text-mist/70 hover:bg-white/5">
+              <details class="group" [open]="isSectionActive(item)">
+                <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-md px-3 text-[0.9375rem] font-medium hover:bg-white/5"
+                         [class]="hasRoutes(item) ? 'text-mist hover:text-snow' : 'text-mist/70'">
                   {{ item.label }}
-                  <span class="text-[0.6875rem] uppercase tracking-wider text-mist/60">Próximamente</span>
+                  @if (!hasRoutes(item)) {
+                    <span class="text-[0.6875rem] uppercase tracking-wider text-mist/60">Próximamente</span>
+                  } @else {
+                    <span class="text-mist/60 transition-transform group-open:rotate-90" aria-hidden="true">›</span>
+                  }
                 </summary>
                 <ul class="mb-2 ml-3 border-l border-white/10 pl-3">
-                  @for (child of item.children; track child) {
-                    <li class="py-1.5 text-sm text-mist/50" aria-disabled="true">{{ child }}</li>
+                  @for (child of item.children; track child.label) {
+                    <li>
+                      @if (child.route) {
+                        <a [routerLink]="child.route" routerLinkActive="!text-snow font-semibold"
+                           class="block py-1.5 text-sm text-mist no-underline hover:text-snow">{{ child.label }}</a>
+                      } @else {
+                        <span class="block py-1.5 text-sm text-mist/50" aria-disabled="true">{{ child.label }} <span class="text-[0.625rem] uppercase tracking-wider">· pronto</span></span>
+                      }
+                    </li>
                   }
                 </ul>
               </details>

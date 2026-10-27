@@ -6,7 +6,7 @@ cp .env.example .env      # completar valores
 docker compose up --build
 ```
 * Aplicación: http://localhost:8080 (Nginx sirve Angular y reenvía `/api` al backend).
-* PostgreSQL persiste en el volumen `pgdata`.
+* PostgreSQL persiste en el volumen `pgdata`; las imágenes subidas (logos, portadas, productos, QR) en `media`.
 
 ## Producción (resumen)
 1. Servidor con Docker y un proxy TLS delante (Caddy, Traefik o Nginx con Let's Encrypt) que termine HTTPS
@@ -19,8 +19,8 @@ docker compose up --build
 
 ## Copias de seguridad
 ```bash
-infrastructure/scripts/backup-db.sh            # genera backups/AAAAmmdd-HHMMSS.dump
-infrastructure/scripts/restore-db.sh <archivo> # restaura sobre la base configurada
+infrastructure/scripts/backup-db.sh            # genera backups/AAAAmmdd-HHMMSS.dump y …-media.tar.gz
+infrastructure/scripts/restore-db.sh <archivo.dump> [archivo-media.tar.gz]  # restaura base e imágenes
 ```
 Programar `backup-db.sh` diariamente (cron) y copiar los archivos fuera del servidor. Probar la
 restauración periódicamente en un entorno aislado.

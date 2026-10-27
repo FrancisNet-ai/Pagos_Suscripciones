@@ -50,6 +50,11 @@ abstract class IntegrationTest {
         rateLimiter.clearAll()
     }
 
+    protected fun pngBytes(width: Int = 8, height: Int = 8): ByteArray {
+        val image = java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB)
+        return java.io.ByteArrayOutputStream().also { javax.imageio.ImageIO.write(image, "png", it) }.toByteArray()
+    }
+
     protected fun uniqueEmail() = "vendedor-${UUID.randomUUID().toString().take(8)}@ejemplo.pe"
 
     protected fun registerJson(

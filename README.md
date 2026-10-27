@@ -11,6 +11,11 @@ cuentas del propio vendedor, verificación manual de pagos, clientes, cupos y re
 **Fase 1 — Fundamentos: completada.** Registro e inicio de sesión de vendedores, creación del negocio
 (slug y código empresarial), sesiones seguras, recuperación de contraseña, multiempresa resuelta en
 servidor, auditoría, landing page, panel inicial e infraestructura Docker.
+
+**Fase 2 — Negocios y productos: completada.** Configuración y personalización del negocio, cambio de
+enlace público, Yape y Plin con titular declarado y QR, catálogo de productos con imágenes, publicación
+y control de cupos sin sobreventa.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

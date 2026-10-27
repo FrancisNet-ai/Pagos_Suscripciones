@@ -46,6 +46,9 @@ services:
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-}
       APP_BOOTSTRAP_SUPER_ADMIN_EMAIL: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:-}
       APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:-}
+    volumes:
+      # Imágenes subidas por los vendedores (logos, portadas, productos, QR).
+      - media:/app/data/media
 
   web:
     build:
@@ -59,3 +62,4 @@ services:
 
 volumes:
   pgdata:
+  media:

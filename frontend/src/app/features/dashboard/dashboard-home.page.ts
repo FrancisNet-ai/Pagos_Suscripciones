@@ -2,26 +2,26 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of, startWith } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { catchError, forkJoin, map, of, startWith } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/services/api-error';
+import { Business } from '../settings/settings.api';
 
-interface BusinessDetail {
-  id: string;
-  uniqueCode: string;
-  slug: string;
-  businessName: string;
-  whatsappNumber: string | null;
-  timeZone: string;
-  status: 'ACTIVE' | 'SUSPENDED';
-  createdAt: string;
+interface Setup {
+  paymentConfigured: boolean;
+  publishedProducts: number;
 }
 
-type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; business: BusinessDetail };
+type LoadState =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; business: Business; setup: Setup };
 
 @Component({
   selector: 'app-dashboard-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   templateUrl: './dashboard-home.page.html',
 })
 export class DashboardHomePage {
@@ -31,8 +31,18 @@ export class DashboardHomePage {
   protected readonly copied = signal(false);
 
   protected readonly state = toSignal(
-    this.http.get<BusinessDetail>('/api/v1/business/me').pipe(
-      map((business): LoadState => ({ status: 'ready', business })),
+    forkJoin({
+      business: this.http.get<Business>('/api/v1/business/me'),
+      methods: this.http.get<{ enabled: boolean }[]>('/api/v1/business/me/payment-methods'),
+      published: this.http.get<{ totalItems: number }>('/api/v1/products', { params: { filter: 'PUBLISHED', size: 1 } }),
+    }).pipe(
+      map(
+        ({ business, methods, published }): LoadState => ({
+          status: 'ready',
+          business,
+          setup: { paymentConfigured: methods.some((m) => m.enabled), publishedProducts: published.totalItems },
+        }),
+      ),
       catchError((e: unknown) => of<LoadState>({ status: 'error', message: ApiError.from(e).message })),
       startWith<LoadState>({ status: 'loading' }),
     ),

@@ -6,11 +6,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
 
+interface NavChild {
+  label: string;
+  /** Sin `route`: aún no implementado, se muestra deshabilitado. */
+  route?: string;
+}
+
 interface NavItem {
   label: string;
   route?: string;
-  /** Las secciones sin `route` aún no están implementadas y se muestran deshabilitadas. */
-  children?: string[];
+  children?: NavChild[];
 }
 
 @Component({
@@ -27,12 +32,28 @@ export class DashboardShellComponent {
 
   protected readonly nav: NavItem[] = [
     { label: 'Inicio', route: '/panel' },
-    { label: 'Productos', children: ['Catálogo', 'Cupos'] },
-    { label: 'Clientes', children: ['Todos', 'Registrar cliente'] },
-    { label: 'Ventas y pagos', children: ['Pedidos', 'Por verificar'] },
-    { label: 'Suscripciones y renovaciones', children: ['Próximos vencimientos', 'Renovaciones'] },
-    { label: 'Configuración', children: ['Negocio', 'Yape y Plin', 'Plan'] },
+    { label: 'Productos', route: '/panel/productos' },
+    { label: 'Clientes', children: [{ label: 'Todos' }, { label: 'Registrar cliente' }] },
+    { label: 'Ventas y pagos', children: [{ label: 'Pedidos' }, { label: 'Por verificar' }] },
+    { label: 'Suscripciones y renovaciones', children: [{ label: 'Próximos vencimientos' }, { label: 'Renovaciones' }] },
+    {
+      label: 'Configuración',
+      children: [
+        { label: 'Datos del negocio', route: '/panel/configuracion/negocio' },
+        { label: 'Enlace público', route: '/panel/configuracion/enlace' },
+        { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
+        { label: 'Plan SaaS' },
+      ],
+    },
   ];
+
+  protected hasRoutes(item: NavItem): boolean {
+    return item.children?.some((c) => c.route) ?? false;
+  }
+
+  protected isSectionActive(item: NavItem): boolean {
+    return item.children?.some((c) => c.route && this.router.url.startsWith(c.route)) ?? false;
+  }
 
   constructor() {
     this.router.events

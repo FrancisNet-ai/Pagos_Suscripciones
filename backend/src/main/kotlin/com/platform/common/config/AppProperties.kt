@@ -15,7 +15,15 @@ data class AppProperties(
     val cors: Cors = Cors(),
     val mail: Mail = Mail(),
     val bootstrap: Bootstrap = Bootstrap(),
+    val storage: Storage = Storage(),
 ) {
+    data class Storage(
+        /** Carpeta donde se guardan imágenes públicas (logos, portadas, productos, QR). */
+        val localDir: String = "./data/media",
+        val maxImageBytes: Long = 2 * 1024 * 1024,
+        val maxImageDimension: Int = 4096,
+    )
+
     data class Session(
         val cookieName: String = "sid",
         val cookieSecure: Boolean = true,

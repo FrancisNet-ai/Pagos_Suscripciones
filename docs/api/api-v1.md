@@ -20,7 +20,7 @@ y `/api/docs/openapi.json` (deshabilitada en producción salvo que se active `AP
   }
   ```
 
-  Códigos: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`,
+  Códigos: `VALIDATION_ERROR`, `INVALID_IMAGE`, `FILE_TOO_LARGE`, `SLUG_TAKEN`, `CAPACITY_BELOW_USAGE`, `PAYMENT_METHOD_NOT_CONFIGURED`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`,
   `EMAIL_ALREADY_REGISTERED`, `INVALID_CREDENTIALS`, `RATE_LIMITED`, `SUBSCRIPTION_REQUIRED`,
   `PRODUCT_SOLD_OUT`, `PAYMENT_ALREADY_PROCESSED`, `INTERNAL_ERROR`.
 * **Paginación**: `?page=0&size=20&sort=createdAt,desc` → `{ "items": [...], "page": 0, "size": 20, "totalItems": 134, "totalPages": 7 }`. `size` máximo 100.
@@ -71,11 +71,50 @@ Límite: 10 intentos / 15 min por IP y por correo → `429 RATE_LIMITED`.
 
 `POST /auth/password-reset/confirm` `{ "token": "…", "newPassword": "…" }` → `204`; revoca todas las sesiones.
 
-### Negocio
+## Fase 2 — implementado
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/business/me` | OWNER | Datos del negocio del usuario autenticado |
+### Negocio y configuración (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/business/me` | Datos del negocio del usuario autenticado |
+| `PUT` | `/business/me` | `{ businessName, description, primaryColor, whatsappNumber, timeZone }` |
+| `GET` | `/business/me/slug-availability?slug=` | `{ slug, available, reason }` |
+| `PUT` | `/business/me/slug` | `{ slug }` → `409 SLUG_TAKEN` si está en uso |
+| `POST` / `DELETE` | `/business/me/logo`, `/business/me/cover` | `multipart/form-data` campo `file`: PNG, JPG o WebP, ≤ 2 MB, ≤ 4096 px |
+| `GET` | `/business/me/payment-methods` | Siempre `[YAPE, PLIN]` con `configured`, `holderName`, `phone`, `qrImageUrl`, `enabled` |
+| `PUT` | `/business/me/payment-methods/{yape\|plin}` | `{ holderName, phone, enabled }` |
+| `POST` / `DELETE` | `/business/me/payment-methods/{method}/qr` | QR opcional; requiere método configurado (`409 PAYMENT_METHOD_NOT_CONFIGURED`) |
+
+### Productos (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/products?query=&filter=ACTIVE\|PUBLISHED\|DRAFT\|ARCHIVED\|ALL&page=&size=` | Paginado; búsqueda por nombre o categoría |
+| `POST` | `/products` | Crea en `DRAFT` |
+| `GET` / `PUT` | `/products/{id}` | `404` si el producto es de otro negocio |
+| `PATCH` | `/products/{id}/status` | `{ publicationStatus }` |
+| `POST` / `DELETE` | `/products/{id}/image` | Imagen del producto |
+
+Cuerpo de producto:
+
+```json
+{
+  "name": "Servicio Premium", "description": "…", "category": "Entretenimiento",
+  "productType": "SUBSCRIPTION", "price": 15.00, "durationDays": 30,
+  "capacityEnabled": true, "capacity": 5, "available": true
+}
+```
+
+Respuesta incluye `availability: { capacityEnabled, capacity, occupied, reserved, available, soldOut }`;
+`available` es `null` cuando el producto no controla cupos. Reducir `capacity` por debajo de los cupos
+en uso → `409 CAPACITY_BELOW_USAGE`.
+
+### Archivos públicos
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/media/{clave}` | Imágenes públicas con nombre aleatorio, caché inmutable. Los comprobantes de pago nunca se sirven aquí. |
 
 ### Operación
 
@@ -84,20 +123,6 @@ Límite: 10 intentos / 15 min por IP y por correo → `429 RATE_LIMITED`.
 | `/actuator/health` | Estado (liveness/readiness) para el proxy y Docker |
 
 ## Fases siguientes — contratos orientativos
-
-### Negocio y configuración (Fase 2)
-
-* `PUT /business/me` — nombre, descripción, color, WhatsApp, zona horaria.
-* `PUT /business/me/slug` — cambio de slug con verificación de disponibilidad.
-* `POST /business/me/logo`, `POST /business/me/cover` — `multipart/form-data`, PNG/JPEG/WebP, ≤ 2 MB.
-* `GET|PUT /business/me/payment-methods/{YAPE|PLIN}`, `POST /business/me/payment-methods/{method}/qr`.
-
-### Productos (Fase 2)
-
-* `GET /products?query=&status=&page=` · `POST /products` · `GET /products/{id}` · `PUT /products/{id}`
-* `PATCH /products/{id}/status` `{ "publicationStatus": "PUBLISHED|DRAFT|ARCHIVED" }`
-* `POST /products/{id}/image`
-* `GET /products/{id}/availability` → `{ capacityEnabled, capacity, occupied, reserved, available }`
 
 ### Tienda pública y checkout (Fase 3)
 
