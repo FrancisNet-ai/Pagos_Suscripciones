@@ -96,7 +96,7 @@ test('compra sin cuenta, verificación manual y renovación con el mismo cupo', 
   await sellerPage.setViewportSize(info.project.use.viewport!);
   try {
     await page.goto(`/tienda/${scenario.business.slug}`);
-    await expect(page.getByRole('heading', { name: /Productos que potencian/ })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: scenario.business.businessName })).toBeVisible();
     await capture(page, info, '05-tienda');
     await accessible(page);
     await page.getByRole('button', { name: 'Educación', exact: true }).click();

@@ -29,12 +29,13 @@
           <app-wave-art />
         }
         <div class="store-banner-inner">
-          <p class="type-eyebrow !mt-0 !text-mist">Tu próxima posibilidad</p>
-          <h1 class="mt-4">Productos que potencian<br />tu día a día.</h1>
+          <!-- La portada es del vendedor: su nombre y su descripción; sin textos comerciales ajenos. -->
+          <p class="type-eyebrow !mt-0 !text-mist">Tienda en línea</p>
+          <h1 class="mt-4">{{ s.businessName }}</h1>
           <p>
             {{
               s.description ||
-                'Servicios y productos digitales, a tu alcance. Elige el tuyo y compra sin crear una cuenta.'
+                'Elige un producto y compra sin crear una cuenta. Pagas por Yape o Plin directamente al vendedor.'
             }}
           </p>
         </div>

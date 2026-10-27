@@ -860,7 +860,8 @@
     padding: 30px 36px 48px;
     min-width: 0;
   }
-  .workspace-main > :not(router-outlet) {
+  /* Las páginas del panel ocupan el ancho; el aviso del plan conserva su diseño flexible. */
+  .workspace-main > :not(router-outlet):not(.notice) {
     display: block;
     min-width: 0;
   }
