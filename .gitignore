@@ -18,3 +18,7 @@ frontend/coverage/
 
 # imágenes subidas en desarrollo
 backend/data/
+
+# comprobaciones de navegador
+frontend/playwright-report/
+frontend/test-results/

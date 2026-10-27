@@ -49,6 +49,12 @@ mientras Yape y Plin no ofrezcan una API oficial.
 
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
+## Rediseño editorial
+
+La interfaz sigue una dirección editorial azul con portada clara, arte fluido, paneles compactos y
+flujos de compra móviles. Ver [capturas antes/después y pruebas](docs/design-review/README.md) y
+el [sistema visual](docs/architecture/sistema-visual.md). Se conservan las funciones de las fases 1–7.
+
 ## Tecnologías
 
 | Capa | Stack |

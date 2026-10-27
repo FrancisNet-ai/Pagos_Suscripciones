@@ -21,16 +21,16 @@
   --color-danger-soft: #f7e6e6;
 
   /* Tipografía */
-  --font-display: 'Playfair Display Variable', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-display: 'Bodoni Moda Variable', 'Bodoni Moda', Didot, Georgia, serif;
   --font-editorial: 'Bodoni Moda Variable', 'Bodoni Moda', Didot, Georgia, serif;
   --font-ui: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-sans: var(--font-ui);
 
   /* Radios y sombras discretas */
-  --radius-control: 6px;
-  --radius-panel: 14px;
-  --shadow-hairline: 0 1px 2px rgb(10 25 49 / 6%);
-  --shadow-lift: 0 12px 32px -18px rgb(10 25 49 / 35%);
+  --radius-control: 10px;
+  --radius-panel: 18px;
+  --shadow-hairline: 0 2px 8px rgb(10 25 49 / 3%);
+  --shadow-lift: 0 16px 45px -24px rgb(10 25 49 / 22%);
 
   --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }

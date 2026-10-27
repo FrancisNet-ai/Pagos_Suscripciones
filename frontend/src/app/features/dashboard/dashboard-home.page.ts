@@ -1,3 +1,4 @@
+import { IconComponent } from '../../shared/components/icon.component';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
@@ -24,7 +25,7 @@ type LoadState =
 @Component({
   selector: 'app-dashboard-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SolesPipe, BarChartComponent],
+  imports: [RouterLink, SolesPipe, BarChartComponent, IconComponent],
   templateUrl: './dashboard-home.page.html',
 })
 export class DashboardHomePage {
@@ -37,18 +38,23 @@ export class DashboardHomePage {
     forkJoin({
       business: inject(SettingsApi).getBusiness(),
       methods: this.http.get<{ enabled: boolean }[]>('/api/v1/business/me/payment-methods'),
-      published: this.http.get<{ totalItems: number }>('/api/v1/products', { params: { filter: 'PUBLISHED', size: 1 } }),
+      published: this.http.get<{ totalItems: number }>('/api/v1/products', {
+        params: { filter: 'PUBLISHED', size: 1 },
+      }),
       dashboard: inject(ReportsApi).dashboard(),
     }).pipe(
-      map(
-        ({ business, methods, published, dashboard }): LoadState => ({
-          status: 'ready',
-          business,
-          dashboard,
-          setup: { paymentConfigured: methods.some((m) => m.enabled), publishedProducts: published.totalItems },
-        }),
+      map(({ business, methods, published, dashboard }): LoadState => ({
+        status: 'ready',
+        business,
+        dashboard,
+        setup: {
+          paymentConfigured: methods.some((m) => m.enabled),
+          publishedProducts: published.totalItems,
+        },
+      })),
+      catchError((e: unknown) =>
+        of<LoadState>({ status: 'error', message: ApiError.from(e).message }),
       ),
-      catchError((e: unknown) => of<LoadState>({ status: 'error', message: ApiError.from(e).message })),
       startWith<LoadState>({ status: 'loading' }),
     ),
     { requireSync: true },
@@ -61,7 +67,9 @@ export class DashboardHomePage {
     if (s.status !== 'ready') return [];
     const days = s.dashboard.last30Days;
     return days.map((d, i) => ({
-      label: new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long' }).format(new Date(`${d.date}T12:00:00`)),
+      label: new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long' }).format(
+        new Date(`${d.date}T12:00:00`),
+      ),
       tick: d.date.slice(8, 10),
       value: Number(d.amount),
       highlight: i === days.length - 1,
@@ -86,7 +94,10 @@ export class DashboardHomePage {
   protected time(iso: string): string {
     const d = new Date(iso);
     const sameDay = d.toDateString() === new Date().toDateString();
-    return new Intl.DateTimeFormat('es-PE', sameDay ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short' }).format(d);
+    return new Intl.DateTimeFormat(
+      'es-PE',
+      sameDay ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short' },
+    ).format(d);
   }
 
   protected monthName(): string {

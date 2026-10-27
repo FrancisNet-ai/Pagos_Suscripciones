@@ -1,73 +1,90 @@
-<div class="min-h-dvh lg:grid lg:grid-cols-[17rem_1fr] lg:bg-[linear-gradient(to_right,var(--color-night)_17rem,transparent_17rem)]">
-  <!-- Barra superior móvil -->
-  <header class="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-night px-4 py-3 lg:hidden">
-    <app-brand-mark tone="light" link="/panel" />
-    <button type="button" class="btn btn-ghost-light !min-h-10 !px-3" aria-controls="panel-nav" [attr.aria-expanded]="menuOpen()" (click)="menuOpen.set(true)">
-      Menú
+<a
+  href="#panel-contenido"
+  class="sr-only-focusable fixed left-4 top-4 z-[60] rounded bg-white p-3 text-night"
+  >Saltar al contenido</a
+>
+<div class="workspace">
+  <header class="workspace-mobile-bar">
+    <app-brand-mark tone="light" link="/panel" /><button
+      type="button"
+      #menuTrigger
+      aria-controls="panel-nav"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="menuOpen.set(true)"
+    >
+      <app-icon name="menu" />Menú
     </button>
   </header>
-
   @if (menuOpen()) {
-    <div class="fixed inset-0 z-40 bg-night/50 lg:hidden" (click)="menuOpen.set(false)" aria-hidden="true"></div>
+    <div class="workspace-backdrop" (click)="closeMenu()" aria-hidden="true"></div>
   }
-
-  <!-- Navegación lateral -->
   <aside
     id="panel-nav"
-    class="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col bg-night text-snow transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:z-auto lg:h-dvh lg:self-start lg:w-auto lg:max-w-none lg:translate-x-0"
-    [class.-translate-x-full]="!menuOpen()"
-    [attr.aria-label]="'Navegación del panel'"
+    [attr.role]="menuOpen() ? 'dialog' : null"
+    [attr.aria-modal]="menuOpen() ? true : null"
+    class="workspace-sidebar"
+    [class.is-closed]="!menuOpen()"
+    aria-label="Navegación del panel"
     [cdkTrapFocus]="menuOpen()"
     [cdkTrapFocusAutoCapture]="menuOpen()"
-    (keydown.escape)="menuOpen.set(false)"
+    (keydown.escape)="closeMenu()"
   >
-    <div class="flex items-center justify-between px-6 pb-6 pt-7">
-      <app-brand-mark tone="light" link="/panel" />
-      <button type="button" class="rounded px-2 py-1 text-sm text-mist hover:text-snow lg:hidden" (click)="menuOpen.set(false)">Cerrar</button>
+    <div class="sidebar-brand">
+      <app-brand-mark tone="light" link="/panel" /><button
+        type="button"
+        class="sidebar-close"
+        aria-label="Cerrar menú"
+        (click)="closeMenu()"
+      >
+        <app-icon name="close" />
+      </button>
     </div>
-
     @if (auth.business(); as business) {
-      <div class="mx-6 border-y border-white/10 py-4">
-        <p class="text-xs uppercase tracking-[0.14em] text-mist/80">Negocio</p>
-        <p class="mt-1 truncate font-[family-name:var(--font-editorial)] text-lg text-snow">{{ business.businessName }}</p>
+      <div class="sidebar-business">
+        <p>Tu espacio de trabajo</p>
+        <p>{{ business.businessName }}</p>
       </div>
     }
-
-    @if (auth.business(); as business) {
-      <a [href]="'/tienda/' + business.slug" target="_blank" rel="noopener" class="mx-6 mt-4 text-sm text-mist underline decoration-mist/40 underline-offset-4 hover:text-snow">Ver mi tienda ↗</a>
-    }
-
-    <nav class="flex-1 overflow-y-auto px-3 py-5" aria-label="Secciones">
-      <ul class="space-y-1">
+    <nav class="sidebar-nav" aria-label="Secciones">
+      <ul>
         @for (item of nav; track item.label) {
           <li>
             @if (item.route) {
               <a
                 [routerLink]="item.route"
-                routerLinkActive="!bg-white/10 !text-snow before:!bg-mist"
+                routerLinkActive="active"
+                ariaCurrentWhenActive="page"
                 [routerLinkActiveOptions]="{ exact: item.route === '/panel' }"
-                class="relative flex min-h-11 items-center rounded-md px-3 text-[0.9375rem] font-medium text-mist no-underline transition-colors before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded before:bg-transparent hover:bg-white/5 hover:text-snow"
-              >{{ item.label }}</a>
+                class="sidebar-link"
+                ><app-icon [name]="item.icon" /><span>{{ item.label }}</span></a
+              >
             } @else {
-              <details class="group" [open]="isSectionActive(item)">
-                <summary class="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-md px-3 text-[0.9375rem] font-medium hover:bg-white/5"
-                         [class]="hasRoutes(item) ? 'text-mist hover:text-snow' : 'text-mist/70'">
-                  {{ item.label }}
-                  @if (!hasRoutes(item)) {
-                    <span class="text-[0.6875rem] uppercase tracking-wider text-mist/60">Próximamente</span>
-                  } @else {
-                    <span class="text-mist/60 transition-transform group-open:rotate-90" aria-hidden="true">›</span>
-                  }
+              <details [open]="isSectionActive(item)">
+                <summary class="sidebar-link">
+                  <app-icon [name]="item.icon" /><span>{{ item.label }}</span
+                  ><app-icon class="nav-chevron" name="chevron" />
                 </summary>
-                <ul class="mb-2 ml-3 border-l border-white/10 pl-3">
+                <ul class="sidebar-children">
                   @for (child of item.children; track child.label) {
                     <li>
                       @if (child.route) {
-                        <a [routerLink]="child.route" [queryParams]="child.queryParams ?? null"
-                           routerLinkActive="!text-snow font-semibold" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', matrixParams: 'ignored', fragment: 'ignored' }"
-                           class="block py-1.5 text-sm text-mist no-underline hover:text-snow">{{ child.label }}</a>
+                        <a
+                          [routerLink]="child.route"
+                          [queryParams]="child.queryParams ?? null"
+                          routerLinkActive="active"
+                          ariaCurrentWhenActive="page"
+                          [routerLinkActiveOptions]="{
+                            paths: 'exact',
+                            queryParams: 'exact',
+                            matrixParams: 'ignored',
+                            fragment: 'ignored',
+                          }"
+                          >{{ child.label }}</a
+                        >
                       } @else {
-                        <span class="block py-1.5 text-sm text-mist/50" aria-disabled="true">{{ child.label }} <span class="text-[0.625rem] uppercase tracking-wider">· pronto</span></span>
+                        <span class="block py-2 text-xs text-mist/60"
+                          >{{ child.label }} · próximamente</span
+                        >
                       }
                     </li>
                   }
@@ -78,27 +95,56 @@
         }
       </ul>
     </nav>
-
-    <div class="border-t border-white/10 px-6 py-5">
-      <div class="flex items-center gap-3">
-        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-corporate text-sm font-semibold text-snow" aria-hidden="true">{{ initials() }}</span>
+    @if (auth.business(); as business) {
+      <a
+        class="sidebar-store-link"
+        [href]="'/tienda/' + business.slug"
+        target="_blank"
+        rel="noopener"
+        ><app-icon name="external" />Ver mi tienda</a
+      >
+    }
+    <div class="sidebar-profile">
+      <div class="sidebar-profile-row">
+        <span class="profile-avatar" aria-hidden="true">{{ initials() }}</span>
         <div class="min-w-0">
-          <p class="truncate text-sm font-semibold text-snow">{{ auth.user()?.fullName }}</p>
-          <p class="truncate text-xs text-mist/80">{{ auth.user()?.email }}</p>
+          <p>{{ auth.user()?.fullName }}</p>
+          <p>{{ auth.user()?.email }}</p>
         </div>
       </div>
-      <button type="button" class="btn btn-ghost-light btn-block mt-4 !min-h-10" (click)="logout()" [disabled]="loggingOut()">Cerrar sesión</button>
+      <button type="button" class="btn" (click)="logout()" [disabled]="loggingOut()">
+        <app-icon name="logout" />Cerrar sesión
+      </button>
     </div>
   </aside>
-
-  <main class="min-w-0 px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
-    @if (planBanner(); as b) {
-      <div class="notice mx-auto mb-8 max-w-5xl flex-wrap items-center justify-between"
-           [class]="b.tone === 'danger' ? 'notice-error' : b.tone === 'warning' ? 'notice-warning' : 'notice-info'" role="status">
-        <span>{{ b.text }}</span>
-        <a routerLink="/panel/plan" class="font-semibold underline underline-offset-4">{{ b.action }}</a>
-      </div>
-    }
-    <router-outlet />
-  </main>
+  <div class="workspace-body">
+    <div class="workspace-topbar">
+      <p class="workspace-context">
+        <strong>Nuvyra Dashboard</strong><span class="context-divider">/</span
+        ><span class="context-name">{{ currentSection() }}</span>
+      </p>
+      <a class="btn btn-secondary" routerLink="/panel/plan"><app-icon name="wallet" />Mi plan</a>
+    </div>
+    <main id="panel-contenido" class="workspace-main">
+      @if (planBanner(); as b) {
+        <div
+          class="notice mx-auto mb-7 max-w-6xl flex-wrap items-center justify-between"
+          [class]="
+            b.tone === 'danger'
+              ? 'notice-error'
+              : b.tone === 'warning'
+                ? 'notice-warning'
+                : 'notice-info'
+          "
+          role="status"
+        >
+          <span>{{ b.text }}</span
+          ><a routerLink="/panel/plan" class="font-semibold underline underline-offset-4">{{
+            b.action
+          }}</a>
+        </div>
+      }
+      <router-outlet />
+    </main>
+  </div>
 </div>

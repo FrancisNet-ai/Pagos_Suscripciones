@@ -1,8 +1,18 @@
+import { IconComponent } from '../../shared/components/icon.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, combineLatest, debounceTime, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
 import { ApiError } from '../../core/services/api-error';
 import { Page } from '../../core/services/page';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
@@ -10,14 +20,24 @@ import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { FILTERS, STATUS_LABELS, availabilityLabel, typeLabel } from './product-labels';
 import { Product, ProductFilter, ProductsApi } from './products.api';
 
-type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; page: Page<Product> };
+type State =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; page: Page<Product> };
 
 const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-products-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, StatusBadgeComponent, SolesPipe, DurationPipe],
+  imports: [
+    IconComponent,
+    ReactiveFormsModule,
+    RouterLink,
+    StatusBadgeComponent,
+    SolesPipe,
+    DurationPipe,
+  ],
   templateUrl: './products-list.page.html',
 })
 export class ProductsListPage {
@@ -49,7 +69,9 @@ export class ProductsListPage {
         switchMap(([query, filter, page]) =>
           this.api.list({ query, filter, page, size: PAGE_SIZE }).pipe(
             map((result): State => ({ status: 'ready', page: result })),
-            catchError((e: unknown) => of<State>({ status: 'error', message: ApiError.from(e).message })),
+            catchError((e: unknown) =>
+              of<State>({ status: 'error', message: ApiError.from(e).message }),
+            ),
           ),
         ),
         takeUntilDestroyed(),

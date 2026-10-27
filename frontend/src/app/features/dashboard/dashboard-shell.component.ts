@@ -1,10 +1,19 @@
 import { A11yModule } from '@angular/cdk/a11y';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  viewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
+import { IconComponent } from '../../shared/components/icon.component';
 import { formatDate } from '../billing/billing.api';
 
 interface NavChild {
@@ -15,6 +24,7 @@ interface NavChild {
 }
 
 interface NavItem {
+  icon: string;
   label: string;
   route?: string;
   children?: NavChild[];
@@ -23,19 +33,33 @@ interface NavItem {
 @Component({
   selector: 'app-dashboard-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, BrandMarkComponent, A11yModule],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    BrandMarkComponent,
+    A11yModule,
+    IconComponent,
+  ],
   templateUrl: './dashboard-shell.component.html',
 })
 export class DashboardShellComponent {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly menuOpen = signal(false);
+  private readonly menuTrigger = viewChild<ElementRef<HTMLButtonElement>>('menuTrigger');
+
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+    this.menuTrigger()?.nativeElement.focus();
+  }
   protected readonly loggingOut = signal(false);
 
   protected readonly nav: NavItem[] = [
-    { label: 'Inicio', route: '/panel' },
-    { label: 'Productos', route: '/panel/productos' },
+    { icon: 'grid', label: 'Inicio', route: '/panel' },
+    { icon: 'box', label: 'Productos', route: '/panel/productos' },
     {
+      icon: 'users',
       label: 'Clientes',
       children: [
         { label: 'Todos', route: '/panel/clientes' },
@@ -44,6 +68,7 @@ export class DashboardShellComponent {
       ],
     },
     {
+      icon: 'wallet',
       label: 'Ventas y pagos',
       children: [
         { label: 'Pedidos', route: '/panel/ventas' },
@@ -52,14 +77,20 @@ export class DashboardShellComponent {
       ],
     },
     {
+      icon: 'renew',
       label: 'Suscripciones y renovaciones',
       children: [
         { label: 'Suscripciones', route: '/panel/suscripciones' },
-        { label: 'Próximos vencimientos', route: '/panel/suscripciones', queryParams: { filtro: 'EXPIRING' } },
+        {
+          label: 'Próximos vencimientos',
+          route: '/panel/suscripciones',
+          queryParams: { filtro: 'EXPIRING' },
+        },
         { label: 'Renovaciones', route: '/panel/renovaciones' },
       ],
     },
     {
+      icon: 'settings',
       label: 'Configuración',
       children: [
         { label: 'Datos del negocio', route: '/panel/configuracion/negocio' },
@@ -73,20 +104,49 @@ export class DashboardShellComponent {
   ];
 
   /** Aviso persistente sobre el plan SaaS (sin plan, en gracia o por vencer). */
-  protected readonly planBanner = computed<{ tone: 'danger' | 'warning' | 'info'; text: string; action: string } | null>(() => {
+  protected readonly planBanner = computed<{
+    tone: 'danger' | 'warning' | 'info';
+    text: string;
+    action: string;
+  } | null>(() => {
     const access = this.auth.business()?.access;
     if (!access || this.url().startsWith('/panel/plan')) return null;
-    if (access.block === 'SUSPENDED') return { tone: 'danger', text: access.message ?? '', action: 'Ver detalles' };
-    if (!access.active) return { tone: 'warning', text: `${access.message ?? ''} Mientras tanto, el panel está en modo de solo lectura.`, action: 'Ir a Mi plan' };
+    if (access.block === 'SUSPENDED')
+      return { tone: 'danger', text: access.message ?? '', action: 'Ver detalles' };
+    if (!access.active)
+      return {
+        tone: 'warning',
+        text: `${access.message ?? ''} Mientras tanto, el panel está en modo de solo lectura.`,
+        action: 'Ir a Mi plan',
+      };
     if (access.subscriptionStatus === 'PAST_DUE') {
-      return { tone: 'warning', text: `Tu plan venció. Puedes seguir vendiendo hasta el ${formatDate(access.usableUntil)}.`, action: 'Renovar' };
+      return {
+        tone: 'warning',
+        text: `Tu plan venció. Puedes seguir vendiendo hasta el ${formatDate(access.usableUntil)}.`,
+        action: 'Renovar',
+      };
     }
-    const days = access.expiresAt ? Math.ceil((new Date(access.expiresAt).getTime() - Date.now()) / 86_400_000) : null;
+    const days = access.expiresAt
+      ? Math.ceil((new Date(access.expiresAt).getTime() - Date.now()) / 86_400_000)
+      : null;
     if (days !== null && days <= 7) {
-      return { tone: 'info', text: `Tu plan ${access.planName ?? ''} vence el ${formatDate(access.expiresAt)}.`, action: 'Renovar' };
+      return {
+        tone: 'info',
+        text: `Tu plan ${access.planName ?? ''} vence el ${formatDate(access.expiresAt)}.`,
+        action: 'Renovar',
+      };
     }
     return null;
   });
+
+  protected readonly currentSection = computed(
+    () =>
+      this.nav.find((item) =>
+        item.route
+          ? this.url() === item.route
+          : item.children?.some((child) => child.route && this.url().startsWith(child.route)),
+      )?.label ?? 'Tu negocio',
+  );
 
   protected hasRoutes(item: NavItem): boolean {
     return item.children?.some((c) => c.route) ?? false;
@@ -100,16 +160,24 @@ export class DashboardShellComponent {
 
   constructor() {
     this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd), takeUntilDestroyed())
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
       .subscribe((e) => {
-        this.menuOpen.set(false);
+        if (this.menuOpen()) this.closeMenu();
         this.url.set(e.urlAfterRedirects);
       });
   }
 
   protected initials(): string {
     const name = this.auth.user()?.fullName ?? '';
-    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('');
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]!.toUpperCase())
+      .join('');
   }
 
   protected logout(): void {
