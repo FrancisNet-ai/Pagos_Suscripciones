@@ -39,6 +39,15 @@ export interface ManualSubscriptionPayload {
   notes: string | null;
 }
 
+export interface RenewalHistoryItem {
+  id: string;
+  orderId: string;
+  previousExpiresAt: string;
+  newExpiresAt: string;
+  amount: number;
+  confirmedAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SubscriptionsApi {
   private readonly http = inject(HttpClient);
@@ -59,6 +68,10 @@ export class SubscriptionsApi {
 
   releaseCapacity(id: string): Observable<Subscription> {
     return this.http.post<Subscription>(`/api/v1/subscriptions/${id}/release-capacity`, {});
+  }
+
+  renewals(id: string, page = 0): Observable<Page<RenewalHistoryItem>> {
+    return this.http.get<Page<RenewalHistoryItem>>(`/api/v1/subscriptions/${id}/renewals`, { params: { page, size: 10 } });
   }
 }
 

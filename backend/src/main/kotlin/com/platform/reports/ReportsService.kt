@@ -190,15 +190,15 @@ class ReportsService(
 
     private fun renewalStats(businessId: UUID, from: Instant, to: Instant): RenewalStats {
         val byStatus = jdbc.query(
-            "select status, count(*) from renewal_requests where business_id = ? and cycle_expires_at >= ? and cycle_expires_at < ? group by status",
-            { rs, _ -> rs.getString(1) to rs.getLong(2) }, businessId, ts(from), ts(to),
+            "select status, response, count(*) from renewal_requests where business_id = ? and cycle_expires_at >= ? and cycle_expires_at < ? group by status, response",
+            { rs, _ -> "${rs.getString(1)}:${rs.getString(2)}" to rs.getLong(3) }, businessId, ts(from), ts(to),
         ).toMap()
         return RenewalStats(
             confirmed = paidRenewals(businessId, from, to),
-            accepted = (byStatus["AWAITING_PAYMENT"] ?: 0) + (byStatus["COMPLETED"] ?: 0),
-            declined = byStatus["DECLINED"] ?: 0,
-            noResponse = byStatus["EXPIRED"] ?: 0,
-            pending = byStatus["OPEN"] ?: 0,
+            accepted = byStatus.filterKeys { it.endsWith(":ACCEPTED") }.values.sum(),
+            declined = byStatus["DECLINED:DECLINED"] ?: 0,
+            noResponse = byStatus["EXPIRED:NONE"] ?: 0,
+            pending = byStatus["OPEN:NONE"] ?: 0,
         )
     }
 

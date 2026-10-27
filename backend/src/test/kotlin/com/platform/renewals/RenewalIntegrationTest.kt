@@ -27,6 +27,7 @@ class RenewalIntegrationTest : IntegrationTest() {
     @Autowired lateinit var job: RenewalJob
     @Autowired lateinit var expirationJob: SubscriptionExpirationJob
     @Autowired lateinit var tokens: RenewalTokens
+    @Autowired lateinit var service: RenewalService
     lateinit var fx: StoreFixture
 
     @BeforeEach
@@ -61,6 +62,17 @@ class RenewalIntegrationTest : IntegrationTest() {
         mockMvc.perform(post("/api/v1/payments/$paymentId/verify").with(csrf()).cookie(seller)).andExpect(status().isOk)
     }
 
+    private fun grantConsent(sub: String) {
+        jdbc.update("""insert into customer_consents (business_id, customer_id, purpose, granted, source, policy_version, created_at)
+            select business_id, customer_id, 'RENEWAL_REMINDERS', true, 'STOREFRONT', 'v1', now()
+            from customer_subscriptions where id = ?::uuid""", sub)
+    }
+
+    private fun pastGrace(sub: String) {
+        jdbc.update("update customer_subscriptions set expires_at = now() - interval '4 days' where id = ?::uuid", sub)
+        jdbc.update("update renewal_requests set cycle_expires_at = now() - interval '4 days', grace_expires_at = now() - interval '1 day' where subscription_id = ?::uuid", sub)
+    }
+
     @Test
     fun `crea una solicitud por ciclo con sus avisos, sin duplicar`() {
         val store = fx.create(registerSeller())
@@ -79,12 +91,13 @@ class RenewalIntegrationTest : IntegrationTest() {
     fun `el aviso manual usa el numero del cliente y un enlace sin datos personales`() {
         val store = fx.create(registerSeller())
         val sub = activeSubscription(store, "911000003", 2)
+        grantConsent(sub)
         job.openDueRequests()
 
         val body = mockMvc.perform(get("/api/v1/renewals/notifications").cookie(store.seller))
             .andExpect(jsonPath("$.totalItems").value(1))
             .andExpect(jsonPath("$.items[0].typeLabel").value("Recordatorio previo"))
-            .andExpect(jsonPath("$.items[0].consent").value(false))
+            .andExpect(jsonPath("$.items[0].consent").value(true))
             .andReturn().response.contentAsString
         val url = Regex("\"whatsappUrl\":\"([^\"]+)\"").find(body)!!.groupValues[1]
         assertThat(url).startsWith("https://wa.me/51911000003?text=")
@@ -181,7 +194,7 @@ class RenewalIntegrationTest : IntegrationTest() {
         job.openDueRequests()
         respond(tokenOf(sub), "ACCEPTED")
         jdbc.update("update customer_subscriptions set expires_at = now() - interval '4 days' where id = ?::uuid", sub)
-        jdbc.update("update renewal_requests set cycle_expires_at = now() - interval '4 days' where subscription_id = ?::uuid", sub)
+        jdbc.update("update renewal_requests set cycle_expires_at = now() - interval '4 days', grace_expires_at = now() - interval '1 day' where subscription_id = ?::uuid", sub)
 
         assertThat(job.expireStale()).isGreaterThanOrEqualTo(1)
         assertThat(job.expireStale()).isZero()
@@ -189,7 +202,11 @@ class RenewalIntegrationTest : IntegrationTest() {
         mockMvc.perform(get("/api/v1/subscriptions/$sub").cookie(store.seller))
             .andExpect(jsonPath("$.status").value("EXPIRED"))
             .andExpect(jsonPath("$.capacityStatus").value("RELEASE_PENDING"))
-        mockMvc.perform(get("/api/v1/renewals").cookie(store.seller).param("bucket", "NO_RESPONSE")).andExpect(jsonPath("$.totalItems").value(1))
+        mockMvc.perform(get("/api/v1/renewals").cookie(store.seller).param("bucket", "NO_RESPONSE")).andExpect(jsonPath("$.totalItems").value(0))
+        mockMvc.perform(get("/api/v1/renewals").cookie(store.seller).param("bucket", "ACCEPTED")).andExpect(jsonPath("$.totalItems").value(1))
+        mockMvc.perform(get("/api/v1/renewals/overview").cookie(store.seller)).andExpect(jsonPath("$.noResponse").value(0))
+        mockMvc.perform(get("/api/v1/reports/sales").cookie(store.seller))
+            .andExpect(jsonPath("$.renewals.accepted").value(1)).andExpect(jsonPath("$.renewals.noResponse").value(0))
     }
 
     @Test
@@ -247,4 +264,154 @@ class RenewalIntegrationTest : IntegrationTest() {
         val types = jdbc.queryForList("select notification_type from renewal_notifications where renewal_request_id = ?", String::class.java, requestOf(sub))
         assertThat(types).containsExactly("REMINDER_DUE_DAY")
     }
+    @Test
+    fun `el plazo se aplica aunque el trabajo programado todavia no se ejecute`() {
+        val store = fx.create(registerSeller(), capacity = 1)
+        val sub = activeSubscription(store, "911000012", 1)
+        job.openDueRequests()
+        val token = tokenOf(sub)
+        val orderToken = fx.idFrom(renewalOrder(token).andReturn().response.contentAsString, "publicToken")
+        pastGrace(sub)
+        mockMvc.perform(get("/api/v1/public/renewals/$token"))
+            .andExpect(jsonPath("$.canRespond").value(false)).andExpect(jsonPath("$.canPay").value(false))
+        respond(token, "DECLINED").andExpect(status().isConflict)
+        renewalOrder(token).andExpect(status().isConflict)
+        fx.report(orderToken, reference = "LATE0001").andExpect(status().isConflict)
+        assertThat(jdbc.queryForObject("select status from customer_subscriptions where id = ?::uuid", String::class.java, sub)).isEqualTo("RENEWAL_PENDING")
+    }
+
+    @Test
+    fun `un pago reportado conserva el cupo hasta que el vendedor lo revise incluso pasada la gracia`() {
+        val store = fx.create(registerSeller(), capacity = 1)
+        val sub = activeSubscription(store, "911000013", 1)
+        job.openDueRequests()
+        val token = tokenOf(sub)
+        val orderToken = fx.idFrom(renewalOrder(token).andReturn().response.contentAsString, "publicToken")
+        fx.report(orderToken, reference = "REVIEW01").andExpect(status().isOk)
+        respond(token, "DECLINED").andExpect(status().isConflict).andExpect(jsonPath("$.code").value("RENEWAL_PAYMENT_UNDER_REVIEW"))
+        pastGrace(sub)
+        service.expire(requestOf(sub))
+        mockMvc.perform(get("/api/v1/subscriptions/$sub").cookie(store.seller))
+            .andExpect(jsonPath("$.capacityStatus").value("OCCUPIED"))
+        assertThat(jdbc.queryForObject("select status from renewal_requests where id = ?", String::class.java, requestOf(sub))).isEqualTo("AWAITING_PAYMENT")
+        verifyLatest(store.seller)
+        mockMvc.perform(get("/api/v1/subscriptions/$sub").cookie(store.seller)).andExpect(jsonPath("$.status").value("ACTIVE"))
+    }
+
+    @Test
+    fun `el trabajo recupera vencimientos que ocurrieron mientras el servidor estuvo detenido`() {
+        val store = fx.create(registerSeller())
+        val sub = activeSubscription(store, "911000014", 0)
+        jdbc.update("update customer_subscriptions set expires_at = now() - interval '1 hour' where id = ?::uuid", sub)
+        expirationJob.expireOverdue()
+        assertThat(service.openRequest(UUID.fromString(sub))).isTrue()
+        assertThat(service.openRequest(UUID.fromString(sub))).isFalse()
+        mockMvc.perform(get("/api/v1/public/renewals/${tokenOf(sub)}")).andExpect(jsonPath("$.canPay").value(true))
+    }
+
+    @Test
+    fun `abrir solicitudes concurrentemente no duplica el ciclo ni sus avisos`() {
+        val store = fx.create(registerSeller())
+        val sub = activeSubscription(store, "911000015", 1)
+        val pool = java.util.concurrent.Executors.newFixedThreadPool(4)
+        val start = java.util.concurrent.CountDownLatch(1)
+        try {
+            val futures = (1..4).map { pool.submit<Boolean> { start.await(); service.openRequest(UUID.fromString(sub)) } }
+            start.countDown()
+            assertThat(futures.count { it.get(30, java.util.concurrent.TimeUnit.SECONDS) }).isEqualTo(1)
+        } finally { pool.shutdownNow() }
+        assertThat(jdbc.queryForObject("select count(*) from renewal_requests where subscription_id = ?::uuid", Int::class.java, sub)).isEqualTo(1)
+        assertThat(jdbc.queryForObject("select count(*) from renewal_notifications where renewal_request_id = ?", Int::class.java, requestOf(sub))).isEqualTo(2)
+    }
+
+    @Test
+    fun `una suscripcion cancelada no puede reactivarse con su enlace ni con un pago reportado`() {
+        val store = fx.create(registerSeller(), capacity = 1)
+        val sub = activeSubscription(store, "911000016", 1)
+        job.openDueRequests()
+        val token = tokenOf(sub)
+        val orderToken = fx.idFrom(renewalOrder(token).andReturn().response.contentAsString, "publicToken")
+        fx.report(orderToken, reference = "CANCEL01").andExpect(status().isOk)
+        mockMvc.perform(post("/api/v1/subscriptions/$sub/cancel").with(csrf()).cookie(store.seller)
+            .contentType(MediaType.APPLICATION_JSON).content("""{"reason":"Cancelada por el vendedor"}""")).andExpect(status().isOk)
+        mockMvc.perform(get("/api/v1/public/renewals/$token")).andExpect(jsonPath("$.canPay").value(false))
+        renewalOrder(token).andExpect(status().isConflict)
+        val (_, paymentId) = fx.latestPaymentId(store.seller)
+        mockMvc.perform(post("/api/v1/payments/$paymentId/verify").with(csrf()).cookie(store.seller))
+            .andExpect(status().isConflict).andExpect(jsonPath("$.code").value("RENEWAL_CLOSED"))
+        assertThat(jdbc.queryForObject("select status from customer_payments where id = ?::uuid", String::class.java, paymentId)).isEqualTo("PENDING_VERIFICATION")
+    }
+
+    @Test
+    fun `sin consentimiento no se entrega enlace de whatsapp ni se permite confirmar envio`() {
+        val store = fx.create(registerSeller())
+        val sub = activeSubscription(store, "911000017", 2)
+        job.openDueRequests()
+        val body = mockMvc.perform(get("/api/v1/renewals/notifications").cookie(store.seller))
+            .andExpect(jsonPath("$.items[0].consent").value(false))
+            .andExpect(jsonPath("$.items[0].whatsappUrl").isEmpty).andReturn().response.contentAsString
+        val id = fx.idFrom(body)
+        mockMvc.perform(post("/api/v1/renewals/notifications/$id/sent").with(csrf()).cookie(store.seller))
+            .andExpect(status().isConflict).andExpect(jsonPath("$.code").value("REMINDER_CONSENT_REQUIRED"))
+        grantConsent(sub)
+        mockMvc.perform(post("/api/v1/renewals/notifications/$id/sent").with(csrf()).cookie(store.seller)).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `no se permite confirmar un aviso que aun no corresponde enviar`() {
+        val store = fx.create(registerSeller())
+        val sub = activeSubscription(store, "911000018", 2)
+        grantConsent(sub)
+        job.openDueRequests()
+        val id = jdbc.queryForObject("select id from renewal_notifications where renewal_request_id = ? and notification_type = 'REMINDER_DUE_DAY'", UUID::class.java, requestOf(sub))!!
+        mockMvc.perform(post("/api/v1/renewals/notifications/$id/sent").with(csrf()).cookie(store.seller))
+            .andExpect(status().isConflict).andExpect(jsonPath("$.code").value("NOTIFICATION_NOT_DUE"))
+    }
+
+    @Test
+    fun `historial de renovaciones paginado con aislamiento entre vendedores`() {
+        val store = fx.create(registerSeller())
+        val sub = activeSubscription(store, "911000019", 1)
+        job.openDueRequests()
+        val orderToken = fx.idFrom(renewalOrder(tokenOf(sub)).andReturn().response.contentAsString, "publicToken")
+        fx.report(orderToken, reference = "HISTORY1").andExpect(status().isOk)
+        verifyLatest(store.seller)
+        mockMvc.perform(get("/api/v1/subscriptions/$sub/renewals").cookie(store.seller).param("size", "1"))
+            .andExpect(status().isOk).andExpect(jsonPath("$.totalItems").value(1))
+            .andExpect(jsonPath("$.items[0].amount").value(15.0))
+        mockMvc.perform(get("/api/v1/subscriptions/$sub/renewals").cookie(registerSeller())).andExpect(status().isNotFound)
+        mockMvc.perform(get("/api/v1/subscriptions/$sub/renewals")).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `cambiar la gracia no modifica el plazo ya ofrecido a un cliente`() {
+        val store = fx.create(registerSeller())
+        val sub = activeSubscription(store, "911000020", 1)
+        jdbc.update("update customer_subscriptions set expires_at = now() - interval '1 day' where id = ?::uuid", sub)
+        service.openRequest(UUID.fromString(sub))
+        val requestId = requestOf(sub)
+        val deadline = jdbc.queryForObject("select grace_expires_at from renewal_requests where id = ?", java.sql.Timestamp::class.java, requestId)
+        mockMvc.perform(put("/api/v1/renewals/settings").with(csrf()).cookie(store.seller)
+            .contentType(MediaType.APPLICATION_JSON).content("""{"reminderDaysBefore":3,"reminderOnDueDay":true,"renewalGraceDays":0}"""))
+            .andExpect(status().isOk)
+        assertThat(jdbc.queryForObject("select grace_expires_at from renewal_requests where id = ?", java.sql.Timestamp::class.java, requestId)).isEqualTo(deadline)
+        assertThat(service.expire(requestId)).isFalse()
+        mockMvc.perform(get("/api/v1/public/renewals/${tokenOf(sub)}")).andExpect(jsonPath("$.canPay").value(true))
+    }
+
+    @Test
+    fun `una solicitud sin respuesta vencida aparece solo en la bandeja correspondiente`() {
+        val store = fx.create(registerSeller(), capacity = 1)
+        val sub = activeSubscription(store, "911000021", 1)
+        service.openRequest(UUID.fromString(sub))
+        pastGrace(sub)
+        assertThat(service.expire(requestOf(sub))).isTrue()
+        mockMvc.perform(get("/api/v1/renewals").cookie(store.seller).param("bucket", "NO_RESPONSE"))
+            .andExpect(jsonPath("$.totalItems").value(1))
+        mockMvc.perform(get("/api/v1/renewals").cookie(store.seller).param("bucket", "ACCEPTED"))
+            .andExpect(jsonPath("$.totalItems").value(0))
+        mockMvc.perform(get("/api/v1/subscriptions/$sub").cookie(store.seller))
+            .andExpect(jsonPath("$.capacityStatus").value("RELEASE_PENDING"))
+    }
+
 }

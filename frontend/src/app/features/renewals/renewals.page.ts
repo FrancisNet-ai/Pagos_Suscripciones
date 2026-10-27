@@ -1,7 +1,9 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { Observable, Subscription as RxSubscription } from 'rxjs';
+import { Page } from '../../core/services/page';
 import { ApiError } from '../../core/services/api-error';
 import { SubscriptionItemComponent } from '../subscriptions/subscription-item.component';
 import { Subscription, SubscriptionsApi, shortDate } from '../subscriptions/subscriptions.api';
@@ -32,6 +34,12 @@ export class RenewalsPage {
   protected readonly opened = signal<Set<string>>(new Set());
   protected readonly copied = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly page = signal(0);
+  protected readonly totalPages = signal(0);
+  protected readonly totalItems = signal(0);
+  protected readonly loading = signal(false);
+  protected readonly processing = signal<Set<string>>(new Set());
+  private listRequest?: RxSubscription;
 
   protected readonly tabs = computed(() => {
     const o = this.overview();
@@ -47,39 +55,56 @@ export class RenewalsPage {
   });
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.listRequest?.unsubscribe());
     toObservable(this.vista).pipe(takeUntilDestroyed()).subscribe((v) => {
       const valid = ['NOTIFICATIONS', 'UPCOMING', 'ACCEPTED', 'DECLINED', 'NO_RESPONSE', 'COMPLETED', 'RELEASE'];
       this.select(v && valid.includes(v) ? (v as Tab) : 'NOTIFICATIONS');
     });
   }
 
-  protected select(tab: Tab): void {
+  protected select(tab: Tab, page = 0): void {
+    this.listRequest?.unsubscribe();
     this.tab.set(tab);
+    this.page.set(page);
     this.error.set(null);
+    this.loading.set(true);
+    this.totalPages.set(0);
     this.loadOverview();
     if (tab === 'NOTIFICATIONS') {
       this.notifications.set(null);
-      this.api.notifications().subscribe({ next: (p) => this.notifications.set(p.items), error: (e) => this.fail(e) });
+      this.listRequest = this.api.notifications(page).subscribe({ next: (p) => { this.notifications.set(p.items); this.loaded(p); }, error: (e) => this.fail(e) });
     } else if (tab === 'RELEASE') {
       this.releases.set(null);
-      this.subscriptionsApi.list('RELEASE_PENDING', '', 0).subscribe({ next: (p) => this.releases.set(p.items), error: (e) => this.fail(e) });
+      this.listRequest = this.subscriptionsApi.list('RELEASE_PENDING', '', page).subscribe({ next: (p) => { this.releases.set(p.items); this.loaded(p); }, error: (e) => this.fail(e) });
     } else {
       this.renewals.set(null);
-      this.api.list(tab, 0).subscribe({ next: (p) => this.renewals.set(p.items), error: (e) => this.fail(e) });
+      this.listRequest = this.api.list(tab, page).subscribe({ next: (p) => { this.renewals.set(p.items); this.loaded(p); }, error: (e) => this.fail(e) });
     }
+  }
+
+  protected changePage(page: number): void {
+    if (!this.loading() && page >= 0 && page < this.totalPages()) this.select(this.tab(), page);
+  }
+
+  private loaded(p: Page<unknown>): void {
+    this.page.set(p.page);
+    this.totalPages.set(p.totalPages);
+    this.totalItems.set(p.totalItems);
+    this.loading.set(false);
   }
 
   /** Abrir WhatsApp no envía el mensaje: después el vendedor confirma que lo envió. */
   protected open(n: NotificationItem): void {
-    this.opened.update((s) => new Set(s).add(n.id));
+    if (n.consent && n.whatsappUrl) this.opened.update((s) => new Set(s).add(n.id));
   }
 
   protected markSent(n: NotificationItem): void {
-    this.api.markSent(n.id).subscribe({ next: () => this.removeNotification(n.id), error: (e) => this.fail(e) });
+    if (!n.consent || !this.opened().has(n.id) || this.processing().has(n.id)) return;
+    this.process(n, this.api.markSent(n.id));
   }
 
   protected skip(n: NotificationItem): void {
-    this.api.skip(n.id).subscribe({ next: () => this.removeNotification(n.id), error: (e) => this.fail(e) });
+    if (!this.processing().has(n.id)) this.process(n, this.api.skip(n.id));
   }
 
   protected copyLink(r: RenewalSummary): void {
@@ -98,19 +123,32 @@ export class RenewalsPage {
   }
 
   protected onReleased(): void {
-    this.select('RELEASE');
+    this.select('RELEASE', this.releases()?.length === 1 ? Math.max(0, this.page() - 1) : this.page());
   }
 
-  private removeNotification(id: string): void {
-    this.notifications.update((list) => list?.filter((n) => n.id !== id) ?? null);
-    this.loadOverview();
+  private process(n: NotificationItem, request: Observable<unknown>): void {
+    this.processing.update((ids) => new Set(ids).add(n.id));
+    request.subscribe({
+      next: () => {
+        this.processing.update((ids) => { const next = new Set(ids); next.delete(n.id); return next; });
+        if (this.tab() === 'NOTIFICATIONS') {
+          const page = this.notifications()?.length === 1 ? Math.max(0, this.page() - 1) : this.page();
+          this.select('NOTIFICATIONS', page);
+        } else this.loadOverview();
+      },
+      error: (e: unknown) => {
+        this.processing.update((ids) => { const next = new Set(ids); next.delete(n.id); return next; });
+        this.fail(e);
+      },
+    });
   }
 
   private loadOverview(): void {
-    this.api.overview().subscribe((o) => this.overview.set(o));
+    this.api.overview().subscribe({ next: (o) => this.overview.set(o), error: (e: unknown) => this.error.set(ApiError.from(e).message) });
   }
 
   private fail(e: unknown): void {
     this.error.set(ApiError.from(e).message);
+    this.loading.set(false);
   }
 }

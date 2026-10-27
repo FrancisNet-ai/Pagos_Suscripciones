@@ -49,7 +49,7 @@ export interface NotificationItem {
   productName: string;
   scheduledAt: string;
   message: string;
-  whatsappUrl: string;
+  whatsappUrl: string | null;
   consent: boolean;
 }
 
@@ -99,8 +99,8 @@ export class RenewalsApi {
     return this.http.get<Page<RenewalSummary>>('/api/v1/renewals', { params: { bucket, page: String(page), size: '20' } });
   }
 
-  notifications(): Observable<Page<NotificationItem>> {
-    return this.http.get<Page<NotificationItem>>('/api/v1/renewals/notifications');
+  notifications(page = 0): Observable<Page<NotificationItem>> {
+    return this.http.get<Page<NotificationItem>>('/api/v1/renewals/notifications', { params: { page, size: 20 } });
   }
 
   markSent(id: string): Observable<NotificationItem> {

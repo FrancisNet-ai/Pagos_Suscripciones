@@ -36,11 +36,15 @@ import { PublicRenewal, RenewalsApi } from './renewals.api';
 
           @switch (r.status) {
             @case ('OPEN') {
+              @if (r.canRespond) {
               <h2 class="type-h2 mt-8">¿Deseas renovar tu servicio?</h2>
               <div class="mt-5 grid gap-3 sm:grid-cols-2">
                 <button type="button" class="btn btn-store !min-h-12 text-base" [disabled]="busy()" (click)="respond('ACCEPTED')">Sí, renovar</button>
                 <button type="button" class="btn btn-secondary !min-h-12 text-base" [disabled]="busy()" (click)="respond('DECLINED')">No, gracias</button>
               </div>
+              } @else {
+                <p class="notice notice-info mt-8">La renovación ya no admite cambios en línea. Contacta al vendedor si ya transferiste.</p>
+              }
             }
             @case ('AWAITING_PAYMENT') {
               <p class="notice notice-info mt-8" role="status">
@@ -63,11 +67,13 @@ import { PublicRenewal, RenewalsApi } from './renewals.api';
               } @else {
                 <p class="mt-4">Este servicio no está disponible para renovar en línea. Escribe al vendedor.</p>
               }
-              <button type="button" class="link mt-6 text-sm" [disabled]="busy()" (click)="respond('DECLINED')">Prefiero no renovar</button>
+              @if (r.canPay) {
+                <button type="button" class="link mt-6 text-sm" [disabled]="busy()" (click)="respond('DECLINED')">Prefiero no renovar</button>
+              }
             }
             @case ('DECLINED') {
               <p class="mt-8 whitespace-pre-line font-[family-name:var(--font-editorial)] text-xl leading-relaxed text-night">{{ r.farewellMessage }}</p>
-              <p class="mt-4 text-sm">Tu servicio sigue vigente hasta el {{ date(r.currentExpiresAt) }}.</p>
+              <p class="mt-4 text-sm">{{ expired() ? 'El periodo contratado terminó el' : 'Tu servicio sigue vigente hasta el' }} {{ date(r.currentExpiresAt) }}.</p>
             }
             @case ('COMPLETED') {
               <p class="notice notice-success mt-8" role="status">Tu renovación fue confirmada. ¡Gracias por seguir con {{ r.store.businessName }}!</p>
@@ -82,7 +88,7 @@ import { PublicRenewal, RenewalsApi } from './renewals.api';
             @if (r.optedOut) {
               <p>No te enviaremos más avisos de {{ r.store.businessName }}.</p>
             } @else {
-              <button type="button" class="underline underline-offset-2" (click)="optOut()">No quiero recibir más avisos de este negocio</button>
+              <button type="button" class="underline underline-offset-2" [disabled]="busy()" (click)="optOut()">No quiero recibir más avisos de este negocio</button>
             }
           </div>
         } @else {

@@ -9,9 +9,14 @@ import java.util.Locale
 object RenewalMessages {
     private val DATE = DateTimeFormatter.ofPattern("d 'de' MMMM", Locale.forLanguageTag("es-PE"))
 
-    fun reminder(customerName: String, productName: String, businessName: String, expiresAt: Instant, zone: ZoneId, dueToday: Boolean, link: String): String {
+    fun reminder(customerName: String, productName: String, businessName: String, expiresAt: Instant, zone: ZoneId, dueToday: Boolean, link: String, overdue: Boolean = false): String {
         val first = customerName.trim().split(Regex("\\s+")).first()
-        val whenText = if (dueToday) "vence hoy" else "vence el ${DATE.format(expiresAt.atZone(zone))}"
+        val date = DATE.format(expiresAt.atZone(zone))
+        val whenText = when {
+            overdue -> "venció el $date"
+            dueToday -> "vence hoy"
+            else -> "vence el $date"
+        }
         return """
             Hola, $first.
             Te informamos que tu suscripción a $productName de $businessName $whenText.

@@ -54,6 +54,17 @@ class PublicRenewalController(private val service: RenewalService) {
 data class OptOutRequest(val optedOut: Boolean)
 
 @RestController
+@RequestMapping("/api/v1/subscriptions/{id}/renewals")
+@Tag(name = "Renovaciones")
+class RenewalHistoryController(private val service: RenewalService) {
+    @GetMapping
+    @Operation(summary = "Historial paginado de renovaciones cobradas de una suscripción del negocio")
+    fun history(current: CurrentBusiness, @PathVariable id: UUID,
+                @RequestParam(defaultValue = "0") page: Int, @RequestParam(defaultValue = "20") size: Int) =
+        service.history(current.businessId, id, page, size)
+}
+
+@RestController
 @RequestMapping("/api/v1/renewals")
 @Tag(name = "Renovaciones")
 class RenewalController(private val service: RenewalService) {

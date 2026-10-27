@@ -30,6 +30,9 @@ y clientes recurrentes.
 conservado al renovar, avisos antes y el día del vencimiento preparados para enviar por WhatsApp,
 mensaje de despedida, exclusión de avisos, plazo de gracia configurable y métricas de renovación.
 
+La [continuación de Fase 5](docs/fase-5-continuacion.md) refuerza plazos, consentimiento, concurrencia
+e historial, e incorpora pruebas E2E versionadas de escritorio y móvil.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

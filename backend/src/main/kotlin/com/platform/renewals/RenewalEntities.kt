@@ -33,6 +33,7 @@ class RenewalRequest(
     @Column(nullable = false, updatable = false) val cycleExpiresAt: Instant,
     @Column(nullable = false) var tokenHash: String,
     @Column(nullable = false) var tokenExpiresAt: Instant,
+    @Column(nullable = false, updatable = false) val graceExpiresAt: Instant = tokenExpiresAt.minus(java.time.Duration.ofDays(1)),
     @Enumerated(EnumType.STRING) @Column(nullable = false) var response: RenewalResponse = RenewalResponse.NONE,
     @Enumerated(EnumType.STRING) @Column(nullable = false) var status: RenewalStatus = RenewalStatus.OPEN,
     var respondedAt: Instant? = null,
@@ -40,16 +41,19 @@ class RenewalRequest(
     var orderId: UUID? = null,
 ) : VersionedEntity()
 
-enum class RenewalBucket(val statuses: Set<RenewalStatus>) {
-    UPCOMING(setOf(RenewalStatus.OPEN)),
-    ACCEPTED(setOf(RenewalStatus.AWAITING_PAYMENT)),
-    DECLINED(setOf(RenewalStatus.DECLINED)),
-    NO_RESPONSE(setOf(RenewalStatus.EXPIRED)),
-    COMPLETED(setOf(RenewalStatus.COMPLETED)),
+enum class RenewalBucket(val statuses: Set<RenewalStatus>, val response: RenewalResponse) {
+    UPCOMING(setOf(RenewalStatus.OPEN), RenewalResponse.NONE),
+    ACCEPTED(setOf(RenewalStatus.AWAITING_PAYMENT, RenewalStatus.EXPIRED), RenewalResponse.ACCEPTED),
+    DECLINED(setOf(RenewalStatus.DECLINED), RenewalResponse.DECLINED),
+    NO_RESPONSE(setOf(RenewalStatus.EXPIRED), RenewalResponse.NONE),
+    COMPLETED(setOf(RenewalStatus.COMPLETED), RenewalResponse.ACCEPTED),
 }
 
 interface RenewalRequestRepository : JpaRepository<RenewalRequest, UUID> {
     fun findByTokenHash(tokenHash: String): RenewalRequest?
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from RenewalRequest r where r.tokenHash = :tokenHash")
+    fun lockByTokenHash(tokenHash: String): RenewalRequest?
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): RenewalRequest?
     fun findBySubscriptionIdOrderByCreatedAtDesc(subscriptionId: UUID): List<RenewalRequest>
     /** Bloquea la solicitud: responder y crear el pedido de renovación se serializan. */
@@ -59,16 +63,18 @@ interface RenewalRequestRepository : JpaRepository<RenewalRequest, UUID> {
 
     fun existsBySubscriptionIdAndCycleExpiresAt(subscriptionId: UUID, cycleExpiresAt: Instant): Boolean
 
-    fun findByBusinessIdAndStatusInOrderByCycleExpiresAtAsc(businessId: UUID, statuses: Collection<RenewalStatus>, pageable: Pageable): Page<RenewalRequest>
+    fun findByBusinessIdAndStatusInAndResponseOrderByCycleExpiresAtAsc(businessId: UUID, statuses: Collection<RenewalStatus>, response: RenewalResponse, pageable: Pageable): Page<RenewalRequest>
 
     fun countByBusinessIdAndStatus(businessId: UUID, status: RenewalStatus): Long
+    fun countByBusinessIdAndStatusInAndResponse(businessId: UUID, statuses: Collection<RenewalStatus>, response: RenewalResponse): Long
 
     /** Solicitudes abiertas o aceptadas cuyo plazo de gracia terminó sin pago. */
     @Query(
         value = """
-            select r.id from renewal_requests r join businesses b on b.id = r.business_id
+            select r.id from renewal_requests r
             where r.status in ('OPEN', 'AWAITING_PAYMENT')
-              and r.cycle_expires_at + make_interval(days => b.renewal_grace_days) < cast(:now as timestamptz)
+              and r.grace_expires_at <= cast(:now as timestamptz)
+              and not exists (select 1 from orders o where o.id = r.order_id and o.status = 'PAYMENT_REPORTED')
             order by r.cycle_expires_at limit :limit
         """,
         nativeQuery = true,
@@ -102,6 +108,9 @@ class RenewalNotification(
 ) : VersionedEntity()
 
 interface RenewalNotificationRepository : JpaRepository<RenewalNotification, UUID> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select n from RenewalNotification n where n.id = :id and n.businessId = :businessId")
+    fun lockByIdAndBusinessId(id: UUID, businessId: UUID): RenewalNotification?
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): RenewalNotification?
     fun findByRenewalRequestId(requestId: UUID): List<RenewalNotification>
     fun findByBusinessIdAndDeliveryStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
@@ -127,4 +136,5 @@ class SubscriptionRenewal(
 
 interface SubscriptionRenewalRepository : JpaRepository<SubscriptionRenewal, UUID> {
     fun findBySubscriptionIdOrderByCreatedAtDesc(subscriptionId: UUID): List<SubscriptionRenewal>
+    fun findByBusinessIdAndSubscriptionIdOrderByCreatedAtDesc(businessId: UUID, subscriptionId: UUID, pageable: Pageable): Page<SubscriptionRenewal>
 }

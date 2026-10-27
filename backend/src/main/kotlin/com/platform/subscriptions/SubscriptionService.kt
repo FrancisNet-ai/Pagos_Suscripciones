@@ -81,7 +81,7 @@ class SubscriptionService(
     /** Cancela el servicio. El cupo queda pendiente de liberar hasta que se retire el acceso. */
     @Transactional
     fun cancel(businessId: UUID, actorId: UUID, subscriptionId: UUID, reason: String): SubscriptionResponse {
-        val s = load(businessId, subscriptionId)
+        val s = lockEntity(businessId, subscriptionId)
         if (s.status !in setOf(SubscriptionStatus.PENDING_ACTIVATION, SubscriptionStatus.ACTIVE, SubscriptionStatus.RENEWAL_PENDING, SubscriptionStatus.EXPIRED)) {
             throw ApiException.conflict("SUBSCRIPTION_CLOSED", "Esta suscripción ya está cerrada.")
         }
@@ -96,7 +96,7 @@ class SubscriptionService(
     /** El vendedor confirma que retiró el acceso en el servicio externo: el cupo vuelve a estar disponible. */
     @Transactional
     fun confirmAccessRemoved(businessId: UUID, actorId: UUID, subscriptionId: UUID): SubscriptionResponse {
-        val s = load(businessId, subscriptionId)
+        val s = lockEntity(businessId, subscriptionId)
         if (s.status !in setOf(SubscriptionStatus.EXPIRED, SubscriptionStatus.CANCELLED)) {
             throw ApiException.conflict("ACCESS_STILL_VALID", "Solo puedes liberar el cupo de suscripciones vencidas o canceladas.")
         }
@@ -201,7 +201,7 @@ class SubscriptionService(
     /** Marca como vencidas las activas cuyo periodo terminó. El cupo NO se libera automáticamente. */
     @Transactional
     fun expire(subscriptionId: UUID): Boolean {
-        val s = subscriptions.findById(subscriptionId).orElse(null) ?: return false
+        val s = subscriptions.lockById(subscriptionId) ?: return false
         if (s.status != SubscriptionStatus.ACTIVE || s.expiresAt?.isAfter(clock.instant()) != false) return false
         s.status = SubscriptionStatus.EXPIRED
         capacity.markReleasePending(s.businessId, s.id)
@@ -256,6 +256,11 @@ class SubscriptionService(
 
     @Transactional(readOnly = true)
     fun entity(businessId: UUID, subscriptionId: UUID): CustomerSubscription = load(businessId, subscriptionId)
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun lockEntity(businessId: UUID, subscriptionId: UUID): CustomerSubscription =
+        subscriptions.lockById(subscriptionId)?.takeIf { it.businessId == businessId }
+            ?: throw ApiException.notFound("La suscripción no existe.")
 
     private fun load(businessId: UUID, id: UUID) =
         subscriptions.findByIdAndBusinessId(id, businessId) ?: throw ApiException.notFound("La suscripción no existe.")

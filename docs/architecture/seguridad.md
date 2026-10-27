@@ -25,5 +25,5 @@
 * Minimización: al comprador solo se le pide nombre y celular.
 * Consentimientos registrados con finalidad, origen, versión de política y fecha (`customer_consents`).
 * Comunicaciones comerciales solo con autorización y con opción de exclusión (desde el enlace de
-  renovación o por el vendedor); los avisos a clientes sin autorización se marcan y no se envían solos.
+  renovación o por el vendedor); los avisos sin autorización vigente no incluyen enlace de WhatsApp y no admiten confirmación de envío.
 * Política de retención y eliminación documentada antes de producción (pendiente en el backlog).

@@ -24,6 +24,7 @@ import com.platform.orders.OrderStatus
 import com.platform.payments.BusinessPaymentMethodRepository
 import com.platform.payments.PaymentMethodService
 import com.platform.products.ProductRepository
+import com.platform.products.ProductType
 import com.platform.products.PublicationStatus
 import com.platform.storefront.CheckoutService
 import com.platform.storefront.CreateOrderResponse
@@ -80,21 +81,25 @@ class RenewalService(
     fun dueSubscriptions(limit: Int): List<UUID> = jdbc.queryForList(
         """
         select s.id from customer_subscriptions s join businesses b on b.id = s.business_id
-        where s.status = 'ACTIVE' and b.status = 'ACTIVE'
+        where s.status in ('ACTIVE', 'EXPIRED') and b.status = 'ACTIVE'
+          and s.expires_at + make_interval(days => b.renewal_grace_days) >= cast(? as timestamptz)
           and s.expires_at <= cast(? as timestamptz) + make_interval(days => greatest(b.reminder_days_before, 1))
           and not exists (select 1 from renewal_requests r where r.subscription_id = s.id and r.cycle_expires_at = s.expires_at)
         order by s.expires_at limit ?
         """.trimIndent(),
-        UUID::class.java, Timestamp.from(clock.instant()), limit,
+        UUID::class.java, Timestamp.from(clock.instant()), Timestamp.from(clock.instant()), limit,
     ).filterNotNull()
 
     /** Crea la solicitud y sus avisos. Idempotente: un ciclo nunca genera dos solicitudes. */
     @Transactional
     fun openRequest(subscriptionId: UUID): Boolean {
-        val s = subscriptionRepo.findById(subscriptionId).orElse(null) ?: return false
-        if (s.status != SubscriptionStatus.ACTIVE || requests.existsBySubscriptionIdAndCycleExpiresAt(s.id, s.expiresAt!!)) return false
+        val s = subscriptionRepo.lockById(subscriptionId) ?: return false
+        if (s.status !in setOf(SubscriptionStatus.ACTIVE, SubscriptionStatus.EXPIRED) || s.expiresAt == null ||
+            requests.existsBySubscriptionIdAndCycleExpiresAt(s.id, s.expiresAt!!)) return false
         val business = businesses.findById(s.businessId).orElseThrow()
         val now = clock.instant()
+        if (business.status != BusinessStatus.ACTIVE || !withinGrace(s.expiresAt!!, business) ||
+            s.expiresAt!!.isAfter(now.plus(Duration.ofDays(maxOf(business.reminderDaysBefore, 1).toLong())))) return false
         val request = RenewalRequest(
             businessId = s.businessId, subscriptionId = s.id, customerId = s.customerId, productId = s.productId,
             cycleExpiresAt = s.expiresAt!!, tokenHash = "pending",
@@ -118,11 +123,12 @@ class RenewalService(
     /** Solicitudes cuyo plazo de gracia terminó sin pago: se cierran y no se retiene el cupo indefinidamente. */
     @Transactional
     fun expire(requestId: UUID): Boolean {
-        val r = requests.findById(requestId).orElse(null) ?: return false
+        val r = requests.lockById(requestId) ?: return false
         if (r.status != RenewalStatus.OPEN && r.status != RenewalStatus.AWAITING_PAYMENT) return false
+        if (clock.instant().isBefore(r.graceExpiresAt) || hasReportedPayment(r)) return false
         r.status = RenewalStatus.EXPIRED
         skipPending(r.id)
-        subscriptions.settleUnrenewed(subscriptions.entity(r.businessId, r.subscriptionId))
+        subscriptions.settleUnrenewed(subscriptions.lockEntity(r.businessId, r.subscriptionId))
         audit.record(AuditActions.RENEWAL_EXPIRED, businessId = r.businessId, entityType = "RENEWAL", entityId = r.id)
         return true
     }
@@ -141,7 +147,11 @@ class RenewalService(
         if (r.status != RenewalStatus.OPEN && !(r.status == RenewalStatus.AWAITING_PAYMENT && response == RenewalResponse.DECLINED)) {
             throw ApiException.conflict("RENEWAL_CLOSED", "Esta solicitud de renovación ya no admite cambios.")
         }
-        val s = subscriptions.entity(r.businessId, r.subscriptionId)
+        val s = subscriptions.lockEntity(r.businessId, r.subscriptionId)
+        requireRenewable(r, s)
+        if (response == RenewalResponse.DECLINED && hasReportedPayment(r)) {
+            throw ApiException.conflict("RENEWAL_PAYMENT_UNDER_REVIEW", "Tu pago está en revisión. Contacta al vendedor antes de cancelar la renovación.")
+        }
         r.response = response
         r.respondedAt = clock.instant()
         when (response) {
@@ -173,6 +183,7 @@ class RenewalService(
         if (r.status != RenewalStatus.AWAITING_PAYMENT) {
             throw ApiException.conflict("RENEWAL_CLOSED", "Esta solicitud de renovación ya no admite pagos.")
         }
+        requireRenewable(r, subscriptions.lockEntity(r.businessId, r.subscriptionId))
         // Si ya hay un pedido abierto, se entrega un enlace nuevo a ese mismo pedido (sin duplicar).
         r.orderId?.let { orders.findById(it).orElse(null) }
             ?.takeIf { it.status == OrderStatus.AWAITING_PAYMENT || it.status == OrderStatus.PAYMENT_REPORTED }
@@ -185,7 +196,7 @@ class RenewalService(
         val business = businesses.findById(r.businessId).orElseThrow()
         if (business.status != BusinessStatus.ACTIVE) throw ApiException.conflict("STORE_NOT_ACCEPTING_ORDERS", "Esta tienda no está recibiendo pagos por el momento.")
         val product = products.findByIdAndBusinessId(r.productId, r.businessId)
-            ?.takeIf { it.publicationStatus != PublicationStatus.ARCHIVED && it.available }
+            ?.takeIf { it.productType == ProductType.SUBSCRIPTION && it.publicationStatus != PublicationStatus.ARCHIVED && it.available }
             ?: throw ApiException.conflict("PRODUCT_UNAVAILABLE", "Este servicio ya no está disponible para renovar. Escribe al vendedor.")
         val method = paymentMethods.findByBusinessIdAndMethod(r.businessId, request.paymentMethod!!)?.takeIf { it.enabled }
             ?: throw ApiException.invalidField("paymentMethod", "Este método de pago no está disponible")
@@ -209,8 +220,14 @@ class RenewalService(
     /** Llamado al verificar el pago de un pedido de renovación: amplía la vigencia y cierra la solicitud. */
     @Transactional(propagation = Propagation.MANDATORY)
     fun completeFromPaidOrder(order: Order) {
-        val r = requests.findById(order.renewalRequestId!!).orElseThrow()
-        val s = subscriptions.entity(order.businessId, r.subscriptionId)
+        val r = requests.lockById(order.renewalRequestId!!) ?: throw ApiException.notFound()
+        val s = subscriptions.lockEntity(order.businessId, r.subscriptionId)
+        // Un pago reportado antes del cierre puede verificarse después de la gracia.
+        // Una solicitud rechazada/cerrada o una suscripción cancelada nunca se reactivan por sorpresa.
+        requireRenewable(r, s, checkDeadline = false)
+        if (r.status != RenewalStatus.AWAITING_PAYMENT || r.orderId != order.id) {
+            throw ApiException.conflict("RENEWAL_CLOSED", "La renovación ya no admite este pago. Revisa la incidencia con el cliente.")
+        }
         val item = orderItems.findByOrderId(order.id).first()
         val (previous, next) = subscriptions.extend(s, item.durationSnapshot ?: s.durationDays, order.totalAmount)
         renewals.save(SubscriptionRenewal(order.businessId, s.id, order.id, r.id, previous, next, order.totalAmount, clock.instant()))
@@ -228,8 +245,8 @@ class RenewalService(
 
     @Transactional(readOnly = true)
     fun list(businessId: UUID, bucket: RenewalBucket, page: Int, size: Int): PageResponse<RenewalSummary> {
-        val result = requests.findByBusinessIdAndStatusInOrderByCycleExpiresAtAsc(
-            businessId, bucket.statuses, PageRequest.of(maxOf(page, 0), size.coerceIn(1, PageResponse.MAX_SIZE)),
+        val result = requests.findByBusinessIdAndStatusInAndResponseOrderByCycleExpiresAtAsc(
+            businessId, bucket.statuses, bucket.response, PageRequest.of(maxOf(page, 0), size.coerceIn(1, PageResponse.MAX_SIZE)),
         )
         val subs = subscriptionRepo.findAllById(result.content.map { it.subscriptionId }.toSet()).associateBy { it.id }
         val custs = customers.findAllById(result.content.map { it.customerId }.toSet()).associateBy { it.id }
@@ -252,8 +269,17 @@ class RenewalService(
 
     @Transactional
     fun markSent(businessId: UUID, actorId: UUID, notificationId: UUID): NotificationItem {
-        val n = notifications.findByIdAndBusinessId(notificationId, businessId) ?: throw ApiException.notFound("El aviso no existe.")
+        val n = notifications.lockByIdAndBusinessId(notificationId, businessId) ?: throw ApiException.notFound("El aviso no existe.")
         if (n.deliveryStatus != DeliveryStatus.PENDING) throw ApiException.conflict("NOTIFICATION_PROCESSED", "Este aviso ya fue procesado.")
+        if (n.scheduledAt.isAfter(clock.instant())) throw ApiException.conflict("NOTIFICATION_NOT_DUE", "Todavía no corresponde enviar este aviso.")
+        if (!canContact(n.customerId)) throw ApiException.conflict("REMINDER_CONSENT_REQUIRED", "No hay autorización vigente para enviar avisos a este cliente.")
+        val r = requests.findById(n.renewalRequestId).orElseThrow()
+        if (n.notificationType != NotificationType.FAREWELL) {
+            requireRenewable(r, subscriptions.entity(businessId, r.subscriptionId))
+            if (r.status !in setOf(RenewalStatus.OPEN, RenewalStatus.AWAITING_PAYMENT)) {
+                throw ApiException.conflict("RENEWAL_CLOSED", "Esta renovación ya está cerrada.")
+            }
+        }
         // Solo el vendedor puede afirmar que lo envió: abrir WhatsApp no garantiza el envío.
         n.deliveryStatus = DeliveryStatus.SENT_MANUALLY
         n.sentAt = clock.instant()
@@ -272,9 +298,9 @@ class RenewalService(
     fun overview(businessId: UUID): RenewalsOverview = RenewalsOverview(
         notificationsDue = notifications.countByBusinessIdAndDeliveryStatusAndScheduledAtLessThanEqual(businessId, DeliveryStatus.PENDING, clock.instant()),
         upcoming = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.OPEN),
-        accepted = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.AWAITING_PAYMENT),
+        accepted = requests.countByBusinessIdAndStatusInAndResponse(businessId, RenewalBucket.ACCEPTED.statuses, RenewalResponse.ACCEPTED),
         declined = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.DECLINED),
-        noResponse = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.EXPIRED),
+        noResponse = requests.countByBusinessIdAndStatusInAndResponse(businessId, RenewalBucket.NO_RESPONSE.statuses, RenewalResponse.NONE),
         completed = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.COMPLETED),
         capacityReleasePending = allocations.countReleasePending(businessId),
     )
@@ -295,6 +321,7 @@ class RenewalService(
     /** Exclusión de avisos: desactiva los pendientes de ese cliente. */
     @Transactional
     fun setOptOut(businessId: UUID, customerId: UUID, optedOut: Boolean, source: String, actorId: UUID?) {
+        customers.findByIdAndBusinessId(customerId, businessId) ?: throw ApiException.notFound("El cliente no existe.")
         val pref = preferences.findByCustomerIdAndChannel(customerId)
             ?: preferences.save(NotificationPreference(businessId, customerId, optedOut, source))
         pref.optedOut = optedOut
@@ -314,11 +341,57 @@ class RenewalService(
     @Transactional(readOnly = true)
     fun historyFor(subscriptionId: UUID): List<SubscriptionRenewal> = renewals.findBySubscriptionIdOrderByCreatedAtDesc(subscriptionId)
 
+    @Transactional(readOnly = true)
+    fun history(businessId: UUID, subscriptionId: UUID, page: Int, size: Int): PageResponse<RenewalHistoryItem> {
+        subscriptions.entity(businessId, subscriptionId)
+        return PageResponse.of(renewals.findByBusinessIdAndSubscriptionIdOrderByCreatedAtDesc(
+            businessId, subscriptionId, PageRequest.of(maxOf(0, page), size.coerceIn(1, PageResponse.MAX_SIZE)),
+        )) { RenewalHistoryItem(it.id, it.orderId, it.previousExpiresAt, it.newExpiresAt, it.amount, it.createdAt) }
+    }
+
+    /** Valida el enlace del pedido aunque el trabajo de expiración aún no se haya ejecutado. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun requirePaymentReport(order: Order) {
+        val r = requests.lockById(order.renewalRequestId!!) ?: throw ApiException.notFound()
+        requireRenewable(r, subscriptions.lockEntity(order.businessId, r.subscriptionId))
+        if (r.status != RenewalStatus.AWAITING_PAYMENT || r.orderId != order.id) {
+            throw ApiException.conflict("RENEWAL_CLOSED", "Esta renovación ya no admite pagos. Contacta al vendedor si ya transferiste.")
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun canReportPayment(order: Order): Boolean {
+        val r = order.renewalRequestId?.let { requests.findById(it).orElse(null) } ?: return false
+        val s = subscriptions.entity(order.businessId, r.subscriptionId)
+        return r.orderId == order.id && r.status == RenewalStatus.AWAITING_PAYMENT &&
+            clock.instant().isBefore(r.graceExpiresAt) &&
+            businesses.findById(r.businessId).orElseThrow().status == BusinessStatus.ACTIVE &&
+            s.status in setOf(SubscriptionStatus.ACTIVE, SubscriptionStatus.EXPIRED, SubscriptionStatus.RENEWAL_PENDING)
+    }
+
     // ---------------------------------------------------------------- utilidades
 
     fun link(requestId: UUID) = "${properties.publicBaseUrl.trimEnd('/')}/renovar/${tokens.tokenFor(requestId)}"
 
     private fun settings(b: Business) = RenewalSettingsResponse(b.reminderDaysBefore, b.reminderOnDueDay, b.renewalGraceDays)
+
+    private fun withinGrace(expiresAt: Instant, business: Business): Boolean =
+        clock.instant().isBefore(expiresAt.plus(Duration.ofDays(business.renewalGraceDays.toLong())))
+
+    private fun hasReportedPayment(r: RenewalRequest): Boolean =
+        r.orderId?.let { orders.findById(it).orElse(null)?.status == OrderStatus.PAYMENT_REPORTED } == true
+
+    private fun requireRenewable(r: RenewalRequest, s: com.platform.subscriptions.CustomerSubscription, checkDeadline: Boolean = true) {
+        val business = businesses.findById(r.businessId).orElseThrow()
+        if (business.status != BusinessStatus.ACTIVE || s.status !in setOf(SubscriptionStatus.ACTIVE, SubscriptionStatus.EXPIRED, SubscriptionStatus.RENEWAL_PENDING) ||
+            (checkDeadline && !clock.instant().isBefore(r.graceExpiresAt))) {
+            throw ApiException.conflict("RENEWAL_CLOSED", "Esta renovación ya no admite cambios. Contacta al vendedor si ya transferiste.")
+        }
+    }
+
+    private fun canContact(customerId: UUID): Boolean = !isOptedOut(customerId) &&
+        consents.findByCustomerIdOrderByCreatedAtDesc(customerId).firstOrNull { it.purpose == ConsentPurpose.RENEWAL_REMINDERS }
+            ?.let { it.granted && it.revokedAt == null } == true
 
     private fun schedule(r: RenewalRequest, type: NotificationType, at: Instant, optedOut: Boolean) {
         if (notifications.existsByRenewalRequestIdAndNotificationType(r.id, type)) return
@@ -334,11 +407,13 @@ class RenewalService(
     }
 
     private fun find(token: String, lock: Boolean = false): RenewalRequest {
-        val r = requests.findByTokenHash(SecureTokens.sha256Hex(token)) ?: throw ApiException.notFound("Este enlace de renovación no es válido.")
+        val hash = SecureTokens.sha256Hex(token)
+        val r = (if (lock) requests.lockByTokenHash(hash) else requests.findByTokenHash(hash))
+            ?: throw ApiException.notFound("Este enlace de renovación no es válido.")
         if (!clock.instant().isBefore(r.tokenExpiresAt)) {
             throw ApiException(org.springframework.http.HttpStatus.GONE, "RENEWAL_LINK_EXPIRED", "Este enlace de renovación venció. Escribe al vendedor para renovar.")
         }
-        return if (lock) requests.lockById(r.id)!! else r
+        return r
     }
 
     private fun describe(r: RenewalRequest): PublicRenewalResponse {
@@ -346,7 +421,8 @@ class RenewalService(
         val s = subscriptions.entity(r.businessId, r.subscriptionId)
         val customer = customers.findById(r.customerId).orElseThrow()
         val product = products.findById(r.productId).orElseThrow()
-        val available = business.status == BusinessStatus.ACTIVE && product.publicationStatus != PublicationStatus.ARCHIVED && product.available
+        val available = business.status == BusinessStatus.ACTIVE && product.productType == ProductType.SUBSCRIPTION && product.publicationStatus != PublicationStatus.ARCHIVED && product.available
+        val renewable = s.status in setOf(SubscriptionStatus.ACTIVE, SubscriptionStatus.EXPIRED, SubscriptionStatus.RENEWAL_PENDING) && clock.instant().isBefore(r.graceExpiresAt)
         return PublicRenewalResponse(
             status = r.status,
             response = r.response,
@@ -356,8 +432,8 @@ class RenewalService(
             durationDays = product.durationDays,
             price = product.price,
             currentExpiresAt = s.expiresAt!!,
-            canRespond = r.status == RenewalStatus.OPEN,
-            canPay = available && (r.status == RenewalStatus.OPEN || r.status == RenewalStatus.AWAITING_PAYMENT),
+            canRespond = renewable && business.status == BusinessStatus.ACTIVE && r.status == RenewalStatus.OPEN,
+            canPay = renewable && available && (r.status == RenewalStatus.OPEN || r.status == RenewalStatus.AWAITING_PAYMENT),
             paymentMethods = if (available) paymentMethodService.enabledMethods(business.id).map { PublicMethod(it.method, it.method.label) } else emptyList(),
             farewellMessage = if (r.status == RenewalStatus.DECLINED) RenewalMessages.farewell(customer.fullName, business.businessName) else null,
             optedOut = isOptedOut(customer.id),
@@ -369,25 +445,27 @@ class RenewalService(
         val s = subscriptionRepo.findById(r.subscriptionId).orElseThrow()
         val c: Customer = customers.findById(n.customerId).orElseThrow()
         val zone = ZoneId.of(business.timeZone)
+        val dueDate = r.cycleExpiresAt.atZone(zone).toLocalDate()
+        val today = clock.instant().atZone(zone).toLocalDate()
         val message = when (n.notificationType) {
             NotificationType.FAREWELL -> RenewalMessages.farewell(c.fullName, business.businessName)
             else -> RenewalMessages.reminder(
                 c.fullName, s.productNameSnapshot, business.businessName, r.cycleExpiresAt, zone,
-                dueToday = n.notificationType == NotificationType.REMINDER_DUE_DAY || r.cycleExpiresAt.atZone(zone).toLocalDate() == clock.instant().atZone(zone).toLocalDate(),
+                dueToday = dueDate == today,
                 link = link(r.id),
+                overdue = dueDate.isBefore(today),
             )
         }
-        val consent = consents.findByCustomerIdOrderByCreatedAtDesc(c.id).firstOrNull { it.purpose == ConsentPurpose.RENEWAL_REMINDERS }
-            ?.let { it.granted && it.revokedAt == null } ?: false
+        val consent = canContact(c.id)
         return NotificationItem(
             id = n.id, type = n.notificationType,
             typeLabel = when (n.notificationType) {
                 NotificationType.REMINDER_BEFORE -> "Recordatorio previo"
-                NotificationType.REMINDER_DUE_DAY -> "Vence hoy"
+                NotificationType.REMINDER_DUE_DAY -> if (dueDate.isBefore(today)) "Vencimiento pendiente de renovar" else "Vence hoy"
                 NotificationType.FAREWELL -> "Despedida"
             },
             customerId = c.id, customerName = c.fullName, customerPhone = c.phone, productName = s.productNameSnapshot,
-            scheduledAt = n.scheduledAt, message = message, whatsappUrl = whatsapp.prepare(c.phone, message).manualUrl!!, consent = consent,
+            scheduledAt = n.scheduledAt, message = message, whatsappUrl = if (consent) whatsapp.prepare(c.phone, message).manualUrl else null, consent = consent,
         )
     }
 }

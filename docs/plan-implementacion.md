@@ -80,6 +80,18 @@ pago de un producto `SUBSCRIPTION` (incluidos los pedidos ya pagados en esta fas
 | Reportes | Renovaciones cobradas del mes en el panel; aceptadas, rechazadas, sin respuesta y pendientes en reportes |
 | Pruebas | Backend 121 (idempotencia del job, cupo conservado, token inválido, exclusión, plazo de gracia, aislamiento); frontend 56; flujo Playwright: avisos → enlace → aceptar y pagar → verificación → renovación; rechazo → despedida |
 
+### Continuación y cierre de pendientes de Fase 5
+
+Se refuerzan los casos límite en [docs/fase-5-continuacion.md](fase-5-continuacion.md):
+plazo de gracia fijado por solicitud (V6), bloqueo al cerrar o cancelar, pagos reportados conservados
+para revisión, recuperación tras reinicios, consentimiento obligatorio para avisos, paginación e
+historial cobrado. Las intenciones aceptadas sin pago se distinguen de quienes no respondieron.
+Los avisos atrasados muestran la fecha real de vencimiento en la zona del negocio.
+
+Validación: backend **133 pruebas** con PostgreSQL/Testcontainers, frontend **64 pruebas**, compilación
+de producción de Angular y empaquetado de Spring Boot. Playwright versionado cubre el checkout y
+la renovación de extremo a extremo en escritorio y móvil. No se han activado integraciones externas.
+
 ## Fase 6 — Comercialización del SaaS
 Planes configurables, suscripción y cobro SaaS con verificación por SUPER_ADMIN, límites por plan,
 bloqueo de funciones sin plan vigente, panel de superadministración, suspensión/reactivación, auditoría.

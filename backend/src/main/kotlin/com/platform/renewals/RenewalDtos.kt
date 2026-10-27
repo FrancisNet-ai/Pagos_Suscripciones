@@ -67,7 +67,7 @@ data class NotificationItem(
     val scheduledAt: Instant,
     val message: String,
     /** Enlace `wa.me`: abre WhatsApp con el texto; el vendedor decide enviarlo. */
-    val whatsappUrl: String,
+    val whatsappUrl: String?,
     /** El cliente autorizó recordatorios al comprar. */
     val consent: Boolean,
 )
@@ -92,3 +92,12 @@ data class RenewalSettingsRequest(
 )
 
 data class RenewalSettingsResponse(val reminderDaysBefore: Int, val reminderOnDueDay: Boolean, val renewalGraceDays: Int)
+
+data class RenewalHistoryItem(
+    val id: UUID,
+    val orderId: UUID,
+    val previousExpiresAt: Instant,
+    val newExpiresAt: Instant,
+    val amount: BigDecimal,
+    val confirmedAt: Instant,
+)

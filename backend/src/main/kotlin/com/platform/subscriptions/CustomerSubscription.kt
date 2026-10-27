@@ -50,6 +50,10 @@ class CustomerSubscription(
 enum class SubscriptionFilter { ALL, PENDING_ACTIVATION, ACTIVE, EXPIRING, RENEWAL, EXPIRED, CLOSED, RELEASE_PENDING }
 
 interface CustomerSubscriptionRepository : JpaRepository<CustomerSubscription, UUID> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from CustomerSubscription s where s.id = :id")
+    fun lockById(id: UUID): CustomerSubscription?
+
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): CustomerSubscription?
     fun findByCustomerIdAndBusinessIdOrderByCreatedAtDesc(customerId: UUID, businessId: UUID): List<CustomerSubscription>
     fun findByOrderIdAndBusinessId(orderId: UUID, businessId: UUID): CustomerSubscription?

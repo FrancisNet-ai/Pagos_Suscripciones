@@ -52,4 +52,15 @@ describe('SubscriptionItemComponent', () => {
     expect(button(ended.el, 'retiré el acceso')).toBeDefined();
     expect(ended.el.textContent).toContain('Cupo pendiente de liberar');
   });
+
+  it('consulta el historial real sin cargarlo antes de abrirlo', () => {
+    const { fixture, el } = render(pending);
+    http.expectNone((r) => r.url.includes('/renewals'));
+    button(el, 'Historial de renovaciones')!.click();
+    const request = http.expectOne((r) => r.url === '/api/v1/subscriptions/s1/renewals');
+    request.flush({ items: [{ id: 'r1', orderId: 'or1', previousExpiresAt: '2026-10-01T00:00:00Z', newExpiresAt: '2026-10-31T00:00:00Z', confirmedAt: '2026-10-01T00:00:00Z', amount: 15 }], page: 0, size: 10, totalPages: 1, totalItems: 1 });
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Vencimiento anterior');
+    expect(el.querySelector('a[href="/panel/ventas/or1"]')).not.toBeNull();
+  });
 });

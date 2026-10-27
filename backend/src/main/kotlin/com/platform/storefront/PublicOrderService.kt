@@ -47,6 +47,7 @@ class PublicOrderService(
     private val audit: AuditService,
     private val properties: AppProperties,
     private val clock: Clock,
+    private val renewals: com.platform.renewals.RenewalService,
 ) {
     @Transactional(readOnly = true)
     fun view(token: String): PublicOrderResponse = describe(find(token))
@@ -65,6 +66,7 @@ class PublicOrderService(
             OrderStatus.CANCELLED, OrderStatus.EXPIRED ->
                 throw ApiException.conflict("ORDER_CLOSED", "Este pedido ya no admite pagos. Escribe al vendedor por WhatsApp si ya transferiste.")
         }
+        if (order.kind == com.platform.orders.OrderKind.RENEWAL) renewals.requirePaymentReport(order)
         val reference = rawReference.trim().uppercase()
         val current = payments.findFirstByOrderIdOrderByCreatedAtDesc(order.id)!!
         // Tras un rechazo se registra un nuevo intento para conservar el historial.
@@ -133,7 +135,8 @@ class PublicOrderService(
             currency = order.currency,
             payment = payment?.let { publicPayment(it, order) },
             reservedUntil = reservation?.reservedUntil,
-            canReportPayment = order.status == OrderStatus.AWAITING_PAYMENT,
+            canReportPayment = order.status == OrderStatus.AWAITING_PAYMENT &&
+                (order.kind != com.platform.orders.OrderKind.RENEWAL || renewals.canReportPayment(order)),
             whatsappUrl = whatsappUrl,
         )
     }

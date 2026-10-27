@@ -66,4 +66,15 @@ describe('RenewalPublicPage', () => {
     fixture.detectChanges();
     expect(el.textContent).toContain('Gracias por haber confiado en Mi Tienda, María.');
   });
+
+  it('un enlace fuera del plazo no ofrece responder ni pagar', () => {
+    const fixture = TestBed.createComponent(RenewalPublicPage);
+    fixture.componentRef.setInput('token', 'tok');
+    fixture.detectChanges();
+    http.expectOne('/api/v1/public/renewals/tok').flush({ ...open, canRespond: false, canPay: false });
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('ya no admite cambios');
+    expect(Array.from(el.querySelectorAll('button')).some((b) => b.textContent?.includes('Sí, renovar'))).toBe(false);
+  });
 });

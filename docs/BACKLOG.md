@@ -14,12 +14,18 @@
 * El token de renovación es un HMAC de la solicitud con `APP_RENEWAL_TOKEN_SECRET`; cambiar el secreto invalida los enlaces ya enviados.
 * El enlace del pedido usa un token aleatorio de 256 bits (solo se guarda su hash). Un reintento con la misma `Idempotency-Key` emite un enlace nuevo para el mismo pedido.
 
+## Continuación de Fase 5
+
+Ver [alcance, contratos y verificación](fase-5-continuacion.md). El envío manual ahora exige consentimiento
+vigente; la gracia se fija por solicitud, y los pagos reportados conservan el cupo hasta revisión.
+Se incorpora historial cobrado y paginación real en el panel.
+
 ## Pendientes
 - [ ] Importación masiva de clientes desde CSV/Excel con vista previa (Fase 7).
 - [ ] Tareas del vendedor (`seller_tasks`) como entidad propia; hoy los pendientes se derivan del estado (cupos por liberar, avisos por enviar, pagos por verificar).
 - [ ] Envío automático de avisos de renovación con WhatsApp Business Platform (Fase 7); hoy el envío es manual.
 - [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
-- [ ] Playwright como suite versionada en el repositorio (hoy los flujos E2E se ejecutan como scripts de verificación).
+- [x] Suite Playwright versionada para checkout y renovación completa, escritorio y móvil (`frontend/e2e`).
 - [ ] Fase 6: aplicar `product_limit` del plan SaaS al crear productos.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
 - [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.

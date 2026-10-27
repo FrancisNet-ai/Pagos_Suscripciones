@@ -214,8 +214,8 @@ Token inválido o vencido → `404`. Rate limiting por IP.
 |---|---|---|
 | `GET` | `/renewals?bucket=UPCOMING\|ACCEPTED\|DECLINED\|NO_RESPONSE\|COMPLETED&page=&size=` | Solicitudes por estado |
 | `GET` | `/renewals/overview` | Conteos por bandeja y avisos por enviar |
-| `GET` | `/renewals/notifications` | Avisos pendientes con mensaje y enlace `wa.me` listos, y si el cliente autorizó recordatorios |
-| `POST` | `/renewals/notifications/{id}/sent` | El vendedor confirma que lo envió (`SENT_MANUALLY`) |
+| `GET` | `/renewals/notifications?page=&size=` | Avisos pendientes; `whatsappUrl` es `null` si falta consentimiento vigente |
+| `POST` | `/renewals/notifications/{id}/sent` | Confirma envío manual; exige consentimiento, fecha alcanzada y aviso pendiente (`SENT_MANUALLY`) |
 | `POST` | `/renewals/notifications/{id}/skip` | Omitir aviso (`SKIPPED`) |
 | `GET`/`PUT` | `/renewals/settings` | `{ reminderDaysBefore (0–15), reminderOnDueDay, renewalGraceDays (0–30) }` |
 | `PUT` | `/customers/{id}/notifications` | `{ "optedOut": true \| false }` exclusión registrada por el vendedor |
@@ -233,3 +233,11 @@ y `notificationsDue`; `/reports/sales` añade `renewals { confirmed, accepted, d
 * `GET /admin/subscriptions` · `GET /admin/saas-payments` · `POST /admin/saas-payments/{id}/verify`
 * `GET /admin/reports/overview` · `GET /admin/audit-logs`
 * `GET /business/me/subscription` · `POST /business/me/subscription` `{ planId }` · `POST /business/me/saas-payments`
+
+### Historial de renovaciones cobradas
+
+`GET /subscriptions/{id}/renewals?page=0&size=20` devuelve `PageResponse<RenewalHistoryItem>`: `id`, `orderId`, `previousExpiresAt`, `newExpiresAt`, `amount`, `confirmedAt`. Solo el negocio propietario; otro vendedor recibe 404.
+
+El plazo de gracia se fija en `grace_expires_at` al abrir cada solicitud. Las operaciones públicas lo
+validan aunque el job no haya corrido. Los pagos ya reportados se mantienen para revisión al agotar
+la gracia y conservan el cupo; no se puede desistir de ellos sin intervención del vendedor.
