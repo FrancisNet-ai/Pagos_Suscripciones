@@ -16,7 +16,7 @@ import { CustomersApi } from './customers.api';
       <a routerLink="/panel/clientes" class="link text-sm">← Volver a clientes</a>
       <p class="type-eyebrow mt-4">Registrar cliente</p>
       <h1 class="type-h1 mt-3">Un cliente que ya tenías</h1>
-      <p class="mt-3 max-w-2xl">Registra a quienes te compraron antes de usar la plataforma para controlar sus vencimientos. No se crea ningún pedido ni se registra como venta.</p>
+      <p class="mt-3 max-w-2xl">Registra a quienes te compraron antes de usar Nuvyra para controlar sus vencimientos. No se crea ningún pedido ni se registra como venta.</p>
 
       @if (error(); as message) {
         <p class="notice notice-error mt-6" role="alert">

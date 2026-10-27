@@ -15,7 +15,7 @@ type MethodForm = FormGroup<{ holderName: FormControl<string>; phone: FormContro
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, ImageUploadComponent],
   template: `
-    <p class="type-eyebrow">Plataforma</p>
+    <p class="type-eyebrow">Nuvyra</p>
     <h1 class="type-h1 mt-3">Configuración general</h1>
 
     @if (notice(); as n) { <p class="notice notice-success mt-6" role="status">{{ n }}</p> }
@@ -48,7 +48,7 @@ type MethodForm = FormGroup<{ holderName: FormControl<string>; phone: FormContro
       <section class="mt-14 grid max-w-3xl gap-10" aria-labelledby="cobro-titulo">
         <div>
           <h2 id="cobro-titulo" class="type-h2">Cuentas donde pagan los vendedores</h2>
-          <p class="mt-3">Son las cuentas de la plataforma, distintas de las de cada vendedor. Se muestran con su titular declarado en «Mi plan».</p>
+          <p class="mt-3">Son las cuentas de Nuvyra, distintas de las de cada vendedor. Se muestran con su titular declarado en «Mi plan».</p>
         </div>
         @for (m of s.paymentMethods; track m.method) {
           <form class="grid gap-5 border-t border-[var(--line-subtle)] pt-8" [formGroup]="methodForms[m.method]" (ngSubmit)="saveMethod(m.method)" novalidate>

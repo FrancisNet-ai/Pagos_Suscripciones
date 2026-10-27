@@ -1,1 +1,1 @@
-rootProject.name = "platform-backend"
+rootProject.name = "nuvyra-backend"

@@ -1,10 +1,16 @@
-# Vigencia — Plataforma SaaS multiempresa de suscripciones digitales
+# Nuvyra — Tu negocio, bajo control.
+
+Plataforma SaaS multiempresa para la gestión de negocios digitales.
 
 Plataforma para que vendedores independientes administren la venta de suscripciones, productos y
 servicios digitales: tienda pública por negocio, compras sin registro, cobros por Yape y Plin a las
 cuentas del propio vendedor, verificación manual de pagos, clientes, cupos y renovaciones.
 
-> «Vigencia» es un nombre provisional; se cambia en `frontend/src/app/core/brand.ts`.
+> **Nuvyra** es el nombre comercial de trabajo hasta verificar su disponibilidad legal y de dominio.
+> La marca vive en `frontend/src/app/core/brand.ts` y `backend/.../common/Brand.kt`; las tiendas públicas
+> muestran siempre la marca de cada vendedor. Módulos internos: **Nuvyra Dashboard** (panel del vendedor),
+> **Nuvyra Store** (tiendas públicas y checkout) y **Nuvyra Billing** (planes y cobros SaaS).
+> Nombre provisional del monorepositorio: `nuvyra-platform`.
 
 ## Estado
 
@@ -56,7 +62,7 @@ Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/B
 ## Estructura
 
 ```
-backend/          API Kotlin/Spring Boot (monolito modular, paquete com.platform)
+backend/          API Kotlin/Spring Boot (monolito modular, paquete com.nuvyra)
 frontend/         SPA Angular (core / shared / features)
 infrastructure/   Dockerfiles, configuración de Nginx y scripts de copias de seguridad
 docs/             Arquitectura, modelo de datos, API, decisiones (ADR), despliegue

@@ -1,14 +1,14 @@
 # Entorno completo con Docker Compose: PostgreSQL + backend + web (Nginx con la SPA).
 # Uso: cp .env.example .env && docker compose up --build
-name: vigencia
+name: nuvyra
 
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-platform}
-      POSTGRES_USER: ${DB_USER:-platform}
+      POSTGRES_DB: ${DB_NAME:-nuvyra}
+      POSTGRES_USER: ${DB_USER:-nuvyra}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
       TZ: UTC
     volumes:
@@ -31,8 +31,8 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
-      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-platform}
-      DB_USER: ${DB_USER:-platform}
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-nuvyra}
+      DB_USER: ${DB_USER:-nuvyra}
       DB_PASSWORD: ${DB_PASSWORD}
       APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://localhost:8080}
       APP_TIME_ZONE: ${APP_TIME_ZONE:-America/Lima}

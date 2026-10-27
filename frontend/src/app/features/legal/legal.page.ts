@@ -12,10 +12,10 @@ const DOCS: Record<string, LegalDoc> = {
     title: 'Condiciones comerciales',
     points: [
       `${BRAND.name} es un software que los vendedores contratan mediante una suscripción periódica para administrar su negocio.`,
-      'Los compradores pagan directamente al vendedor por Yape, Plin u otros medios que el vendedor configure. La plataforma no recibe, retiene ni intermedia esos pagos.',
+      'Los compradores pagan directamente al vendedor por Yape, Plin u otros medios que el vendedor configure. Nuvyra no recibe, retiene ni intermedia esos pagos.',
       'Cada vendedor es responsable de comercializar únicamente productos y servicios digitales autorizados y de cumplir las condiciones de los proveedores de esos servicios.',
       'La falta de pago de la suscripción puede limitar las funciones comerciales, sin eliminar automáticamente los datos del vendedor.',
-      'La plataforma puede revisar y suspender cuentas que incumplan las políticas de uso.',
+      'Nuvyra puede revisar y suspender cuentas que incumplan las políticas de uso.',
     ],
   },
   privacidad: {

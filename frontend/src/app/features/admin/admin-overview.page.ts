@@ -14,9 +14,9 @@ type State = { status: 'loading' } | { status: 'error'; message: string } | { st
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, SolesPipe, BarChartComponent],
   template: `
-    <p class="type-eyebrow">Plataforma</p>
+    <p class="type-eyebrow">Nuvyra</p>
     <h1 class="type-h1 mt-3">Resumen</h1>
-    <p class="mt-3 max-w-2xl">Solo dinero que los vendedores pagan por usar la plataforma. Las ventas de cada negocio a sus compradores no se suman aquí.</p>
+    <p class="mt-3 max-w-2xl">Solo dinero que los vendedores pagan por usar Nuvyra. Las ventas de cada negocio a sus compradores no se suman aquí.</p>
 
     @let s = state();
     @if (s.status === 'loading') {

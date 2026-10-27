@@ -20,4 +20,4 @@ app:
 
 logging:
   level:
-    com.platform: DEBUG
+    com.nuvyra: DEBUG

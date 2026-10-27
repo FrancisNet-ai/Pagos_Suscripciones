@@ -1,8 +1,8 @@
 <section class="mx-auto max-w-5xl" aria-labelledby="plan-titulo">
-  <p class="type-eyebrow">Tu cuenta en la plataforma</p>
+  <p class="type-eyebrow">Nuvyra Billing</p>
   <h1 id="plan-titulo" class="type-h1 mt-3">Mi plan</h1>
   <p class="mt-3 max-w-2xl">
-    Lo que pagas por usar la plataforma. Es independiente de tus ventas: el dinero de tus compradores llega directo a tus cuentas Yape y Plin.
+    Lo que pagas por usar Nuvyra. Es independiente de tus ventas: el dinero de tus compradores llega directo a tus cuentas Yape y Plin.
   </p>
 
   @if (notice(); as n) { <p class="notice notice-success mt-6" role="status">{{ n }}</p> }
@@ -89,7 +89,7 @@
           } @else {
             <div class="mt-8 grid gap-10 lg:grid-cols-2">
               <div>
-                <h3 class="font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">1. Paga a la plataforma</h3>
+                <h3 class="font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">1. Paga a Nuvyra</h3>
                 <ul class="mt-4 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
                   @for (o of d.paymentOptions; track o.method) {
                     <li class="flex items-start justify-between gap-4 py-4">

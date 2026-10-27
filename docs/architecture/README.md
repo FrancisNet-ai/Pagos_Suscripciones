@@ -50,7 +50,7 @@ suscripciones, productos y servicios digitales, cobrando a sus compradores media
 
 ## 3. Módulos del backend
 
-Paquete raíz `com.platform`. Cada módulo agrupa su `Controller`, `Service`, `Repository`,
+Paquete raíz `com.nuvyra`. Cada módulo agrupa su `Controller`, `Service`, `Repository`,
 `Entity` y `DTO`. Un módulo solo accede a otro mediante su **servicio público**, nunca a su
 repositorio, para evitar dependencias circulares y mantener límites claros.
 
