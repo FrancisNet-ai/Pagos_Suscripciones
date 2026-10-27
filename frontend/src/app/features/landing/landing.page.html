@@ -1,0 +1,167 @@
+<a href="#contenido" class="sr-only-focusable fixed left-4 top-4 z-50 rounded bg-snow px-4 py-2 text-night">Saltar al contenido</a>
+
+<!-- Portada -->
+<header class="relative isolate overflow-hidden bg-night text-snow">
+  <app-wave-art class="absolute inset-0 -z-10" [intensity]="0.9" />
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8" aria-label="Principal">
+    <app-brand-mark tone="light" />
+    <div class="flex items-center gap-2 sm:gap-3">
+      @if (auth.isAuthenticated()) {
+        <a class="btn btn-light" [routerLink]="auth.homeRoute()">Ir a mi panel</a>
+      } @else {
+        <a class="btn btn-ghost-light hidden sm:inline-flex" routerLink="/ingresar">Iniciar sesión</a>
+        <a class="btn btn-light" routerLink="/registro">Crear cuenta</a>
+      }
+    </div>
+  </nav>
+
+  <div class="mx-auto grid max-w-6xl gap-12 px-5 pb-24 pt-14 sm:px-8 md:pb-32 md:pt-20 lg:grid-cols-[1.25fr_1fr] lg:items-end">
+    <div>
+      <p class="type-eyebrow !text-mist">Plataforma para vendedores de servicios digitales</p>
+      <h1 class="type-display mt-5 !text-snow">Tu negocio de suscripciones, <em class="font-normal italic text-mist">en orden.</em></h1>
+      <p class="mt-7 max-w-xl text-lg leading-relaxed text-mist">
+        Publica tus productos, cobra por Yape y Plin a tus propias cuentas, verifica pagos y controla cada vencimiento y renovación desde un solo lugar.
+      </p>
+      <div class="mt-10 flex flex-col gap-3 sm:flex-row">
+        <a class="btn btn-light" routerLink="/registro">Crear mi negocio</a>
+        <a class="btn btn-ghost-light" href="#como-funciona">Ver cómo funciona</a>
+      </div>
+    </div>
+
+    <figure class="border-l border-mist/30 pl-6 lg:mb-2">
+      <blockquote class="font-[family-name:var(--font-editorial)] text-2xl leading-snug text-snow">
+        “Cada cliente con su fecha. Cada pago con su comprobación. Cada renovación a tiempo.”
+      </blockquote>
+      <figcaption class="mt-4 text-sm text-mist">El control que tu negocio necesita, sin hojas de cálculo.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<main id="contenido">
+  <!-- Propuesta de valor -->
+  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-28" aria-labelledby="valor-titulo">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
+      <div>
+        <p class="type-eyebrow">Por qué {{ brand.name }}</p>
+        <h2 id="valor-titulo" class="type-h1 mt-4">Menos mensajes perdidos. Más ventas confirmadas.</h2>
+        <p class="mt-5 max-w-md">
+          Diseñado para quienes venden suscripciones, licencias y servicios digitales por WhatsApp y necesitan orden sin complicaciones.
+        </p>
+      </div>
+      <ol class="divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+        @for (benefit of benefits; track benefit.title; let i = $index) {
+          <li class="grid grid-cols-[3rem_1fr] gap-4 py-7">
+            <span class="type-numeric font-[family-name:var(--font-editorial)] text-2xl text-steel">0{{ i + 1 }}</span>
+            <div>
+              <h3 class="text-lg font-semibold">{{ benefit.title }}</h3>
+              <p class="mt-1.5">{{ benefit.text }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section id="como-funciona" class="scroll-mt-8 bg-[color-mix(in_srgb,var(--color-mist)_22%,var(--color-snow))]" aria-labelledby="pasos-titulo">
+    <div class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-24">
+      <p class="type-eyebrow">Cómo funciona</p>
+      <h2 id="pasos-titulo" class="type-h2 mt-4 max-w-2xl">De tu primer producto a tu primera renovación, en cuatro pasos.</h2>
+      <ol class="relative mt-14 grid gap-10 before:absolute before:left-0 before:right-0 before:top-[1.125rem] before:hidden before:h-px before:bg-mist md:grid-cols-4 md:gap-8 md:before:block">
+        @for (step of steps; track step.title; let i = $index) {
+          <li class="relative">
+            <span class="relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-night text-sm font-semibold text-snow type-numeric">{{ i + 1 }}</span>
+            <h3 class="mt-5 text-lg font-semibold">{{ step.title }}</h3>
+            <p class="mt-1.5">{{ step.text }}</p>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Características -->
+  <section class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-28" aria-labelledby="caracteristicas-titulo">
+    <p class="type-eyebrow">Características</p>
+    <h2 id="caracteristicas-titulo" class="type-h1 mt-4 max-w-3xl">Todo lo necesario para vender, cobrar y renovar.</h2>
+    <div class="mt-14 grid gap-12 md:grid-cols-3 md:gap-10">
+      @for (feature of features; track feature.group) {
+        <div class="border-t-2 border-night pt-6">
+          <h3 class="font-[family-name:var(--font-editorial)] text-2xl">{{ feature.group }}</h3>
+          <ul class="mt-5 space-y-3">
+            @for (item of feature.items; track item) {
+              <li class="flex gap-3">
+                <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-steel" aria-hidden="true"></span>
+                <span>{{ item }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Planes -->
+  <section id="planes" class="bg-night text-snow" aria-labelledby="planes-titulo">
+    <div class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-24">
+      <div class="max-w-2xl">
+        <p class="type-eyebrow !text-mist">Planes</p>
+        <h2 id="planes-titulo" class="type-h1 mt-4 !text-snow">Paga por la plataforma, no por tus ventas.</h2>
+        <p class="mt-5 text-mist">
+          Un precio fijo según los productos, clientes y funciones que necesites. Tus ventas siguen llegando completas a tus cuentas Yape y Plin.
+        </p>
+      </div>
+      @if (plans(); as list) {
+        @if (list.length > 0) {
+          <div class="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            @for (p of list; track p.id) {
+              <app-plan-card [plan]="p" [dark]="true">
+                <a class="btn btn-light btn-block" routerLink="/registro" [queryParams]="{ plan: p.id }">Empezar con {{ p.name }}</a>
+              </app-plan-card>
+            }
+          </div>
+        } @else {
+          <div class="mt-10 border-t border-mist/30 pt-8">
+            <p class="text-mist">Los precios vigentes se publicarán aquí. Crea tu cuenta ahora y deja listo tu negocio.</p>
+            <a class="btn btn-light mt-5" routerLink="/registro">Crear mi cuenta</a>
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Preguntas frecuentes -->
+  <section class="mx-auto max-w-3xl px-5 py-20 sm:px-8 md:py-28" aria-labelledby="faq-titulo">
+    <p class="type-eyebrow">Preguntas frecuentes</p>
+    <h2 id="faq-titulo" class="type-h2 mt-4">Lo que suelen preguntarnos</h2>
+    <div class="mt-10 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+      @for (faq of faqs; track faq.q) {
+        <details class="group py-5">
+          <summary class="flex cursor-pointer list-none items-start justify-between gap-6 text-lg font-semibold text-night">
+            {{ faq.q }}
+            <span class="mt-1 text-steel transition-transform duration-200 group-open:rotate-45" aria-hidden="true">+</span>
+          </summary>
+          <p class="mt-3 pr-8">{{ faq.a }}</p>
+        </details>
+      }
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="relative isolate overflow-hidden bg-shadow text-snow">
+    <app-wave-art class="absolute inset-0 -z-10 opacity-60" [intensity]="0.6" />
+    <div class="mx-auto max-w-6xl px-5 py-20 text-center sm:px-8 md:py-24">
+      <h2 class="type-h1 !text-snow">Empieza a ordenar tu negocio hoy.</h2>
+      <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <a class="btn btn-light" routerLink="/registro">Crear mi negocio</a>
+        <a class="btn btn-ghost-light" routerLink="/ingresar">Ya tengo cuenta</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-[var(--line-subtle)]">
+  <div class="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8">
+    <app-brand-mark />
+    <p class="text-[var(--text-muted)]">© {{ year }} {{ brand.name }}. {{ brand.tagline }}.</p>
+  </div>
+</footer>

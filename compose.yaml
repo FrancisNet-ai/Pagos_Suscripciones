@@ -1,0 +1,72 @@
+# Entorno completo con Docker Compose: PostgreSQL + backend + web (Nginx con la SPA).
+# Uso: cp .env.example .env && docker compose up --build
+name: vigencia
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-platform}
+      POSTGRES_USER: ${DB_USER:-platform}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+      TZ: UTC
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infrastructure/docker/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-platform}
+      DB_USER: ${DB_USER:-platform}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://localhost:8080}
+      APP_TIME_ZONE: ${APP_TIME_ZONE:-America/Lima}
+      APP_SESSION_COOKIE_NAME: ${APP_SESSION_COOKIE_NAME:-__Host-sid}
+      APP_SESSION_COOKIE_SECURE: ${APP_SESSION_COOKIE_SECURE:-true}
+      APP_OPENAPI_ENABLED: ${APP_OPENAPI_ENABLED:-false}
+      APP_RENEWAL_TOKEN_SECRET: ${APP_RENEWAL_TOKEN_SECRET:?Define APP_RENEWAL_TOKEN_SECRET en .env}
+      APP_SECRETS_ENCRYPTION_KEY: ${APP_SECRETS_ENCRYPTION_KEY:?Define APP_SECRETS_ENCRYPTION_KEY en .env}
+      APP_WHATSAPP_APP_SECRET: ${APP_WHATSAPP_APP_SECRET:-}
+      APP_WHATSAPP_VERIFY_TOKEN: ${APP_WHATSAPP_VERIFY_TOKEN:-}
+      APP_MAIL_FROM: ${APP_MAIL_FROM:-no-reply@localhost}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-}
+      APP_BOOTSTRAP_SUPER_ADMIN_EMAIL: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:-}
+      APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:-}
+    volumes:
+      # Imágenes subidas por los vendedores (logos, portadas, productos, QR).
+      - media:/app/data/media
+      # Comprobantes de pago: privados, nunca servidos por Nginx.
+      - private:/app/data/private
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  pgdata:
+  media:
+  private:

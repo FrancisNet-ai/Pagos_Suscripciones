@@ -1,0 +1,23 @@
+# Desarrollo local: HTTP, documentación OpenAPI y enlaces de correo en el log.
+springdoc:
+  api-docs:
+    enabled: ${APP_OPENAPI_ENABLED:true}
+  swagger-ui:
+    enabled: ${APP_OPENAPI_ENABLED:true}
+
+app:
+  session:
+    cookie-name: ${APP_SESSION_COOKIE_NAME:sid}
+    cookie-secure: ${APP_SESSION_COOKIE_SECURE:false}
+  mail:
+    log-links: true
+  renewals:
+    # Solo para desarrollo local. En producción se define APP_RENEWAL_TOKEN_SECRET.
+    token-secret: ${APP_RENEWAL_TOKEN_SECRET:dev-only-renewal-secret-change-me-0123456789}
+  secrets:
+    # Solo para desarrollo local (32 bytes en Base64). En producción se define APP_SECRETS_ENCRYPTION_KEY.
+    encryption-key: ${APP_SECRETS_ENCRYPTION_KEY:ZGV2LW9ubHktZW5jcnlwdGlvbi1rZXktMzJieXRlcyE=}
+
+logging:
+  level:
+    com.platform: DEBUG

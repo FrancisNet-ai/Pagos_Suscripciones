@@ -1,0 +1,20 @@
+.env
+backups/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# backend
+backend/build/
+backend/.gradle/
+backend/.kotlin/
+
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/coverage/
+
+# imágenes subidas en desarrollo
+backend/data/

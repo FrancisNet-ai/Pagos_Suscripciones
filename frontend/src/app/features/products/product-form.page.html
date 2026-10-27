@@ -1,0 +1,160 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/panel/productos" class="link text-sm">← Volver a productos</a>
+
+  @if (loadError(); as message) {
+    <p class="notice notice-error mt-8" role="alert">{{ message }}</p>
+  } @else if (loading()) {
+    <div class="mt-8 h-64 animate-pulse rounded bg-mist/25" aria-busy="true"><span class="sr-only">Cargando producto…</span></div>
+  } @else {
+    <div class="mt-4 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="type-eyebrow">{{ isNew() ? 'Nuevo producto' : 'Editar producto' }}</p>
+        <h1 class="type-h1 mt-3">{{ isNew() ? 'Crea un producto' : product()?.name }}</h1>
+      </div>
+      @if (product(); as p) {
+        <app-status-badge [label]="statusLabels[p.publicationStatus].label" [tone]="statusLabels[p.publicationStatus].tone" />
+      }
+    </div>
+
+    @if (error(); as message) { <p class="notice notice-error mt-6" role="alert">{{ message }}</p> }
+
+    <div class="mt-10 grid gap-12 lg:grid-cols-[1fr_18rem]">
+      <form class="grid gap-6" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <div class="field">
+          <label class="field-label" for="name">Nombre</label>
+          <input id="name" class="input" formControlName="name" [attr.aria-invalid]="!!err('name')" />
+          @if (err('name'); as e) { <p class="field-error">{{ e }}</p> }
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="description">Descripción</label>
+          <textarea id="description" class="input min-h-28" rows="4" formControlName="description" maxlength="2000"></textarea>
+          <p class="field-hint">Qué incluye, condiciones y cómo se entrega. No incluyas contraseñas ni datos de acceso.</p>
+          @if (err('description'); as e) { <p class="field-error">{{ e }}</p> }
+        </div>
+
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="field">
+            <label class="field-label" for="category">Categoría</label>
+            <input id="category" class="input" formControlName="category" placeholder="Entretenimiento, Educación…" />
+            @if (err('category'); as e) { <p class="field-error">{{ e }}</p> }
+          </div>
+          <div class="field">
+            <label class="field-label" for="price">Precio</label>
+            <div class="flex">
+              <span class="inline-flex items-center rounded-l-[var(--radius-control)] border border-r-0 border-[var(--line-strong)] bg-snow px-3 text-sm font-semibold text-night">S/</span>
+              <input id="price" class="input type-numeric !rounded-l-none" type="number" inputmode="decimal" step="0.01" min="0.1" formControlName="price"
+                     [attr.aria-invalid]="!!err('price')" />
+            </div>
+            @if (err('price'); as e) { <p class="field-error">{{ e }}</p> }
+          </div>
+        </div>
+
+        <fieldset class="grid gap-3">
+          <legend class="field-label mb-2">Tipo de producto</legend>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="flex cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-4 transition-colors"
+                   [class]="productType() === 'SUBSCRIPTION' ? 'border-night bg-white' : 'border-[var(--line-strong)]'">
+              <input type="radio" class="checkbox" formControlName="productType" value="SUBSCRIPTION" />
+              <span><span class="block font-semibold text-night">Suscripción</span><span class="text-sm">Con inicio, vencimiento y renovación.</span></span>
+            </label>
+            <label class="flex cursor-pointer items-start gap-3 rounded-[var(--radius-control)] border p-4 transition-colors"
+                   [class]="productType() === 'ONE_TIME' ? 'border-night bg-white' : 'border-[var(--line-strong)]'">
+              <input type="radio" class="checkbox" formControlName="productType" value="ONE_TIME" />
+              <span><span class="block font-semibold text-night">Pago único</span><span class="text-sm">Sin renovación automática.</span></span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="field">
+          <label class="field-label" for="durationDays">Duración en días {{ productType() === 'ONE_TIME' ? '(opcional)' : '' }}</label>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="durationDays" class="input type-numeric max-w-32" type="number" inputmode="numeric" min="1" max="3650" formControlName="durationDays"
+                   [attr.aria-invalid]="!!err('durationDays')" />
+            @for (preset of presets; track preset.days) {
+              <button type="button" class="rounded-full border px-3 py-1.5 text-sm font-medium"
+                      [class]="form.controls.durationDays.value === preset.days ? 'border-night bg-night text-snow' : 'border-[var(--line-strong)] text-corporate hover:border-steel'"
+                      (click)="setDuration(preset.days)">{{ preset.label }}</button>
+            }
+          </div>
+          @if (err('durationDays'); as e) { <p class="field-error">{{ e }}</p> }
+        </div>
+
+        <div class="grid gap-4 border-y border-[var(--line-subtle)] py-6">
+          <label class="flex items-start gap-3">
+            <input class="checkbox" type="checkbox" formControlName="available" />
+            <span><span class="font-semibold text-night">Disponible para la venta</span><br /><span class="text-sm">Desmárcalo para pausar las compras sin despublicar.</span></span>
+          </label>
+          <label class="flex items-start gap-3">
+            <input class="checkbox" type="checkbox" formControlName="capacityEnabled" />
+            <span><span class="font-semibold text-night">Controlar cupos</span><br /><span class="text-sm">Limita cuántos clientes pueden tener este producto a la vez.</span></span>
+          </label>
+          @if (capacityEnabled()) {
+            <div class="field pl-8">
+              <label class="field-label" for="capacity">Capacidad total de cupos</label>
+              <input id="capacity" class="input type-numeric max-w-32" type="number" inputmode="numeric" min="1" formControlName="capacity"
+                     [attr.aria-invalid]="!!err('capacity')" />
+              @if (err('capacity'); as e) { <p class="field-error">{{ e }}</p> }
+            </div>
+          }
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4">
+          <button class="btn btn-primary" type="submit" [disabled]="saving() || (!isNew() && form.pristine)">
+            @if (saving()) { <span class="spinner" aria-hidden="true"></span> Guardando… } @else { {{ isNew() ? 'Crear producto' : 'Guardar cambios' }} }
+          </button>
+          <span class="text-sm text-success" role="status" aria-live="polite">{{ saved() ? 'Cambios guardados' : '' }}</span>
+        </div>
+        @if (!isNew()) {
+          <p class="text-sm text-[var(--text-muted)]">Los cambios de precio no afectan a pedidos ya registrados: cada pedido conserva su precio original.</p>
+        }
+      </form>
+
+      <aside class="grid content-start gap-10">
+        @if (product(); as p) {
+          <section aria-labelledby="publicacion-titulo">
+            <h2 id="publicacion-titulo" class="field-label">Publicación</h2>
+            <div class="mt-3 grid gap-2">
+              @if (p.publicationStatus !== 'PUBLISHED') {
+                <button type="button" class="btn btn-primary" [disabled]="statusBusy()" (click)="changeStatus('PUBLISHED')">Publicar en mi tienda</button>
+              }
+              @if (p.publicationStatus === 'PUBLISHED') {
+                <button type="button" class="btn btn-secondary" [disabled]="statusBusy()" (click)="changeStatus('DRAFT')">Despublicar</button>
+              }
+              @if (p.publicationStatus !== 'ARCHIVED') {
+                <button type="button" class="btn btn-secondary" [disabled]="statusBusy()" (click)="changeStatus('ARCHIVED')">Archivar</button>
+              }
+            </div>
+            <p class="field-hint mt-3">Archivar oculta el producto sin borrar su historial de ventas.</p>
+          </section>
+
+          <section aria-labelledby="imagen-titulo">
+            <h2 id="imagen-titulo" class="field-label mb-3">Imagen</h2>
+            <app-image-upload label="Imagen" [imageUrl]="p.imageUrl" [busy]="imageBusy()" [error]="imageError()"
+                              (selected)="uploadImage($event)" (remove)="removeImage()" />
+          </section>
+
+          @if (p.availability.capacityEnabled) {
+            <section aria-labelledby="cupos-titulo">
+              <h2 id="cupos-titulo" class="field-label">Cupos</h2>
+              <dl class="mt-3 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-sm">
+                <div class="flex justify-between py-2.5"><dt>Capacidad</dt><dd class="type-numeric font-semibold text-night">{{ p.availability.capacity }}</dd></div>
+                <div class="flex justify-between py-2.5"><dt>Ocupados</dt><dd class="type-numeric font-semibold text-night">{{ p.availability.occupied }}</dd></div>
+                <div class="flex justify-between py-2.5"><dt>Reservados</dt><dd class="type-numeric font-semibold text-night">{{ p.availability.reserved }}</dd></div>
+                <div class="flex justify-between py-2.5"><dt>Disponibles</dt><dd class="type-numeric font-semibold" [class.text-danger]="p.availability.soldOut" [class.text-night]="!p.availability.soldOut">{{ p.availability.soldOut ? 'Agotado' : p.availability.available }}</dd></div>
+              </dl>
+            </section>
+          }
+
+          <section aria-labelledby="resumen-titulo">
+            <h2 id="resumen-titulo" class="field-label">Resumen</h2>
+            <p class="mt-2 font-[family-name:var(--font-editorial)] text-3xl text-night">{{ p.price | soles }}</p>
+            <p class="text-sm text-[var(--text-muted)]">{{ p.durationDays | duration }}</p>
+          </section>
+        } @else {
+          <p class="text-sm text-[var(--text-muted)]">Podrás subir una imagen y publicar el producto después de crearlo. Se crea como borrador.</p>
+        }
+      </aside>
+    </div>
+  }
+</section>

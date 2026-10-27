@@ -1,0 +1,85 @@
+<div [style]="theme()" class="min-h-dvh">
+  <main class="mx-auto max-w-lg px-5 pb-16 pt-6">
+    <a [routerLink]="['/tienda', slug()]" class="link text-sm">← {{ store()?.businessName ?? 'Volver a la tienda' }}</a>
+
+    @if (loadError(); as message) {
+      <p class="notice notice-error mt-8" role="alert">{{ message }}</p>
+    } @else if (product(); as p) {
+      @let s = store()!;
+      <h1 class="type-h2 mt-6">Completa tu pedido</h1>
+
+      <section class="mt-6 flex gap-4 border-y border-[var(--line-subtle)] py-5" aria-label="Producto seleccionado">
+        @if (p.imageUrl) { <img [src]="p.imageUrl" alt="" class="h-16 w-16 shrink-0 rounded-[var(--radius-control)] object-cover" /> }
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold text-night">{{ p.name }}</p>
+          <p class="text-sm text-[var(--text-muted)]">{{ p.productType === 'SUBSCRIPTION' ? 'Suscripción · ' + (p.durationDays | duration) : 'Pago único' }}</p>
+        </div>
+        <p class="type-numeric shrink-0 font-[family-name:var(--font-editorial)] text-2xl font-semibold text-night">{{ p.price | soles }}</p>
+      </section>
+
+      @if (!p.purchasable || !s.acceptingOrders) {
+        <p class="notice notice-error mt-6" role="alert">
+          {{ p.soldOut ? 'Agotado — Actualmente no hay cupos disponibles.' : (s.notice ?? 'Este producto no está disponible por ahora.') }}
+        </p>
+      } @else {
+        @if (error(); as message) { <p class="notice notice-error mt-6" role="alert">{{ message }}</p> }
+
+        <form class="mt-6 grid gap-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="field">
+            <label class="field-label" for="customerName">Tu nombre</label>
+            <input id="customerName" class="input" formControlName="customerName" autocomplete="name" [attr.aria-invalid]="!!err('customerName')" />
+            @if (err('customerName'); as e) { <p class="field-error">{{ e }}</p> }
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="phone">Tu celular</label>
+            <input id="phone" class="input" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="987 654 321" formControlName="phone"
+                   [attr.aria-invalid]="!!err('phone')" aria-describedby="phone-hint" />
+            <p id="phone-hint" class="field-hint">El vendedor te contactará a este número.</p>
+            @if (err('phone'); as e) { <p class="field-error">{{ e }}</p> }
+          </div>
+
+          <fieldset class="grid gap-2">
+            <legend class="field-label mb-1">¿Cómo pagarás?</legend>
+            <div class="grid grid-cols-2 gap-3">
+              @for (m of s.paymentMethods; track m.method) {
+                <label class="flex min-h-14 cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-control)] border text-base font-semibold"
+                       [class]="form.controls.paymentMethod.value === m.method ? 'border-[var(--store-accent)] bg-white text-night ring-2 ring-[var(--store-accent)]' : 'border-[var(--line-strong)] text-corporate'">
+                  <input type="radio" class="sr-only" formControlName="paymentMethod" [value]="m.method" />
+                  {{ m.label }}
+                </label>
+              }
+            </div>
+            @if (err('paymentMethod'); as e) { <p class="field-error">{{ e }}</p> }
+          </fieldset>
+
+          <div class="grid gap-3 border-t border-[var(--line-subtle)] pt-5 text-[0.9375rem]">
+            <label class="flex gap-3">
+              <input class="checkbox" type="checkbox" formControlName="acceptTerms" />
+              <span>Acepto los <a class="link" routerLink="/legal/condiciones" target="_blank">términos de compra</a>. El pago se hace directamente a {{ s.businessName }}.</span>
+            </label>
+            @if (err('acceptTerms'); as e) { <p class="field-error pl-8">{{ e }}</p> }
+            <label class="flex gap-3">
+              <input class="checkbox" type="checkbox" formControlName="acceptDataProcessing" />
+              <span>Autorizo a {{ s.businessName }} a usar mi nombre y celular para procesar este pedido (<a class="link" routerLink="/legal/privacidad" target="_blank">privacidad</a>).</span>
+            </label>
+            @if (err('acceptDataProcessing'); as e) { <p class="field-error pl-8">{{ e }}</p> }
+            @if (p.productType === 'SUBSCRIPTION') {
+              <label class="flex gap-3">
+                <input class="checkbox" type="checkbox" formControlName="acceptRenewalReminders" />
+                <span>Opcional: quiero recibir avisos de vencimiento y renovación por WhatsApp.</span>
+              </label>
+            }
+          </div>
+
+          <button class="btn btn-store btn-block !min-h-12 text-base" type="submit" [disabled]="submitting()">
+            @if (submitting()) { <span class="spinner" aria-hidden="true"></span> Creando pedido… } @else { Continuar al pago · {{ p.price | soles }} }
+          </button>
+          <p class="text-center text-xs text-[var(--text-muted)]">No necesitas crear una cuenta ni contraseña.</p>
+        </form>
+      }
+    } @else {
+      <div class="mt-8 h-40 animate-pulse rounded bg-mist/30" aria-busy="true"><span class="sr-only">Cargando…</span></div>
+    }
+  </main>
+</div>

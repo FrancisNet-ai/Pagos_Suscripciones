@@ -1,0 +1,84 @@
+@if (loadError(); as message) {
+  <p class="notice notice-error" role="alert">{{ message }}</p>
+} @else if (!business()) {
+  <div class="h-40 animate-pulse rounded bg-mist/30" aria-busy="true"><span class="sr-only">Cargando…</span></div>
+} @else {
+  <div class="grid gap-14">
+    <section aria-labelledby="imagenes-titulo">
+      <h2 id="imagenes-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Imagen de tu tienda</h2>
+      <p class="mt-2 max-w-xl">Se mostrarán en tu tienda pública. Usa imágenes livianas para que carguen rápido en celulares.</p>
+      <div class="mt-6 grid gap-8 border-y border-[var(--line-subtle)] py-8 md:grid-cols-2">
+        <div>
+          <h3 class="field-label mb-3">Logotipo</h3>
+          <app-image-upload label="Logotipo" shape="circle" [imageUrl]="business()!.logoUrl" [busy]="uploading() === 'logo'"
+                            [error]="imageErrorFor('logo')" (selected)="upload('logo', $event)" (remove)="removeImage('logo')" />
+        </div>
+        <div>
+          <h3 class="field-label mb-3">Portada</h3>
+          <app-image-upload label="Portada" shape="wide" [imageUrl]="business()!.coverUrl" [busy]="uploading() === 'cover'"
+                            [error]="imageErrorFor('cover')" (selected)="upload('cover', $event)" (remove)="removeImage('cover')" />
+        </div>
+      </div>
+    </section>
+
+    <form class="grid gap-6" [formGroup]="form" (ngSubmit)="save()" novalidate aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Datos del negocio</h2>
+
+      @if (error(); as message) { <p class="notice notice-error" role="alert">{{ message }}</p> }
+
+      <div class="field">
+        <label class="field-label" for="businessName">Nombre comercial</label>
+        <input id="businessName" class="input" formControlName="businessName" [attr.aria-invalid]="!!err('businessName')" aria-describedby="businessName-error" />
+        @if (err('businessName'); as e) { <p id="businessName-error" class="field-error">{{ e }}</p> }
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="description">Descripción</label>
+        <textarea id="description" class="input min-h-28" formControlName="description" rows="4" maxlength="1000"
+                  aria-describedby="description-hint description-error"></textarea>
+        <p id="description-hint" class="field-hint">Cuéntales a tus compradores qué ofreces. Máximo 1000 caracteres.</p>
+        @if (err('description'); as e) { <p id="description-error" class="field-error">{{ e }}</p> }
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-2">
+        <div class="field">
+          <label class="field-label" for="whatsappNumber">WhatsApp comercial</label>
+          <div class="flex">
+            <span class="inline-flex items-center rounded-l-[var(--radius-control)] border border-r-0 border-[var(--line-strong)] bg-snow px-3 text-sm text-[var(--text-muted)]">+51</span>
+            <input id="whatsappNumber" class="input !rounded-l-none" type="tel" inputmode="tel" formControlName="whatsappNumber" placeholder="987 654 321"
+                   [attr.aria-invalid]="!!err('whatsappNumber')" aria-describedby="whatsapp-hint whatsapp-error" />
+          </div>
+          <p id="whatsapp-hint" class="field-hint">Tus compradores te escribirán aquí después de comprar.</p>
+          @if (err('whatsappNumber'); as e) { <p id="whatsapp-error" class="field-error">{{ e }}</p> }
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="timeZone">Zona horaria</label>
+          <select id="timeZone" class="input" formControlName="timeZone">
+            @for (tz of timeZones; track tz) { <option [value]="tz">{{ tz }}</option> }
+          </select>
+          <p class="field-hint">Se usa para fechas de venta y vencimientos.</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="primaryColor">Color de tu tienda</label>
+        <div class="flex items-center gap-3">
+          <input type="color" class="h-11 w-14 cursor-pointer rounded-[var(--radius-control)] border border-[var(--line-strong)] bg-white p-1"
+                 [value]="form.controls.primaryColor.value" (input)="form.controls.primaryColor.setValue($any($event.target).value.toUpperCase())"
+                 aria-label="Elegir color" />
+          <input id="primaryColor" class="input max-w-40 uppercase" formControlName="primaryColor" maxlength="7"
+                 [attr.aria-invalid]="!!err('primaryColor')" aria-describedby="primaryColor-error" />
+        </div>
+        @if (err('primaryColor'); as e) { <p id="primaryColor-error" class="field-error">{{ e }}</p> }
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 border-t border-[var(--line-subtle)] pt-6">
+        <button class="btn btn-primary" type="submit" [disabled]="saving() || form.pristine">
+          @if (saving()) { <span class="spinner" aria-hidden="true"></span> Guardando… } @else { Guardar cambios }
+        </button>
+        <span class="text-sm text-success" role="status" aria-live="polite">{{ saved() ? 'Cambios guardados' : '' }}</span>
+      </div>
+    </form>
+  </div>
+}

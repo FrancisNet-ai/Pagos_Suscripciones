@@ -1,0 +1,10 @@
+# Producción: cookies Secure con prefijo __Host-, logs estructurados en JSON.
+app:
+  session:
+    cookie-name: __Host-sid
+    cookie-secure: true
+
+logging:
+  structured:
+    format:
+      console: ecs

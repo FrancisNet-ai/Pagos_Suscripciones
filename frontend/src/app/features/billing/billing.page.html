@@ -1,0 +1,198 @@
+<section class="mx-auto max-w-5xl" aria-labelledby="plan-titulo">
+  <p class="type-eyebrow">Tu cuenta en la plataforma</p>
+  <h1 id="plan-titulo" class="type-h1 mt-3">Mi plan</h1>
+  <p class="mt-3 max-w-2xl">
+    Lo que pagas por usar la plataforma. Es independiente de tus ventas: el dinero de tus compradores llega directo a tus cuentas Yape y Plin.
+  </p>
+
+  @if (notice(); as n) { <p class="notice notice-success mt-6" role="status">{{ n }}</p> }
+  @if (error(); as e) { <p class="notice notice-error mt-6" role="alert">{{ e }}</p> }
+
+  @if (data(); as d) {
+    <!-- Estado -->
+    <div class="mt-10 grid gap-8 border-y border-[var(--line-subtle)] py-8 md:grid-cols-[1.4fr_1fr]">
+      <div>
+        @if (d.access.block === 'SUSPENDED') {
+          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-danger">Negocio suspendido</p>
+          <p class="mt-2 font-[family-name:var(--font-editorial)] text-2xl text-night">Tu tienda no recibe pedidos y el panel está en solo lectura.</p>
+          @if (d.suspensionReason) { <p class="mt-3"><span class="font-semibold">Motivo:</span> {{ d.suspensionReason }}</p> }
+          <p class="mt-3 text-sm">Escribe a soporte para revisar tu caso. Tus datos se conservan.</p>
+        } @else if (d.access.active) {
+          <p class="text-xs font-semibold uppercase tracking-[0.12em]" [class]="d.access.subscriptionStatus === 'PAST_DUE' ? 'text-warning' : 'text-success'">
+            {{ d.access.subscriptionStatus === 'PAST_DUE' ? 'Vencido · en plazo de gracia' : 'Plan vigente' }}
+          </p>
+          <p class="mt-2 font-[family-name:var(--font-display)] text-4xl text-night">{{ d.currentPlan?.name }}</p>
+          @if (d.access.subscriptionStatus === 'PAST_DUE') {
+            <p class="mt-3">Venció el {{ formatDate(d.access.expiresAt) }}. Puedes seguir vendiendo hasta el <strong>{{ formatDate(d.access.usableUntil) }}</strong>; renueva antes para no interrumpir tu tienda.</p>
+          } @else {
+            <p class="mt-3">Vigente hasta el <strong>{{ formatDate(d.access.expiresAt) }}</strong>.</p>
+          }
+        } @else {
+          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-warning">Sin plan vigente</p>
+          <p class="mt-2 font-[family-name:var(--font-editorial)] text-2xl text-night">{{ d.access.message }}</p>
+          <p class="mt-3 text-sm">Mientras tanto puedes consultar tu información. Tu tienda no recibe pedidos nuevos y no se borra ningún dato.</p>
+        }
+      </div>
+
+      <dl class="grid content-start gap-5">
+        <div>
+          <dt class="flex justify-between text-sm"><span>Productos activos</span>
+            <span class="type-numeric font-semibold text-night">{{ d.products.used }}{{ d.products.limit ? ' de ' + d.products.limit : '' }}</span></dt>
+          <dd>
+            @if (d.products.limit) {
+              <div class="mt-2 h-1 rounded bg-mist/40"><div class="h-1 rounded" [class]="d.products.used >= d.products.limit ? 'bg-warning' : 'bg-steel'" [style.width.%]="usagePercent(d.products.used, d.products.limit)"></div></div>
+            } @else if (d.currentPlan) { <p class="mt-1 text-xs text-[var(--text-muted)]">Sin límite en tu plan</p> }
+          </dd>
+        </div>
+        <div>
+          <dt class="flex justify-between text-sm"><span>Clientes</span>
+            <span class="type-numeric font-semibold text-night">{{ d.customers.used }}{{ d.customers.limit ? ' de ' + d.customers.limit : '' }}</span></dt>
+          <dd>
+            @if (d.customers.limit) {
+              <div class="mt-2 h-1 rounded bg-mist/40"><div class="h-1 rounded" [class]="d.customers.used >= d.customers.limit ? 'bg-warning' : 'bg-steel'" [style.width.%]="usagePercent(d.customers.used, d.customers.limit)"></div></div>
+              @if (d.customers.used >= d.customers.limit) {
+                <p class="mt-1 text-xs text-warning">Llegaste al límite: tu tienda no acepta pedidos de compradores nuevos.</p>
+              }
+            } @else if (d.currentPlan) { <p class="mt-1 text-xs text-[var(--text-muted)]">Sin límite en tu plan</p> }
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Cobro abierto -->
+    @if (open(); as inv) {
+      <section class="mt-12" aria-labelledby="cobro-titulo">
+        <div class="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 id="cobro-titulo" class="type-h2">Cobro {{ inv.invoiceNumber }}</h2>
+          <p class="type-numeric font-[family-name:var(--font-display)] text-3xl text-night">{{ inv.amount | soles }}</p>
+        </div>
+        <p class="mt-2">{{ inv.kindLabel }} · {{ inv.planName }} · {{ inv.billingPeriodLabel }}</p>
+        @if (inv.kind === 'PLAN_CHANGE') {
+          <p class="notice notice-info mt-4" role="note">El nuevo plan empieza el día que confirmemos tu pago. Los días que te queden del plan actual no se trasladan.</p>
+        }
+
+        @if (pendingPayment(); as p) {
+          <div class="notice notice-info mt-6" role="status">
+            <div>
+              <p class="font-semibold">Pago en revisión</p>
+              <p class="mt-1 text-sm">Reportaste {{ p.method === 'YAPE' ? 'Yape' : 'Plin' }} con el código <span class="type-numeric font-semibold">{{ p.transactionReference }}</span>.
+                Activaremos tu plan cuando confirmemos que el dinero llegó. Un comprobante no lo activa por sí solo.</p>
+            </div>
+          </div>
+        } @else {
+          @if (lastRejected(); as r) {
+            <p class="notice notice-error mt-6" role="alert">Rechazamos el pago con código {{ r.transactionReference }}: {{ r.rejectionReason }}. Revisa el código y vuelve a reportarlo.</p>
+          }
+
+          @if (d.paymentOptions.length === 0) {
+            <p class="notice notice-warning mt-6" role="note">Aún no hay cuentas de pago configuradas. Escribe a soporte para completar tu pago.</p>
+          } @else {
+            <div class="mt-8 grid gap-10 lg:grid-cols-2">
+              <div>
+                <h3 class="font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">1. Paga a la plataforma</h3>
+                <ul class="mt-4 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+                  @for (o of d.paymentOptions; track o.method) {
+                    <li class="flex items-start justify-between gap-4 py-4">
+                      <div>
+                        <p class="font-semibold text-night">{{ o.methodLabel }} · <span class="type-numeric">{{ localPhone(o.phone) }}</span></p>
+                        <p class="text-sm">Titular declarado: <strong>{{ o.holderName }}</strong></p>
+                      </div>
+                      @if (o.qrImageUrl) { <img [src]="o.qrImageUrl" [alt]="'Código QR de ' + o.methodLabel" class="h-24 w-24 rounded object-contain ring-1 ring-[var(--line-subtle)]" /> }
+                    </li>
+                  }
+                </ul>
+                <p class="mt-3 text-sm">Antes de confirmar en tu aplicación, comprueba que el nombre del destinatario coincida.</p>
+              </div>
+
+              <form [formGroup]="form" (ngSubmit)="report(inv)" novalidate class="grid content-start gap-5">
+                <h3 class="font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">2. Reporta tu pago</h3>
+                <fieldset class="field">
+                  <legend class="field-label">Método usado</legend>
+                  <div class="flex gap-5">
+                    @for (o of d.paymentOptions; track o.method) {
+                      <label class="flex items-center gap-2"><input type="radio" class="checkbox" formControlName="method" [value]="o.method" /> {{ o.methodLabel }}</label>
+                    }
+                  </div>
+                  @if (form.controls.method.touched && form.controls.method.invalid) { <p class="field-error">Selecciona Yape o Plin</p> }
+                </fieldset>
+                <div class="field">
+                  <label class="field-label" for="ref">Código de operación</label>
+                  <input id="ref" class="input type-numeric uppercase" formControlName="transactionReference" autocomplete="off" [attr.aria-invalid]="!!referenceError()" aria-describedby="ref-hint ref-error" />
+                  <p id="ref-hint" class="field-hint">Aparece en la constancia de {{ selectedMethod()?.methodLabel ?? 'Yape o Plin' }}.</p>
+                  @if (referenceError(); as e) { <p id="ref-error" class="field-error">{{ e }}</p> }
+                </div>
+                <div class="field">
+                  <span class="field-label" id="saas-receipt-label">Captura del comprobante (opcional)</span>
+                  <div class="flex items-center gap-3">
+                    <label for="saas-receipt" class="btn btn-secondary !min-h-10 cursor-pointer">{{ receipt() ? 'Cambiar captura' : 'Adjuntar captura' }}</label>
+                    <span class="min-w-0 truncate text-sm text-[var(--text-muted)]">{{ receipt()?.name ?? 'Ningún archivo seleccionado' }}</span>
+                  </div>
+                  <input id="saas-receipt" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" aria-labelledby="saas-receipt-label" (change)="onReceipt($event)" />
+                  @if (receiptError(); as e) { <p class="field-error">{{ e }}</p> }
+                </div>
+                <div class="flex flex-wrap gap-3">
+                  <button type="submit" class="btn btn-primary" [disabled]="busy()">Reportar pago</button>
+                  <button type="button" class="btn btn-secondary" (click)="cancel(inv)" [disabled]="busy()">Anular cobro</button>
+                </div>
+              </form>
+            </div>
+          }
+        }
+      </section>
+    }
+
+    <!-- Planes -->
+    <section class="mt-14" aria-labelledby="planes-titulo">
+      <h2 id="planes-titulo" class="type-h2">{{ hasPeriod() ? 'Renovar o cambiar de plan' : 'Elige tu plan' }}</h2>
+      @if (plans().length === 0) {
+        <p class="mt-4">Todavía no hay planes publicados. Escribe a soporte para activar tu cuenta.</p>
+      } @else {
+        <div class="mt-8 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+          @for (p of plans(); track p.id) {
+            <app-plan-card [plan]="p" [current]="isCurrent(p)" [selected]="open()?.planId === p.id">
+              <button type="button" class="btn btn-block" [class]="open()?.planId === p.id ? 'btn-secondary' : 'btn-primary'"
+                      [disabled]="busy() || open()?.planId === p.id || !!pendingPayment()" (click)="choose(p)">{{ actionLabel(p) }}</button>
+            </app-plan-card>
+          }
+        </div>
+        @if (pendingPayment()) { <p class="mt-4 text-sm">Podrás cambiar de plan cuando confirmemos el pago en revisión.</p> }
+      }
+    </section>
+
+    <!-- Historial -->
+    @if (d.history.length > 0) {
+      <section class="mt-14" aria-labelledby="historial-titulo">
+        <h2 id="historial-titulo" class="type-h2">Historial de cobros</h2>
+        <ul class="mt-6 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+          @for (i of d.history; track i.id) {
+            <li class="grid gap-1 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-6">
+              <div>
+                <p class="font-semibold text-night">{{ i.invoiceNumber }} · {{ i.planName }}</p>
+                <p class="text-sm text-[var(--text-muted)]">
+                  {{ i.kindLabel }}@if (i.periodStart) { · del {{ formatDate(i.periodStart) }} al {{ formatDate(i.periodEnd) }} }
+                </p>
+              </div>
+              <span class="type-numeric font-semibold text-night">{{ i.amount | soles }}</span>
+              <app-status-badge [label]="invoiceLabel(i)" [tone]="invoiceTone(i)" />
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- Soporte -->
+    <section class="mt-14 border-t border-[var(--line-subtle)] pt-8" aria-labelledby="soporte-titulo">
+      <h2 id="soporte-titulo" class="font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">¿Necesitas ayuda?</h2>
+      @if (d.support.whatsappUrl || d.support.email) {
+        <div class="mt-3 flex flex-wrap gap-3">
+          @if (d.support.whatsappUrl) { <a class="btn btn-secondary" [href]="d.support.whatsappUrl" target="_blank" rel="noopener noreferrer">Escribir a soporte por WhatsApp</a> }
+          @if (d.support.email) { <a class="btn btn-secondary" [href]="'mailto:' + d.support.email">{{ d.support.email }}</a> }
+        </div>
+      } @else {
+        <p class="mt-3 text-sm">Los datos de contacto de soporte aún no están configurados.</p>
+      }
+    </section>
+  } @else if (!error()) {
+    <div class="mt-10 h-48 animate-pulse rounded bg-mist/25" aria-busy="true"><span class="sr-only">Cargando…</span></div>
+  }
+</section>

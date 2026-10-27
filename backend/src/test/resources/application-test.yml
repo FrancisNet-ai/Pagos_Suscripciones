@@ -1,0 +1,23 @@
+app:
+  session:
+    cookie-name: sid
+    cookie-secure: false
+  mail:
+    log-links: false
+  renewals:
+    token-secret: test-renewal-secret-0123456789-abcdefghij
+  secrets:
+    encryption-key: dGVzdC1vbmx5LWVuY3J5cHRpb24ta2V5LTMyYnl0ZXM=
+  whatsapp:
+    app-secret: test-whatsapp-app-secret
+    verify-token: test-verify-token
+
+logging:
+  level:
+    root: WARN
+    com.platform: INFO
+---
+app:
+  storage:
+    local-dir: ${java.io.tmpdir}/platform-test-media
+    private-dir: ${java.io.tmpdir}/platform-test-private

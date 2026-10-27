@@ -1,0 +1,138 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/panel/ventas" class="link text-sm">← Volver a pedidos</a>
+
+  @if (loadError(); as message) {
+    <p class="notice notice-error mt-8" role="alert">{{ message }}</p>
+  } @else if (order(); as o) {
+    <div class="mt-4 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="type-eyebrow">{{ o.kind === 'RENEWAL' ? 'Pedido de renovación' : 'Pedido' }}</p>
+        <h1 class="type-h1 type-numeric mt-2">{{ o.orderNumber }}</h1>
+        <p class="mt-1 text-sm text-[var(--text-muted)]">Creado el {{ date(o.createdAt) }}</p>
+      </div>
+      <app-status-badge [label]="o.statusLabel" [tone]="tone(o.status)" />
+    </div>
+
+    @if (o.incidentReason) { <p class="notice notice-error mt-6" role="alert"><strong>Requiere revisión:</strong>&nbsp;{{ o.incidentReason }}</p> }
+    @if (o.cancellationReason) { <p class="notice notice-info mt-6">Cancelado: {{ o.cancellationReason }}</p> }
+    @if (actionError(); as message) { <p class="notice notice-error mt-6" role="alert">{{ message }}</p> }
+
+    <div class="mt-10 grid gap-12 lg:grid-cols-[1.3fr_1fr]">
+      <div class="grid content-start gap-12">
+        <!-- Pago vigente -->
+        @if (current(); as p) {
+          <section aria-labelledby="pago-titulo">
+            <div class="flex items-baseline justify-between gap-3">
+              <h2 id="pago-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Pago</h2>
+              <span class="text-sm font-semibold text-[var(--text-muted)]">{{ paymentLabel[p.status] }}</span>
+            </div>
+            <dl class="mt-4 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-[0.9375rem]">
+              <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Método</dt><dd class="font-semibold text-night">{{ methodLabel[p.method] }}</dd></div>
+              <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Recibe</dt><dd class="text-right text-night">{{ p.holderName }} · <span class="type-numeric">{{ localPhone(p.receiverPhone) }}</span></dd></div>
+              <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Importe esperado</dt><dd class="type-numeric text-lg font-semibold text-night">{{ p.amount | soles }}</dd></div>
+              <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Código de operación</dt><dd class="type-numeric font-semibold text-night">{{ p.transactionReference ?? 'Aún no reportado' }}</dd></div>
+              @if (p.reportedAt) { <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Reportado</dt><dd class="text-night">{{ date(p.reportedAt) }}</dd></div> }
+              @if (p.verifiedAt) { <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Verificado</dt><dd class="text-night">{{ date(p.verifiedAt) }}</dd></div> }
+            </dl>
+
+            @if (canVerify()) {
+              <div class="mt-8 rounded-[var(--radius-panel)] border border-[var(--line-strong)] bg-white p-5">
+                <h3 class="font-semibold text-night">Verifica en tu aplicación antes de aprobar</h3>
+                <p class="mt-1 text-sm">Busca la operación <strong class="type-numeric">{{ p.transactionReference }}</strong> por <strong>{{ p.amount | soles }}</strong> en {{ methodLabel[p.method] }} ({{ localPhone(p.receiverPhone) }}).</p>
+                <label class="mt-4 flex gap-3 text-[0.9375rem]">
+                  <input class="checkbox" type="checkbox" [formControl]="confirmReceived" />
+                  <span>Confirmo que recibí {{ p.amount | soles }} en {{ methodLabel[p.method] }} con esta operación.</span>
+                </label>
+                <div class="mt-4 flex flex-wrap gap-3">
+                  <button type="button" class="btn btn-primary" [disabled]="!confirmReceived.value || busy()" (click)="verify()">
+                    @if (busy() && panel() === 'none') { <span class="spinner" aria-hidden="true"></span> } Aprobar pago
+                  </button>
+                  <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="openPanel('reject')">Rechazar</button>
+                </div>
+              </div>
+            }
+            @if (p.hasReceipt) {
+              <div class="mt-6">
+                @if (receiptUrl(); as url) {
+                  <img [src]="url" alt="Comprobante enviado por el comprador" class="max-h-96 rounded-[var(--radius-panel)] border border-[var(--line-subtle)]" />
+                  <p class="field-hint mt-2">El comprobante es referencial: confirma siempre la operación en tu aplicación de {{ methodLabel[p.method] }}.</p>
+                } @else {
+                  <button type="button" class="btn btn-secondary" (click)="showReceipt(p.id)">Ver comprobante</button>
+                }
+                @if (receiptError(); as e) { <p class="field-error mt-2">{{ e }}</p> }
+              </div>
+            }
+
+          </section>
+        }
+
+        @if (panel() !== 'none') {
+          <section class="rounded-[var(--radius-panel)] border border-[var(--line-strong)] bg-white p-5" aria-labelledby="motivo-titulo">
+            <h3 id="motivo-titulo" class="font-semibold text-night">{{ panel() === 'reject' ? 'Rechazar el pago' : 'Cancelar el pedido' }}</h3>
+            <p class="mt-1 text-sm">
+              {{ panel() === 'reject' ? 'El comprador verá el motivo y podrá registrar nuevamente su operación.' : 'Se liberará la reserva de cupo. Esta acción no se puede deshacer.' }}
+            </p>
+            <label class="field mt-4">
+              <span class="field-label">Motivo</span>
+              <textarea class="input min-h-24" [formControl]="reason" maxlength="300"
+                        [placeholder]="panel() === 'reject' ? 'Ej.: No encuentro la operación en Yape' : 'Ej.: El cliente desistió'"></textarea>
+              @if (reasonError(); as e) { <span class="field-error">{{ e }}</span> }
+            </label>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <button type="button" class="btn bg-danger text-snow hover:brightness-95" [disabled]="busy()" (click)="submitReason()">
+                {{ panel() === 'reject' ? 'Rechazar pago' : 'Cancelar pedido' }}
+              </button>
+              <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="panel.set('none')">Volver</button>
+            </div>
+          </section>
+        }
+
+        @if (o.payments.length > 1) {
+          <section aria-labelledby="historial-titulo">
+            <h2 id="historial-titulo" class="field-label">Intentos anteriores</h2>
+            <ul class="mt-3 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-sm">
+              @for (p of o.payments.slice(1); track p.id) {
+                <li class="py-3">
+                  <span class="font-semibold text-night">{{ paymentLabel[p.status] }}</span> · <span class="type-numeric">{{ p.transactionReference ?? '—' }}</span>
+                  @if (p.rejectionReason) { <span class="text-[var(--text-muted)]"> · «{{ p.rejectionReason }}»</span> }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+
+      <aside class="grid content-start gap-10">
+        <section aria-labelledby="cliente-titulo">
+          <h2 id="cliente-titulo" class="field-label">Cliente</h2>
+          <p class="mt-2 text-lg font-semibold text-night">{{ o.customerName }}</p>
+          <p class="type-numeric">{{ localPhone(o.customerPhone) }}</p>
+          <a class="btn btn-secondary mt-3" [href]="o.customerWhatsappUrl" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
+          <p class="mt-3 text-xs text-[var(--text-muted)]">Recordatorios de renovación: {{ o.renewalRemindersConsent ? 'autorizados' : 'no autorizados' }}.</p>
+        </section>
+
+        <section aria-labelledby="producto-titulo">
+          <h2 id="producto-titulo" class="field-label">Producto</h2>
+          @for (item of o.items; track item.productId) {
+            <p class="mt-2 font-semibold text-night">{{ item.productName }}</p>
+            <p class="text-sm text-[var(--text-muted)]">{{ item.productType === 'SUBSCRIPTION' ? 'Suscripción · ' + (item.durationDays | duration) : 'Pago único' }}</p>
+            <p class="type-numeric mt-1 font-[family-name:var(--font-editorial)] text-3xl text-night">{{ item.unitPrice | soles }}</p>
+            <p class="text-xs text-[var(--text-muted)]">Precio al momento de la compra.</p>
+          }
+          @if (o.subscriptionStatus) {
+            <p class="mt-3 text-sm">Suscripción: <a class="link" [routerLink]="['/panel/clientes', o.customerId]">{{ o.subscriptionStatus }}</a></p>
+          }
+          @if (o.capacityStatus) {
+            <p class="mt-3 text-sm">Cupo: <strong class="text-night">{{ o.capacityStatus === 'OCCUPIED' ? 'ocupado' : o.capacityStatus === 'RESERVED' ? 'reservado' : 'liberado' }}</strong></p>
+          }
+        </section>
+
+        @if (canCancel()) {
+          <button type="button" class="link self-start text-sm text-danger" (click)="openPanel('cancel')">Cancelar este pedido</button>
+        }
+      </aside>
+    </div>
+  } @else {
+    <div class="mt-8 h-64 animate-pulse rounded bg-mist/25" aria-busy="true"><span class="sr-only">Cargando pedido…</span></div>
+  }
+</section>

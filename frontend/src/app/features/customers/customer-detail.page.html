@@ -1,0 +1,100 @@
+<section class="mx-auto max-w-5xl">
+  <a routerLink="/panel/clientes" class="link text-sm">← Volver a clientes</a>
+
+  @if (loadError(); as message) {
+    <p class="notice notice-error mt-8" role="alert">{{ message }}</p>
+  } @else if (customer(); as c) {
+    <div class="mt-4 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="type-eyebrow">{{ c.source === 'MANUAL' ? 'Cliente registrado a mano' : 'Cliente de la tienda' }}</p>
+        <h1 class="type-h1 mt-2">{{ c.fullName }}</h1>
+        <p class="type-numeric mt-1 text-lg">{{ local(c.phone) }}</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a class="btn btn-secondary" [href]="whatsapp(c)" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        @if (!editing()) { <button type="button" class="btn btn-secondary" (click)="startEdit(c)">Editar</button> }
+      </div>
+    </div>
+
+    @if (error(); as message) { <p class="notice notice-error mt-6" role="alert">{{ message }}</p> }
+
+    @if (editing()) {
+      <form class="mt-6 grid gap-4 rounded-[var(--radius-panel)] bg-white p-5 ring-1 ring-[var(--line-subtle)]" [formGroup]="editForm" (ngSubmit)="saveEdit()" novalidate>
+        <label class="field"><span class="field-label">Nombre</span><input class="input" formControlName="fullName" /></label>
+        <label class="field"><span class="field-label">Notas internas</span><textarea class="input min-h-20" formControlName="notes" maxlength="1000"></textarea></label>
+        <div class="flex gap-3">
+          <button class="btn btn-primary" type="submit" [disabled]="busy()">Guardar</button>
+          <button class="btn btn-secondary" type="button" (click)="editing.set(false)">Cancelar</button>
+        </div>
+      </form>
+    } @else if (c.notes) {
+      <p class="mt-6 max-w-2xl border-l-2 border-mist pl-4 text-[0.9375rem]">{{ c.notes }}</p>
+    }
+
+    <div class="mt-12 grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+      <section aria-labelledby="subs-titulo">
+        <div class="flex items-baseline justify-between gap-3">
+          <h2 id="subs-titulo" class="font-[family-name:var(--font-editorial)] text-2xl font-semibold">Suscripciones</h2>
+          @if (!adding()) { <button type="button" class="link text-sm" (click)="adding.set(true)">Registrar suscripción anterior</button> }
+        </div>
+
+        @if (adding()) {
+          <form class="mt-5 grid gap-5 rounded-[var(--radius-panel)] bg-white p-5 ring-1 ring-[var(--line-subtle)]" [formGroup]="subscriptionForm" (ngSubmit)="saveSubscription()" novalidate>
+            <app-manual-subscription-fields [form]="subscriptionForm" />
+            <div class="flex gap-3">
+              <button class="btn btn-primary" type="submit" [disabled]="busy()">Guardar suscripción</button>
+              <button class="btn btn-secondary" type="button" (click)="adding.set(false)">Cancelar</button>
+            </div>
+          </form>
+        }
+
+        @if (c.subscriptions.length === 0) {
+          <p class="mt-6 text-[var(--text-muted)]">Este cliente aún no tiene suscripciones.</p>
+        } @else {
+          <div class="mt-2 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)]">
+            @for (s of c.subscriptions; track s.id) {
+              <app-subscription-item [sub]="s" (changed)="onSubscriptionChanged($event)" />
+            }
+          </div>
+        }
+      </section>
+
+      <aside class="grid content-start gap-10">
+        <section aria-labelledby="compras-titulo">
+          <h2 id="compras-titulo" class="field-label">Compras en la tienda</h2>
+          <p class="mt-1 text-sm text-[var(--text-muted)]">{{ c.paidOrders }} {{ c.paidOrders === 1 ? 'pedido pagado' : 'pedidos pagados' }}</p>
+          @if (c.orders.length === 0) {
+            <p class="mt-3 text-sm text-[var(--text-muted)]">Sin pedidos en la tienda.</p>
+          } @else {
+            <ul class="mt-3 divide-y divide-[var(--line-subtle)] border-y border-[var(--line-subtle)] text-sm">
+              @for (o of c.orders; track o.id) {
+                <li>
+                  <a [routerLink]="['/panel/ventas', o.id]" class="flex items-center justify-between gap-3 py-3 no-underline">
+                    <span><span class="type-numeric font-semibold text-night">{{ o.orderNumber }}</span><br /><span class="text-[var(--text-muted)]">{{ o.productName }}</span></span>
+                    <span class="text-right"><span class="type-numeric font-semibold text-night">{{ o.amount | soles }}</span><br /><app-status-badge [label]="o.statusLabel" [tone]="tone(o.status)" /></span>
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+        <section aria-labelledby="avisos-titulo">
+          <h2 id="avisos-titulo" class="field-label">Avisos por WhatsApp</h2>
+          <p class="mt-2 text-sm">
+            @if (c.notificationsOptedOut) {
+              No desea recibir avisos. No se prepararán recordatorios para este cliente.
+            } @else {
+              Recordatorios de renovación: {{ c.renewalRemindersConsent ? 'autorizados por el cliente' : 'sin autorización registrada' }}.
+            }
+          </p>
+          <button type="button" class="link mt-2 text-sm" [disabled]="busy()" (click)="toggleOptOut(c)">
+            {{ c.notificationsOptedOut ? 'Volver a permitir avisos' : 'Registrar que no desea avisos' }}
+          </button>
+        </section>
+        <p class="text-xs text-[var(--text-muted)]">Cliente desde el {{ date(c.createdAt) }}</p>
+      </aside>
+    </div>
+  } @else {
+    <div class="mt-8 h-64 animate-pulse rounded bg-mist/25" aria-busy="true"><span class="sr-only">Cargando cliente…</span></div>
+  }
+</section>
