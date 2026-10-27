@@ -1,5 +1,6 @@
 package com.platform.customers
 
+import com.platform.saas.EntitlementService
 import com.platform.businesses.BusinessService
 import com.platform.common.audit.AuditActions
 import com.platform.common.audit.AuditService
@@ -135,6 +136,7 @@ class CustomerAdminService(
     private val orders: OrderService,
     private val orderRepo: OrderRepository,
     private val renewals: RenewalService,
+    private val entitlements: EntitlementService,
     private val audit: AuditService,
     private val clock: Clock,
 ) {
@@ -188,6 +190,7 @@ class CustomerAdminService(
                 extra = mapOf("customerId" to existing.id),
             )
         }
+        entitlements.ensureCustomerCapacity(businessId, phone, storefront = false)
         val customer = customers.save(
             Customer(businessId, request.fullName!!.trim(), phone, CustomerSource.MANUAL, request.notes?.trim()?.ifEmpty { null }),
         )

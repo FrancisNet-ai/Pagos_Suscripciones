@@ -1,5 +1,7 @@
 package com.platform.reports
 
+import com.platform.saas.EntitlementService
+import com.platform.saas.PlanFeature
 import com.platform.businesses.BusinessService
 import com.platform.capacity.CapacityAllocationRepository
 import com.platform.capacity.CapacityService
@@ -291,7 +293,12 @@ object ActivityText {
 @RestController
 @RequestMapping("/api/v1/reports")
 @Tag(name = "Reportes")
-class ReportsController(private val reports: ReportsService, private val businesses: BusinessService, private val clock: Clock) {
+class ReportsController(
+    private val reports: ReportsService,
+    private val businesses: BusinessService,
+    private val entitlements: EntitlementService,
+    private val clock: Clock,
+) {
 
     @GetMapping("/dashboard")
     @Operation(summary = "Indicadores del panel. Solo los pagos verificados cuentan como ingresos.")
@@ -304,6 +311,7 @@ class ReportsController(private val reports: ReportsService, private val busines
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate?,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?,
     ): SalesReport {
+        entitlements.requireFeature(current.businessId, PlanFeature.REPORTS)
         val zone = zone(current)
         val today = clock.instant().atZone(zone).toLocalDate()
         val end = to ?: today

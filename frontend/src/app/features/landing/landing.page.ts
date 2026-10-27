@@ -1,20 +1,26 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { BRAND } from '../../core/brand';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
 import { WaveArtComponent } from '../../shared/components/wave-art.component';
+import { BillingApi, Plan } from '../billing/billing.api';
+import { PlanCardComponent } from '../billing/plan-card.component';
 
 @Component({
   selector: 'app-landing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, BrandMarkComponent, WaveArtComponent],
+  imports: [RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent],
   templateUrl: './landing.page.html',
 })
 export class LandingPage {
   protected readonly auth = inject(AuthService);
   protected readonly brand = BRAND;
   protected readonly year = new Date().getFullYear();
+  /** Planes configurados por la plataforma; sin precios inventados en el código. */
+  protected readonly plans = toSignal(inject(BillingApi).publicPlans().pipe(catchError(() => of<Plan[]>([]))));
 
   protected readonly benefits = [
     {

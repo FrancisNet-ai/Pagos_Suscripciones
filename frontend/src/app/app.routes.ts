@@ -121,6 +121,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/subscriptions/subscriptions.page').then((m) => m.SubscriptionsPage),
       },
       {
+        path: 'plan',
+        title: 'Mi plan · Panel',
+        loadComponent: () => import('./features/billing/billing.page').then((m) => m.BillingPage),
+      },
+      {
         path: 'configuracion',
         loadComponent: () => import('./features/settings/settings-layout.component').then((m) => m.SettingsLayoutComponent),
         children: [
@@ -151,9 +156,45 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    title: 'Superadministración',
     canActivate: [authGuard, roleGuard('SUPER_ADMIN')],
-    loadComponent: () => import('./features/super-admin/super-admin-home.page').then((m) => m.SuperAdminHomePage),
+    loadComponent: () => import('./features/admin/admin-shell.component').then((m) => m.AdminShellComponent),
+    children: [
+      {
+        path: '',
+        title: 'Resumen · Superadministración',
+        loadComponent: () => import('./features/admin/admin-overview.page').then((m) => m.AdminOverviewPage),
+      },
+      {
+        path: 'pagos',
+        title: 'Pagos SaaS · Superadministración',
+        loadComponent: () => import('./features/admin/admin-payments.page').then((m) => m.AdminPaymentsPage),
+      },
+      {
+        path: 'negocios',
+        title: 'Negocios · Superadministración',
+        loadComponent: () => import('./features/admin/admin-businesses.page').then((m) => m.AdminBusinessesPage),
+      },
+      {
+        path: 'negocios/:id',
+        title: 'Negocio · Superadministración',
+        loadComponent: () => import('./features/admin/admin-business-detail.page').then((m) => m.AdminBusinessDetailPage),
+      },
+      {
+        path: 'planes',
+        title: 'Planes · Superadministración',
+        loadComponent: () => import('./features/admin/admin-plans.page').then((m) => m.AdminPlansPage),
+      },
+      {
+        path: 'configuracion',
+        title: 'Configuración · Superadministración',
+        loadComponent: () => import('./features/admin/admin-settings.page').then((m) => m.AdminSettingsPage),
+      },
+      {
+        path: 'auditoria',
+        title: 'Auditoría · Superadministración',
+        loadComponent: () => import('./features/admin/admin-audit.page').then((m) => m.AdminAuditPage),
+      },
+    ],
   },
   {
     path: '**',

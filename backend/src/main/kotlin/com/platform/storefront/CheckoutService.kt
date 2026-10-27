@@ -1,7 +1,7 @@
 package com.platform.storefront
 
 import com.platform.businesses.Business
-import com.platform.businesses.BusinessStatus
+import com.platform.saas.EntitlementService
 import com.platform.capacity.CapacityService
 import com.platform.common.audit.AuditActions
 import com.platform.common.audit.AuditService
@@ -48,6 +48,7 @@ class CheckoutService(
     private val rateLimiter: RateLimiter,
     private val audit: AuditService,
     private val properties: AppProperties,
+    private val entitlements: EntitlementService,
 ) {
     @Transactional
     fun createOrder(slug: String, request: CreateOrderRequest, idempotencyKey: UUID?, ip: String): CreateOrderResponse {
@@ -66,7 +67,7 @@ class CheckoutService(
         rateLimiter.check("order:ip:$ip", limit = 15, window = Duration.ofMinutes(15))
         rateLimiter.check("order:phone:${business.id}:$phone", limit = 6, window = Duration.ofHours(1))
 
-        if (business.status != BusinessStatus.ACTIVE) {
+        if (!entitlements.canSell(business)) {
             throw ApiException.conflict("STORE_NOT_ACCEPTING_ORDERS", "Esta tienda no está recibiendo pedidos por el momento.")
         }
         val product = storefront.publishedProduct(business, request.productId!!)
@@ -75,6 +76,7 @@ class CheckoutService(
             ?: throw ApiException.invalidField("paymentMethod", "Este método de pago no está disponible en la tienda")
 
         val customerName = request.customerName!!.trim().replace(Regex("\\s+"), " ")
+        entitlements.ensureCustomerCapacity(business.id, phone, storefront = true)
         val customer = customers.findOrCreateFromStorefront(business.id, customerName, phone)
         val (order, token) = placeOrder(business, customer.id, customerName, phone, product, method, idempotencyKey, reserveCapacity = true)
         customers.recordConsents(

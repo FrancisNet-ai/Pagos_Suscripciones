@@ -101,19 +101,31 @@
   </section>
 
   <!-- Planes -->
-  <section class="bg-night text-snow" aria-labelledby="planes-titulo">
-    <div class="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:px-8 md:grid-cols-[1.2fr_1fr] md:items-center md:py-24">
-      <div>
+  <section id="planes" class="bg-night text-snow" aria-labelledby="planes-titulo">
+    <div class="mx-auto max-w-6xl px-5 py-20 sm:px-8 md:py-24">
+      <div class="max-w-2xl">
         <p class="type-eyebrow !text-mist">Planes</p>
-        <h2 id="planes-titulo" class="type-h1 mt-4 !text-snow">Planes mensuales, trimestrales y anuales.</h2>
-        <p class="mt-5 max-w-lg text-mist">
-          Elige según la cantidad de productos, clientes y funciones que necesites. Los precios vigentes se publicarán aquí al abrir la contratación de planes.
+        <h2 id="planes-titulo" class="type-h1 mt-4 !text-snow">Paga por la plataforma, no por tus ventas.</h2>
+        <p class="mt-5 text-mist">
+          Un precio fijo según los productos, clientes y funciones que necesites. Tus ventas siguen llegando completas a tus cuentas Yape y Plin.
         </p>
       </div>
-      <div class="border-t border-mist/30 pt-8 md:border-l md:border-t-0 md:pl-10 md:pt-0">
-        <p class="text-mist">Crea tu cuenta ahora y deja listo tu negocio.</p>
-        <a class="btn btn-light mt-5" routerLink="/registro">Crear mi cuenta</a>
-      </div>
+      @if (plans(); as list) {
+        @if (list.length > 0) {
+          <div class="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            @for (p of list; track p.id) {
+              <app-plan-card [plan]="p" [dark]="true">
+                <a class="btn btn-light btn-block" routerLink="/registro" [queryParams]="{ plan: p.id }">Empezar con {{ p.name }}</a>
+              </app-plan-card>
+            }
+          </div>
+        } @else {
+          <div class="mt-10 border-t border-mist/30 pt-8">
+            <p class="text-mist">Los precios vigentes se publicarán aquí. Crea tu cuenta ahora y deja listo tu negocio.</p>
+            <a class="btn btn-light mt-5" routerLink="/registro">Crear mi cuenta</a>
+          </div>
+        }
+      }
     </div>
   </section>
 

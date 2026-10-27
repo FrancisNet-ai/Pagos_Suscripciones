@@ -1,5 +1,6 @@
 package com.platform.products
 
+import com.platform.saas.EntitlementService
 import com.platform.capacity.CapacityService
 import com.platform.common.audit.AuditActions
 import com.platform.common.audit.AuditService
@@ -20,6 +21,7 @@ class ProductService(
     private val capacity: CapacityService,
     private val media: MediaStorage,
     private val audit: AuditService,
+    private val entitlements: EntitlementService,
 ) {
     @Transactional(readOnly = true)
     fun list(businessId: UUID, query: String?, filter: ProductFilter, page: Int, size: Int): PageResponse<ProductResponse> {
@@ -35,6 +37,7 @@ class ProductService(
     @Transactional
     fun create(businessId: UUID, actorId: UUID, request: ProductRequest): ProductResponse {
         validate(request)
+        entitlements.ensureProductCapacity(businessId)
         val product = products.save(
             Product(
                 businessId = businessId,
@@ -92,6 +95,8 @@ class ProductService(
     fun changeStatus(businessId: UUID, actorId: UUID, productId: UUID, status: PublicationStatus): ProductResponse {
         val product = load(businessId, productId)
         val previous = product.publicationStatus
+        // Sacar un producto del archivo vuelve a contar para el límite del plan.
+        if (previous == PublicationStatus.ARCHIVED && status != PublicationStatus.ARCHIVED) entitlements.ensureProductCapacity(businessId)
         if (previous != status) {
             product.publicationStatus = status
             audit.record(

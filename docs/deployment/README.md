@@ -14,9 +14,12 @@ docker compose up --build
 2. Variables: `SPRING_PROFILES_ACTIVE=prod`, credenciales de base de datos propias, `APP_PUBLIC_BASE_URL=https://tudominio.com`,
    `APP_SESSION_COOKIE_SECURE=true`, SMTP y `APP_RENEWAL_TOKEN_SECRET` (obligatorio, ≥ 32 caracteres,
    `openssl rand -base64 48`; cambiarlo invalida los enlaces de renovación ya enviados).
-3. Las migraciones Flyway se aplican al arrancar el backend.
-4. Health check: `GET /actuator/health`.
-5. Logs en stdout (formato JSON en `prod`), recogidos por Docker.
+3. Para crear el superadministrador inicial define una vez `APP_BOOTSTRAP_SUPER_ADMIN_EMAIL` y
+   `APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD` (≥ 12 caracteres); después configura en `/admin` las cuentas Yape/Plin
+   de la plataforma, el soporte y los planes. Sin planes publicados los vendedores no pueden activar su cuenta.
+4. Las migraciones Flyway se aplican al arrancar el backend.
+5. Health check: `GET /actuator/health`.
+6. Logs en stdout (formato JSON en `prod`), recogidos por Docker.
 
 ## Copias de seguridad
 ```bash

@@ -2,6 +2,7 @@ package com.platform.auth
 
 import com.platform.businesses.BusinessStatus
 import com.platform.common.validation.PeruvianMobile
+import com.platform.saas.AccessSummary
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -38,6 +39,9 @@ data class RegisterRequest(
 
     @field:AssertTrue(message = "Debes aceptar la política de privacidad")
     val acceptPrivacy: Boolean?,
+
+    /** Plan SaaS elegido al registrarse (opcional: también puede elegirse después en «Mi plan»). */
+    val planId: UUID? = null,
 )
 
 data class LoginRequest(
@@ -81,6 +85,8 @@ data class BusinessSummaryDto(
     val slug: String,
     val businessName: String,
     val status: BusinessStatus,
+    /** Si el plan permite usar las funciones comerciales y qué funciones incluye. */
+    val access: AccessSummary,
 )
 
 data class SessionResponse(

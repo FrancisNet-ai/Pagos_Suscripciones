@@ -2,7 +2,8 @@ package com.platform.storefront
 
 import com.platform.businesses.Business
 import com.platform.businesses.BusinessRepository
-import com.platform.businesses.BusinessStatus
+import com.platform.saas.EntitlementService
+import com.platform.saas.PlanFeature
 import com.platform.capacity.CapacityService
 import com.platform.common.error.ApiException
 import com.platform.payments.PaymentMethodService
@@ -20,12 +21,14 @@ class StorefrontService(
     private val products: ProductRepository,
     private val paymentMethods: PaymentMethodService,
     private val capacity: CapacityService,
+    private val entitlements: EntitlementService,
 ) {
     @Transactional(readOnly = true)
     fun store(slug: String): PublicStoreResponse {
         val business = findBusiness(slug)
-        if (business.status != BusinessStatus.ACTIVE) {
-            // Política para negocios suspendidos: sin catálogo ni datos de contacto o cobro.
+        val access = entitlements.access(business)
+        if (!access.active) {
+            // Negocio suspendido o sin plan vigente: sin catálogo ni datos de contacto o cobro.
             return PublicStoreResponse(
                 business.slug, business.businessName, null, null, null, null, false,
                 "Esta tienda no está recibiendo pedidos por el momento.", emptyList(),
@@ -37,8 +40,9 @@ class StorefrontService(
             businessName = business.businessName,
             description = business.description,
             logoUrl = business.logoUrl,
-            coverUrl = business.coverUrl,
-            primaryColor = business.primaryColor,
+            // La personalización solo se aplica si el plan la incluye.
+            coverUrl = business.coverUrl.takeIf { access.has(PlanFeature.BRANDING) },
+            primaryColor = business.primaryColor.takeIf { access.has(PlanFeature.BRANDING) },
             acceptingOrders = methods.isNotEmpty(),
             notice = if (methods.isEmpty()) "Esta tienda aún no tiene métodos de pago habilitados." else null,
             paymentMethods = methods,
@@ -48,7 +52,7 @@ class StorefrontService(
     @Transactional(readOnly = true)
     fun products(slug: String): List<PublicProductResponse> {
         val business = findBusiness(slug)
-        if (business.status != BusinessStatus.ACTIVE) return emptyList()
+        if (!entitlements.canSell(business)) return emptyList()
         val list = products.findByBusinessIdAndPublicationStatusOrderByCreatedAtDesc(business.id, PublicationStatus.PUBLISHED)
         val availability = capacity.availabilityFor(list)
         return list.map { toPublic(it, availability.getValue(it.id)) }
@@ -57,6 +61,7 @@ class StorefrontService(
     @Transactional(readOnly = true)
     fun product(slug: String, productId: UUID): PublicProductResponse {
         val business = findBusiness(slug)
+        if (!entitlements.canSell(business)) throw ApiException.notFound("Esta tienda no está recibiendo pedidos por el momento.")
         val product = publishedProduct(business, productId)
         return toPublic(product, capacity.availability(product))
     }

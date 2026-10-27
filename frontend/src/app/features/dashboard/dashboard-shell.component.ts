@@ -1,10 +1,11 @@
 import { A11yModule } from '@angular/cdk/a11y';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
+import { formatDate } from '../billing/billing.api';
 
 interface NavChild {
   label: string;
@@ -64,10 +65,26 @@ export class DashboardShellComponent {
         { label: 'Enlace público', route: '/panel/configuracion/enlace' },
         { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
         { label: 'Avisos de renovación', route: '/panel/configuracion/renovaciones' },
-        { label: 'Plan SaaS' },
+        { label: 'Mi plan', route: '/panel/plan' },
       ],
     },
   ];
+
+  /** Aviso persistente sobre el plan SaaS (sin plan, en gracia o por vencer). */
+  protected readonly planBanner = computed<{ tone: 'danger' | 'warning' | 'info'; text: string; action: string } | null>(() => {
+    const access = this.auth.business()?.access;
+    if (!access || this.url().startsWith('/panel/plan')) return null;
+    if (access.block === 'SUSPENDED') return { tone: 'danger', text: access.message ?? '', action: 'Ver detalles' };
+    if (!access.active) return { tone: 'warning', text: `${access.message ?? ''} Mientras tanto, el panel está en modo de solo lectura.`, action: 'Ir a Mi plan' };
+    if (access.subscriptionStatus === 'PAST_DUE') {
+      return { tone: 'warning', text: `Tu plan venció. Puedes seguir vendiendo hasta el ${formatDate(access.usableUntil)}.`, action: 'Renovar' };
+    }
+    const days = access.expiresAt ? Math.ceil((new Date(access.expiresAt).getTime() - Date.now()) / 86_400_000) : null;
+    if (days !== null && days <= 7) {
+      return { tone: 'info', text: `Tu plan ${access.planName ?? ''} vence el ${formatDate(access.expiresAt)}.`, action: 'Renovar' };
+    }
+    return null;
+  });
 
   protected hasRoutes(item: NavItem): boolean {
     return item.children?.some((c) => c.route) ?? false;
@@ -77,10 +94,15 @@ export class DashboardShellComponent {
     return item.children?.some((c) => c.route && this.router.url.startsWith(c.route)) ?? false;
   }
 
+  private readonly url = signal(this.router.url);
+
   constructor() {
     this.router.events
-      .pipe(filter((e) => e instanceof NavigationEnd), takeUntilDestroyed())
-      .subscribe(() => this.menuOpen.set(false));
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd), takeUntilDestroyed())
+      .subscribe((e) => {
+        this.menuOpen.set(false);
+        this.url.set(e.urlAfterRedirects);
+      });
   }
 
   protected initials(): string {

@@ -2,7 +2,8 @@ package com.platform.renewals
 
 import com.platform.businesses.Business
 import com.platform.businesses.BusinessRepository
-import com.platform.businesses.BusinessStatus
+import com.platform.saas.EntitlementService
+import com.platform.saas.PlanFeature
 import com.platform.capacity.AllocationStatus
 import com.platform.capacity.CapacityAllocationRepository
 import com.platform.common.audit.AuditActions
@@ -70,6 +71,7 @@ class RenewalService(
     private val whatsapp: ManualWhatsAppLinkProvider,
     private val rateLimiter: RateLimiter,
     private val audit: AuditService,
+    private val entitlements: EntitlementService,
     private val jdbc: JdbcTemplate,
     private val properties: AppProperties,
     private val clock: Clock,
@@ -80,12 +82,12 @@ class RenewalService(
     fun dueSubscriptions(limit: Int): List<UUID> = jdbc.queryForList(
         """
         select s.id from customer_subscriptions s join businesses b on b.id = s.business_id
-        where s.status = 'ACTIVE' and b.status = 'ACTIVE'
+        where s.status = 'ACTIVE' and ${EntitlementService.entitledSql("sp.feature_reminders")}
           and s.expires_at <= cast(? as timestamptz) + make_interval(days => greatest(b.reminder_days_before, 1))
           and not exists (select 1 from renewal_requests r where r.subscription_id = s.id and r.cycle_expires_at = s.expires_at)
         order by s.expires_at limit ?
         """.trimIndent(),
-        UUID::class.java, Timestamp.from(clock.instant()), limit,
+        UUID::class.java, Timestamp.from(clock.instant()), Timestamp.from(clock.instant()), limit,
     ).filterNotNull()
 
     /** Crea la solicitud y sus avisos. Idempotente: un ciclo nunca genera dos solicitudes. */
@@ -183,7 +185,7 @@ class RenewalService(
             }
 
         val business = businesses.findById(r.businessId).orElseThrow()
-        if (business.status != BusinessStatus.ACTIVE) throw ApiException.conflict("STORE_NOT_ACCEPTING_ORDERS", "Esta tienda no está recibiendo pagos por el momento.")
+        if (!entitlements.canSell(business)) throw ApiException.conflict("STORE_NOT_ACCEPTING_ORDERS", "Esta tienda no está recibiendo pagos por el momento.")
         val product = products.findByIdAndBusinessId(r.productId, r.businessId)
             ?.takeIf { it.publicationStatus != PublicationStatus.ARCHIVED && it.available }
             ?: throw ApiException.conflict("PRODUCT_UNAVAILABLE", "Este servicio ya no está disponible para renovar. Escribe al vendedor.")
@@ -281,6 +283,7 @@ class RenewalService(
 
     @Transactional
     fun updateSettings(businessId: UUID, actorId: UUID, body: RenewalSettingsRequest): RenewalSettingsResponse {
+        entitlements.requireFeature(businessId, PlanFeature.REMINDERS)
         val b = businesses.findById(businessId).orElseThrow()
         b.reminderDaysBefore = body.reminderDaysBefore!!
         b.reminderOnDueDay = body.reminderOnDueDay!!
@@ -346,11 +349,14 @@ class RenewalService(
         val s = subscriptions.entity(r.businessId, r.subscriptionId)
         val customer = customers.findById(r.customerId).orElseThrow()
         val product = products.findById(r.productId).orElseThrow()
-        val available = business.status == BusinessStatus.ACTIVE && product.publicationStatus != PublicationStatus.ARCHIVED && product.available
+        val available = entitlements.canSell(business) && product.publicationStatus != PublicationStatus.ARCHIVED && product.available
         return PublicRenewalResponse(
             status = r.status,
             response = r.response,
-            store = PublicRenewalStore(business.slug, business.businessName, business.logoUrl, business.primaryColor),
+            store = PublicRenewalStore(
+                business.slug, business.businessName, business.logoUrl,
+                business.primaryColor.takeIf { entitlements.hasFeature(business.id, PlanFeature.BRANDING) },
+            ),
             customerFirstName = customer.fullName.trim().split(Regex("\\s+")).first(),
             productName = s.productNameSnapshot,
             durationDays = product.durationDays,

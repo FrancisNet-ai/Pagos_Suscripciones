@@ -23,9 +23,6 @@
       </a>
     }
 
-    @if (business.status === 'SUSPENDED') {
-      <p class="notice notice-error mt-6" role="alert">Tu negocio está suspendido. Las compras nuevas están bloqueadas; contacta a soporte para reactivarlo.</p>
-    }
     @if (d.pendingVerification.count > 0) {
       <a routerLink="/panel/ventas" [queryParams]="{ filtro: 'TO_VERIFY' }"
          class="mt-6 flex items-center justify-between gap-4 rounded-[var(--radius-panel)] border border-warning/40 bg-warning-soft px-5 py-4 text-warning no-underline">

@@ -1,5 +1,7 @@
 package com.platform.businesses
 
+import com.platform.saas.EntitlementService
+import com.platform.saas.PlanFeature
 import com.platform.common.audit.AuditActions
 import com.platform.common.audit.AuditService
 import com.platform.common.error.ApiException
@@ -20,6 +22,7 @@ class BusinessSettingsService(
     private val businesses: BusinessRepository,
     private val media: MediaStorage,
     private val audit: AuditService,
+    private val entitlements: EntitlementService,
 ) {
     @Transactional
     fun update(businessId: UUID, actorId: UUID, request: UpdateBusinessRequest): Business {
@@ -32,7 +35,9 @@ class BusinessSettingsService(
         }
         business.businessName = request.businessName!!.trim()
         business.description = request.description?.trim()?.ifEmpty { null }
-        business.primaryColor = request.primaryColor?.uppercase()?.ifEmpty { null }
+        val color = request.primaryColor?.uppercase()?.ifEmpty { null }
+        if (color != null && color != business.primaryColor) entitlements.requireFeature(businessId, PlanFeature.BRANDING)
+        business.primaryColor = color
         business.whatsappNumber = request.whatsappNumber?.takeIf { it.isNotBlank() }?.let { PeruPhone.normalize(it) }
         business.timeZone = timeZone
         audit.record(AuditActions.BUSINESS_UPDATED, actorId = actorId, businessId = businessId, entityType = "BUSINESS", entityId = businessId)
@@ -69,6 +74,7 @@ class BusinessSettingsService(
     @Transactional
     fun replaceImage(businessId: UUID, actorId: UUID, kind: BusinessImageKind, file: MultipartFile?): Business {
         val business = load(businessId)
+        if (kind == BusinessImageKind.COVER && file != null) entitlements.requireFeature(businessId, PlanFeature.BRANDING)
         val newUrl = file?.let { media.storeImage(it) }
         val previous = when (kind) {
             BusinessImageKind.LOGO -> business.logoUrl.also { business.logoUrl = newUrl }

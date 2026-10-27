@@ -224,12 +224,43 @@ Al verificar el pago de un pedido `RENEWAL` la suscripción se extiende desde su
 hoy si ya venció) y se registra en `subscription_renewals`. `/reports/dashboard` añade `renewalsMonth`
 y `notificationsDue`; `/reports/sales` añade `renewals { confirmed, accepted, declined, noResponse, pending }`.
 
-## Fases siguientes — contratos orientativos
+## Fase 6 — implementado
 
-### Administración SaaS (Fase 6)
+### Planes (público)
 
-* `GET /public/saas-plans` (landing) · `GET|POST /admin/plans` · `PUT /admin/plans/{id}`
-* `GET /admin/businesses?status=` · `POST /admin/businesses/{id}/suspend` · `POST /admin/businesses/{id}/reactivate`
-* `GET /admin/subscriptions` · `GET /admin/saas-payments` · `POST /admin/saas-payments/{id}/verify`
-* `GET /admin/reports/overview` · `GET /admin/audit-logs`
-* `GET /business/me/subscription` · `POST /business/me/subscription` `{ planId }` · `POST /business/me/saas-payments`
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/saas-plans` | Planes activos para la landing y el registro |
+
+`POST /auth/register` acepta `planId` opcional: genera el cobro del plan elegido. `/auth/me` incluye
+`business.access { active, block, message, subscriptionStatus, planName, expiresAt, usableUntil, features }`.
+
+### Mi plan (OWNER, disponible aunque el plan no esté vigente)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/billing` | Acceso, plan, uso (productos y clientes frente a límites), cobro abierto con pagos, cuentas Yape/Plin de la plataforma, soporte, planes e historial |
+| `POST` | `/billing/checkout` | `{ planId }` → cobro `NEW`, `RENEWAL` o `PLAN_CHANGE` (idempotente para el mismo plan; plan gratuito se activa al instante) |
+| `POST` | `/billing/invoices/{id}/payments` | Multipart `method`, `transactionReference`, `receipt?` → `PENDING_VERIFICATION`. No activa el plan |
+| `POST` | `/billing/invoices/{id}/cancel` | Anula un cobro sin pagos en revisión |
+
+Errores: `PLAN_REQUIRED` / `BUSINESS_SUSPENDED` (403) en operaciones que modifican datos sin plan vigente;
+`FEATURE_NOT_IN_PLAN` (403); `PLAN_LIMIT_REACHED` (409); `PAYMENT_UNDER_REVIEW`, `PAYMENT_ALREADY_REPORTED`,
+`DUPLICATE_REFERENCE`, `PLAN_UNAVAILABLE` (409). En la tienda pública un límite de clientes responde
+`STORE_NOT_ACCEPTING_ORDERS` sin revelar el plan.
+
+### Superadministración (SUPER_ADMIN)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/admin/overview` | Vendedores por estado, pagos por verificar, ingresos SaaS del mes, históricos y de 12 meses, planes contratados |
+| `GET` / `POST` / `PUT` | `/admin/plans`, `/admin/plans/{id}` | Planes (con número de negocios vigentes) |
+| `GET` | `/admin/businesses?q=&filter=ALL\|ACTIVE\|NO_PLAN\|PENDING_PAYMENT\|PAST_DUE\|EXPIRED\|SUSPENDED` | Negocios con su plan (reemplaza a `/admin/subscriptions`) |
+| `GET` | `/admin/businesses/{id}` | Titular, plan, uso agregado, cobros y actividad de plataforma |
+| `POST` | `/admin/businesses/{id}/suspend` · `/reactivate` | `{ reason }` · sin cuerpo |
+| `GET` | `/admin/saas-payments?status=` | Pagos SaaS |
+| `POST` | `/admin/saas-payments/{id}/verify` · `/reject` | Verificación con bloqueo pesimista · `{ reason }` |
+| `GET` | `/admin/saas-payments/{id}/receipt` | Comprobante privado (acceso auditado) |
+| `GET` | `/admin/audit-logs?businessId=&action=` | Metadatos e IP solo en acciones de plataforma |
+| `GET` / `PUT` | `/admin/settings` | Soporte (WhatsApp, correo) y días de gracia |
+| `PUT` | `/admin/settings/payment-methods/{yape\|plin}` | Cuenta de la plataforma; `POST`/`DELETE …/qr` para el QR |

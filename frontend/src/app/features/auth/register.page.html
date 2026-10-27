@@ -56,6 +56,26 @@
       </div>
     </fieldset>
 
+    @if (plans(); as list) {
+      @if (list.length > 0) {
+        <hr class="rule" />
+        <fieldset class="grid gap-5">
+          <legend class="mb-1 font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">Tu plan</legend>
+          <p class="-mt-2 text-[0.9375rem]">Elige uno ahora o después desde tu panel. Se activa cuando confirmemos tu pago; los planes gratuitos, al instante.</p>
+          <div class="grid gap-8 sm:grid-cols-2">
+            @for (p of list; track p.id) {
+              <app-plan-card [plan]="p" [selected]="form.controls.planId.value === p.id">
+                <button type="button" class="btn btn-block !min-h-10" [class]="form.controls.planId.value === p.id ? 'btn-primary' : 'btn-secondary'"
+                        [attr.aria-pressed]="form.controls.planId.value === p.id" (click)="selectPlan(p.id)">
+                  {{ form.controls.planId.value === p.id ? 'Plan elegido' : 'Elegir' }}
+                </button>
+              </app-plan-card>
+            }
+          </div>
+        </fieldset>
+      }
+    }
+
     <div class="grid gap-3">
       <label class="flex gap-3 text-[0.9375rem]">
         <input class="checkbox" type="checkbox" formControlName="acceptTerms" aria-describedby="acceptTerms-error" />

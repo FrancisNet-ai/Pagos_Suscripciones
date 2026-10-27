@@ -7,7 +7,7 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 |---|---|---|---|
 | `/` | `landing` | público | 1 |
 | `/ingresar` | `auth/login` | solo invitados | 1 |
-| `/registro` | `auth/register` | solo invitados | 1 |
+| `/registro` (`?plan=`) | `auth/register` | solo invitados | 1 / 6 |
 | `/recuperar` | `auth/forgot-password` | solo invitados | 1 |
 | `/restablecer?token=` | `auth/reset-password` | público | 1 |
 | `/panel` | `dashboard` (shell con menú lateral) | `BUSINESS_OWNER` | 1 |
@@ -18,12 +18,13 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/panel/suscripciones` (`?filtro=`) | `subscriptions` | owner | 4 |
 | `/panel/reportes` | `reports` | owner | 4 |
 | `/panel/renovaciones` (`?vista=`) | `renewals` | owner | 5 |
-| `/panel/configuracion/negocio`, `/enlace`, `/cobros`, `/renovaciones` (plan SaaS en Fase 6) | `settings` | owner | 2 / 5 / 6 |
+| `/panel/configuracion/negocio`, `/enlace`, `/cobros`, `/renovaciones` | `settings` | owner | 2 / 5 / 6 |
 | `/tienda/:slug` | `storefront` | público | 3 |
 | `/tienda/:slug/comprar/:productId` | `checkout` | público | 3 |
 | `/pedido/:token` | `order-status` | público (token del pedido) | 3 |
+| `/panel/plan` | `billing` (Mi plan: plan, uso, cobro, pago SaaS) | owner, también sin plan vigente | 6 |
 | `/renovar/:token` | `renewals/public` | público (token de renovación) | 5 |
-| `/admin` | `super-admin` (shell propio) | `SUPER_ADMIN` | 6 |
+| `/admin`, `/admin/pagos`, `/admin/negocios`, `/admin/negocios/:id`, `/admin/planes`, `/admin/configuracion`, `/admin/auditoria` | `admin` (shell propio) | `SUPER_ADMIN` | 6 |
 | `**` | página 404 | público | 1 |
 
 Guards:

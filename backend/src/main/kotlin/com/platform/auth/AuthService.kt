@@ -7,6 +7,10 @@ import com.platform.common.audit.AuditService
 import com.platform.common.error.ApiException
 import com.platform.common.ratelimit.RateLimiter
 import com.platform.common.validation.PeruPhone
+import com.platform.saas.AccessSummary
+import com.platform.saas.BillingService
+import com.platform.saas.EntitlementService
+import com.platform.saas.SaasPlanRepository
 import com.platform.security.AuthenticatedUser
 import com.platform.security.IssuedSession
 import com.platform.security.Roles
@@ -33,6 +37,9 @@ class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val rateLimiter: RateLimiter,
     private val audit: AuditService,
+    private val plans: SaasPlanRepository,
+    private val billing: BillingService,
+    private val entitlements: EntitlementService,
     private val clock: Clock,
 ) {
     // Hash válido de una contraseña aleatoria: iguala el tiempo de respuesta cuando el correo no existe.
@@ -48,6 +55,9 @@ class AuthService(
 
         if (users.existsByEmail(email)) {
             throw ApiException.conflict("EMAIL_ALREADY_REGISTERED", "Ya existe una cuenta con este correo. Inicia sesión o recupera tu contraseña.")
+        }
+        request.planId?.let { planId ->
+            if (plans.findById(planId).orElse(null)?.active != true) throw ApiException.invalidField("planId", "Este plan ya no está disponible")
         }
         val now = clock.instant()
         val user = users.save(
@@ -66,6 +76,8 @@ class AuthService(
             AuditActions.USER_REGISTERED, actorId = user.id, businessId = business.id,
             entityType = "BUSINESS", entityId = business.id, ipAddress = client.ip,
         )
+        // Elegir el plan genera su cobro; el plan se habilita cuando la plataforma verifica el pago.
+        request.planId?.let { billing.checkout(business.id, user.id, it) }
         val session = sessionService.create(user.id, client.ip, client.userAgent)
         return AuthResult(toResponse(user, setOf(Roles.BUSINESS_OWNER), business), session)
     }
@@ -103,7 +115,9 @@ class AuthService(
 
     private fun toResponse(user: User, roles: Set<String>, business: Business?) = SessionResponse(
         user = UserDto(user.id, user.fullName, user.email, user.phone, roles),
-        business = business?.let { BusinessSummaryDto(it.id, it.uniqueCode, it.slug, it.businessName, it.status) },
+        business = business?.let {
+            BusinessSummaryDto(it.id, it.uniqueCode, it.slug, it.businessName, it.status, AccessSummary.of(entitlements.access(it)))
+        },
     )
 
     companion object {

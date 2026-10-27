@@ -30,6 +30,11 @@ y clientes recurrentes.
 conservado al renovar, avisos antes y el día del vencimiento preparados para enviar por WhatsApp,
 mensaje de despedida, exclusión de avisos, plazo de gracia configurable y métricas de renovación.
 
+**Fase 6 — Comercialización del SaaS: completada.** Planes configurables por el superadministrador,
+elección de plan en el registro, pago del plan por Yape/Plin verificado manualmente, plazo de gracia,
+límites de productos y clientes, funciones por plan, panel de superadministración con ingresos SaaS
+separados de las ventas, suspensión y reactivación de negocios y auditoría.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

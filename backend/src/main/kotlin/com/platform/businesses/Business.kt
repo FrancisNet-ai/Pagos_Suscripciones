@@ -30,6 +30,9 @@ class Business(
     @Column(nullable = false) var reminderOnDueDay: Boolean = true,
     /** Días tras el vencimiento en que se mantiene el cupo esperando la renovación. */
     @Column(nullable = false) var renewalGraceDays: Int = 3,
+    /** Motivo de la suspensión administrativa (SUPER_ADMIN); visible para el vendedor. */
+    var suspensionReason: String? = null,
+    var suspendedAt: java.time.Instant? = null,
 ) : VersionedEntity()
 
 interface BusinessRepository : JpaRepository<Business, UUID> {

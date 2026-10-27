@@ -22,7 +22,7 @@ erDiagram
 
     saas_plans ||--o{ saas_subscriptions : "contratado en"
     businesses ||--o{ saas_subscriptions : "contrata"
-    saas_subscriptions ||--o{ saas_invoices : "factura"
+    saas_subscriptions ||--o{ saas_invoices : "cobra"
     saas_invoices ||--o{ saas_payments : "se paga con"
 
     businesses ||--o{ products : "publica"
@@ -59,14 +59,19 @@ erDiagram
 | `password_reset_tokens` | `id`, `user_id`, `token_hash`, `expires_at`, `used_at`, `created_at` | `UNIQUE(token_hash)` |
 | `audit_logs` | `id`, `actor_id`, `business_id`, `action`, `entity_type`, `entity_id`, `metadata JSONB`, `ip_address`, `created_at` | índices `(business_id, created_at)`, `(actor_id, created_at)`; solo inserción |
 
-### Facturación SaaS (Fase 6)
+### Facturación SaaS (Fase 6 — `V6__saas_billing.sql`)
 
 | Tabla | Columnas clave |
 |---|---|
-| `saas_plans` | `id`, `name`, `description`, `price`, `billing_period` (`MONTHLY`, `QUARTERLY`, `YEARLY`), `product_limit`, `customer_limit`, `admin_user_limit`, `feature_flags JSONB` (reportes, recordatorios, personalización), `is_active`, `sort_order` |
-| `saas_subscriptions` | `id`, `business_id`, `plan_id`, `status` (`PENDING_PAYMENT`, `ACTIVE`, `PAST_DUE`, `SUSPENDED`, `CANCELLED`, `EXPIRED`), `start_at`, `expires_at`, `grace_until`, `plan_snapshot JSONB` — índice parcial único: una suscripción vigente por negocio |
-| `saas_invoices` | `id`, `business_id`, `subscription_id`, `invoice_number`, `amount`, `period_start`, `period_end`, `status` (`OPEN`, `PAID`, `VOID`), `due_at` |
-| `saas_payments` | `id`, `invoice_id`, `amount`, `method`, `transaction_reference`, `receipt_url`, `status`, `reported_at`, `verified_at`, `verified_by` |
+| `saas_plans` | `id`, `name` (único), `description`, `price`, `billing_period` (`MONTHLY`, `QUARTERLY`, `YEARLY`), `product_limit`, `customer_limit` (`NULL` = sin límite), `admin_user_limit`, `feature_reports`, `feature_reminders`, `feature_branding`, `is_active`, `sort_order`, `version` |
+| `saas_subscriptions` | `id`, `business_id` (único), `plan_id`, `status` (`PENDING_PAYMENT`, `ACTIVE`, `PAST_DUE`, `CANCELLED`, `EXPIRED`), `start_at`, `expires_at`, `grace_until`, `cancelled_at` — `CHECK` de fechas por estado |
+| `saas_invoices` | `id`, `invoice_number` (`PLAN-AAAA-NNNNNN`), `business_id`, `subscription_id`, `plan_id`, `plan_name_snapshot`, `billing_period`, `kind` (`NEW`, `RENEWAL`, `PLAN_CHANGE`), `amount`, `status` (`OPEN`, `PAID`, `VOID`), `period_start`, `period_end`, `paid_at`, `voided_at` — único parcial: un cobro `OPEN` por negocio |
+| `saas_payments` | `id`, `business_id`, `invoice_id`, `method`, `receiver_holder_snapshot`, `receiver_phone_snapshot`, `amount`, `transaction_reference`, `receipt_key`, `status` (`PENDING_VERIFICATION`, `VERIFIED`, `REJECTED`), `reported_at`, `reported_by`, `verified_at`, `verified_by`, `rejected_at`, `rejection_reason` — únicos parciales: un pago en revisión por cobro; `(method, transaction_reference)` en revisión o verificado |
+| `saas_invoice_sequences` | `year`, `last_value` |
+| `platform_settings` | Fila única: `support_whatsapp`, `support_email`, `saas_grace_days` (0–30) |
+| `platform_payment_methods` | `method` (`YAPE`, `PLIN`), `holder_name`, `phone`, `qr_image_url`, `is_enabled` — cuentas de la plataforma, no de los vendedores |
+
+`businesses` añade `suspension_reason` y `suspended_at` (obligatoria si `status = 'SUSPENDED'`).
 
 ### Catálogo y cupos (Fase 2 — `V2__catalog_and_payment_methods.sql`)
 

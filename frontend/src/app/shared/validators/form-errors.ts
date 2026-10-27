@@ -7,6 +7,8 @@ const MESSAGES: Record<string, (args: unknown) => string> = {
   email: () => 'Ingresa un correo electrónico válido',
   minlength: (a) => `Debe tener al menos ${(a as { requiredLength: number }).requiredLength} caracteres`,
   maxlength: (a) => `Debe tener como máximo ${(a as { requiredLength: number }).requiredLength} caracteres`,
+  min: (a) => `Debe ser como mínimo ${(a as { min: number }).min}`,
+  max: (a) => `Debe ser como máximo ${(a as { max: number }).max}`,
   peruMobile: () => 'Ingresa un celular peruano válido de 9 dígitos',
   passwordMismatch: () => 'Las contraseñas no coinciden',
   server: (a) => String(a),

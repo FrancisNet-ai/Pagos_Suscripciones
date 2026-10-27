@@ -131,7 +131,7 @@ class StorefrontIntegrationTest : IntegrationTest() {
     @Test
     fun `un negocio suspendido no expone catalogo ni acepta pedidos`() {
         val store = fx.create(registerSeller())
-        jdbc.update("update businesses set status = 'SUSPENDED' where slug = ?", store.slug)
+        jdbc.update("update businesses set status = 'SUSPENDED', suspended_at = now() where slug = ?", store.slug)
         mockMvc.perform(get("/api/v1/public/stores/${store.slug}"))
             .andExpect(jsonPath("$.acceptingOrders").value(false))
             .andExpect(jsonPath("$.paymentMethods.length()").value(0))

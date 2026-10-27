@@ -19,9 +19,7 @@ Cada fase termina con pruebas en verde y una versión utilizable de punta a punt
 | Infraestructura | Dockerfiles multi-stage, Nginx como proxy de mismo origen, Docker Compose |
 | Pruebas | Unitarias (slug, teléfono, rate limiter), integración con Testcontainers (auth, sesión vencida, acceso no autorizado, aislamiento), unitarias de frontend |
 
-**Pendiente explícito de Fase 1:** selección de plan y pago SaaS durante el registro (depende de los
-planes de la Fase 6). Mientras tanto el negocio queda creado sin suscripción SaaS y el bloqueo por
-falta de plan se activará en la Fase 6.
+La selección de plan y el pago SaaS durante el registro se completaron en la Fase 6.
 
 ## Fase 2 — Negocios y productos ✅
 
@@ -80,9 +78,17 @@ pago de un producto `SUBSCRIPTION` (incluidos los pedidos ya pagados en esta fas
 | Reportes | Renovaciones cobradas del mes en el panel; aceptadas, rechazadas, sin respuesta y pendientes en reportes |
 | Pruebas | Backend 121 (idempotencia del job, cupo conservado, token inválido, exclusión, plazo de gracia, aislamiento); frontend 56; flujo Playwright: avisos → enlace → aceptar y pagar → verificación → renovación; rechazo → despedida |
 
-## Fase 6 — Comercialización del SaaS
-Planes configurables, suscripción y cobro SaaS con verificación por SUPER_ADMIN, límites por plan,
-bloqueo de funciones sin plan vigente, panel de superadministración, suspensión/reactivación, auditoría.
+## Fase 6 — Comercialización del SaaS ✅
+
+| Entregable | Detalle |
+|---|---|
+| Migración | `V6__saas_billing.sql`: `saas_plans`, `saas_subscriptions` (una por negocio), `saas_invoices` (`PLAN-AAAA-NNNNNN`, un cobro abierto por negocio), `saas_payments` (un pago en revisión por cobro, código de operación único), `platform_settings`, `platform_payment_methods`, suspensión en `businesses` |
+| Planes | Creados y editados por el SUPER_ADMIN: precio, periodo (mensual, trimestral, anual), límites de productos y clientes, reportes, avisos automáticos y personalización. Nada de precios en el código |
+| Cobro SaaS | El vendedor elige un plan (en el registro o en «Mi plan»), paga por Yape/Plin a las cuentas de la plataforma con titular declarado y reporta el código; el SUPER_ADMIN lo verifica. Un plan gratuito se activa al instante. Renovar continúa desde el vencimiento; un cambio de plan empieza al verificar (sin prorrateo) |
+| Vigencia | `SaasBillingJob` idempotente: `ACTIVE` → `PAST_DUE` (gracia configurable) → `EXPIRED`. Sin plan vigente el panel queda en solo lectura y la tienda cerrada, sin borrar datos; siguen disponibles «Mi plan», soporte y lo que se debe a compradores que ya pagaron (verificar pagos, activar, cancelar, liberar cupos, exclusiones) |
+| Límites y funciones | Productos activos y clientes (la tienda no revela el plan al comprador), reportes de ventas, avisos de renovación automáticos y colores/portada; validados en el servidor |
+| Superadministración | Panel propio en `/admin`: resumen con ingresos SaaS (separados de las ventas de los vendedores), pagos SaaS con comprobante auditado, negocios con suspensión/reactivación, planes, configuración general y auditoría sin datos de compradores |
+| Pruebas | Backend 134 (pago ≠ activación, doble verificación, rechazo, plan gratuito, registro con plan, límites, funciones, suspensión, gracia y vencimiento, acceso de roles, auditoría minimizada); frontend 60; flujo Playwright completo |
 
 ## Fase 7 — Integraciones avanzadas
 WhatsApp Business Platform (`WhatsAppCloudApiProvider`, plantillas, webhooks firmados), pagos

@@ -217,6 +217,10 @@
     background: rgb(179 207 229 / 30%);
     color: var(--color-corporate);
   }
+  .notice-warning {
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
 
   /* Separadores y superficies */
   .rule {

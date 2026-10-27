@@ -16,9 +16,10 @@
 | 12 | Archivos maliciosos | Lista blanca de tipos verificando *magic bytes*, tamaño máximo, nombres aleatorios, descarga autenticada de comprobantes | Fase 2–3 ✅ |
 | 13 | Datos personales en logs/URLs | Sin teléfonos ni nombres en URLs; tokens opacos; logs sin cuerpos de petición | Todas |
 | 14 | Secretos en el repositorio | Variables de entorno; `.env` ignorado; `.env.example` sin valores reales | Fase 1 |
-| 15 | Acceso indiscriminado del SUPER_ADMIN a compradores | Endpoints admin solo con agregados; acceso a detalle de compradores con motivo y auditoría | Fase 6 |
+| 15 | Acceso indiscriminado del SUPER_ADMIN a compradores | Endpoints admin solo con agregados; sin acceso a compradores; metadatos e IP de auditoría solo en acciones de plataforma; comprobantes SaaS con acceso auditado | Fase 6 ✅ |
 | 16 | Webhooks falsificados (WhatsApp) | Verificación de firma `X-Hub-Signature-256`, idempotencia por `message_id` | Fase 7 |
 | 17 | Cabeceras inseguras | HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `frame-ancestors 'none'` | Fase 1 (backend) + proxy |
+| 18 | Uso sin plan pagado | Derechos calculados en el servidor (`EntitlementService`), interceptor de solo lectura, límites con bloqueo consultivo, pago SaaS verificado manualmente con bloqueo pesimista | Fase 6 ✅ |
 
 ## Datos personales (Perú, Ley N.º 29733)
 

@@ -65,7 +65,7 @@ describe('LoginPage', () => {
 
     http.expectOne('/api/v1/auth/login').flush({
       user: { id: '1', fullName: 'Ana', email: 'ana@ejemplo.pe', phone: '+51987654321', roles: ['BUSINESS_OWNER'] },
-      business: { id: 'b', uniqueCode: 'NEG-1', slug: 'ana', businessName: 'Ana', status: 'ACTIVE' },
+      business: { id: 'b', uniqueCode: 'NEG-1', slug: 'ana', businessName: 'Ana', status: 'ACTIVE', access: { active: true, block: null, message: null, subscriptionStatus: 'ACTIVE', planName: 'Base', expiresAt: null, usableUntil: null, features: [] } },
     });
     expect(navigate).toHaveBeenCalledWith('/panel');
   });
