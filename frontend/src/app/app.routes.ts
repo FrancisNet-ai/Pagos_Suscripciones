@@ -106,6 +106,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/customers/customer-new.page').then((m) => m.CustomerNewPage),
       },
       {
+        path: 'clientes/importar',
+        title: 'Importar clientes · Panel',
+        loadComponent: () => import('./features/imports/customer-import.page').then((m) => m.CustomerImportPage),
+      },
+      {
         path: 'clientes/:id',
         title: 'Cliente · Panel',
         loadComponent: () => import('./features/customers/customer-detail.page').then((m) => m.CustomerDetailPage),
@@ -144,6 +149,11 @@ export const routes: Routes = [
             path: 'renovaciones',
             title: 'Avisos de renovación · Panel',
             loadComponent: () => import('./features/settings/renewal-settings.page').then((m) => m.RenewalSettingsPage),
+          },
+          {
+            path: 'whatsapp',
+            title: 'WhatsApp Business · Panel',
+            loadComponent: () => import('./features/whatsapp/whatsapp-settings.page').then((m) => m.WhatsAppSettingsPage),
           },
           {
             path: 'cobros',

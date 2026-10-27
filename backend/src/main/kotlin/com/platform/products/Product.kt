@@ -39,6 +39,7 @@ class Product(
 interface ProductRepository : JpaRepository<Product, UUID> {
     /** Toda consulta administrativa va acotada por `businessId` (ver ADR-002). */
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): Product?
+    fun findByBusinessId(businessId: UUID): List<Product>
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Product p where p.id = :id and p.businessId = :businessId")

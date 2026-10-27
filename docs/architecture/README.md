@@ -143,8 +143,8 @@ El superadministrador inicial se crea al arrancar solo si se definen las variabl
 | Funcionalidad | MVP (real) | Futuro (requiere credenciales / autorización) |
 |---|---|---|
 | Cobro a compradores | Yape/Plin con **verificación manual** del vendedor | `PaymentProvider` con pasarela autorizada |
-| WhatsApp | Enlace `wa.me` prellenado (el usuario confirma el envío) | `WhatsAppCloudApiProvider` con plantillas y webhooks |
-| Recordatorios | Notificaciones pendientes que el vendedor envía manualmente desde el panel | Envío automático vía WhatsApp Business Platform |
+| WhatsApp | Enlace `wa.me` prellenado (el usuario confirma el envío) y, si el negocio conecta su número, WhatsApp Business Platform (Cloud API) con plantillas y webhooks firmados | Alta guiada con *Embedded Signup* de Meta |
+| Recordatorios | Envío automático por WhatsApp Business a clientes con autorización; el resto, envío manual desde el panel | — |
 | Correo de recuperación | SMTP configurable; en desarrollo el enlace se escribe en el log | Proveedor transaccional |
 | Cobro SaaS | Registro y verificación manual por SUPER_ADMIN | Pasarela de suscripciones |
 | Almacenamiento de imágenes | Disco local / volumen Docker con validación de tipo y tamaño | Almacenamiento de objetos (S3 compatible) |

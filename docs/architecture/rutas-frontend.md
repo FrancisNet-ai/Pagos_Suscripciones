@@ -14,11 +14,12 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/panel/productos` | `products` | owner | 2 |
 | `/panel/productos/nuevo`, `/panel/productos/:id` | `products` | owner | 2 |
 | `/panel/clientes`, `/panel/clientes/nuevo`, `/panel/clientes/:id` | `customers` | owner | 4 |
+| `/panel/clientes/importar` | `imports` (CSV/Excel con vista previa) | owner | 7 |
 | `/panel/ventas` (`?filtro=TO_VERIFY`), `/panel/ventas/:id` | `orders` | owner | 3 |
 | `/panel/suscripciones` (`?filtro=`) | `subscriptions` | owner | 4 |
 | `/panel/reportes` | `reports` | owner | 4 |
 | `/panel/renovaciones` (`?vista=`) | `renewals` | owner | 5 |
-| `/panel/configuracion/negocio`, `/enlace`, `/cobros`, `/renovaciones` | `settings` | owner | 2 / 5 / 6 |
+| `/panel/configuracion/negocio`, `/enlace`, `/cobros`, `/renovaciones`, `/whatsapp` | `settings`, `whatsapp` | owner | 2 / 5 / 7 |
 | `/tienda/:slug` | `storefront` | público | 3 |
 | `/tienda/:slug/comprar/:productId` | `checkout` | público | 3 |
 | `/pedido/:token` | `order-status` | público (token del pedido) | 3 |

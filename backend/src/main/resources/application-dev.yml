@@ -14,6 +14,9 @@ app:
   renewals:
     # Solo para desarrollo local. En producción se define APP_RENEWAL_TOKEN_SECRET.
     token-secret: ${APP_RENEWAL_TOKEN_SECRET:dev-only-renewal-secret-change-me-0123456789}
+  secrets:
+    # Solo para desarrollo local (32 bytes en Base64). En producción se define APP_SECRETS_ENCRYPTION_KEY.
+    encryption-key: ${APP_SECRETS_ENCRYPTION_KEY:ZGV2LW9ubHktZW5jcnlwdGlvbi1rZXktMzJieXRlcyE=}
 
 logging:
   level:

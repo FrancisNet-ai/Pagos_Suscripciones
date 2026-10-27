@@ -18,7 +18,26 @@ data class AppProperties(
     val storage: Storage = Storage(),
     val checkout: Checkout = Checkout(),
     val renewals: Renewals = Renewals(),
+    val secrets: Secrets = Secrets(),
+    val whatsapp: WhatsApp = WhatsApp(),
 ) {
+    data class Secrets(
+        /** Clave AES-256 en Base64 (32 bytes) para cifrar credenciales de terceros guardadas en la base. */
+        val encryptionKey: String = "",
+    )
+
+    /**
+     * WhatsApp Business Platform. La plataforma opera una app de Meta: el secreto firma los webhooks y el
+     * token de verificación responde al alta del webhook. Cada negocio aporta su número y su token.
+     */
+    data class WhatsApp(
+        val graphBaseUrl: String = "https://graph.facebook.com/v21.0",
+        val appSecret: String = "",
+        val verifyToken: String = "",
+        val requestTimeout: Duration = Duration.ofSeconds(10),
+        val maxAttempts: Int = 3,
+    )
+
     data class Renewals(
         /**
          * Secreto para derivar los enlaces de renovación (HMAC). Permite reconstruir el enlace al

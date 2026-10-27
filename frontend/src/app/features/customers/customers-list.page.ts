@@ -22,7 +22,10 @@ type State = { status: 'loading' } | { status: 'error'; message: string } | { st
           <p class="type-eyebrow">Clientes</p>
           <h1 id="clientes-titulo" class="type-h1 mt-3">Tus clientes</h1>
         </div>
-        <a class="btn btn-primary" routerLink="/panel/clientes/nuevo">Registrar cliente</a>
+        <div class="flex flex-wrap gap-3">
+          <a class="btn btn-secondary" routerLink="/panel/clientes/importar">Importar desde archivo</a>
+          <a class="btn btn-primary" routerLink="/panel/clientes/nuevo">Registrar cliente</a>
+        </div>
       </div>
 
       <div class="mt-8 flex flex-col gap-4 border-b border-[var(--line-subtle)] pb-5 md:flex-row md:items-center md:justify-between">

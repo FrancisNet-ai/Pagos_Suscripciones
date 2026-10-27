@@ -44,6 +44,8 @@ class SecurityConfig(
             .csrf { csrf ->
                 // Double submit cookie: Angular lee XSRF-TOKEN y envía X-XSRF-TOKEN.
                 csrf.spa()
+                // El webhook de Meta no usa cookies: se autentica con la firma HMAC de cada entrega.
+                csrf.ignoringRequestMatchers("/api/v1/public/webhooks/**")
                 csrf.csrfTokenRepository(
                     CookieCsrfTokenRepository.withHttpOnlyFalse().apply {
                         setCookieCustomizer { it.secure(properties.session.cookieSecure).sameSite("Lax").path("/") }

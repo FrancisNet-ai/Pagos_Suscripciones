@@ -38,13 +38,21 @@
                 </div>
                 <div>
                   <p class="whitespace-pre-line rounded-[var(--radius-control)] bg-white p-4 text-sm ring-1 ring-[var(--line-subtle)]">{{ n.message }}</p>
-                  <div class="mt-3 flex flex-wrap items-center gap-2">
-                    <a class="btn btn-primary !min-h-10" [href]="n.whatsappUrl" target="_blank" rel="noopener noreferrer" (click)="open(n)">Abrir WhatsApp</a>
-                    <button type="button" class="btn btn-secondary !min-h-10" (click)="markSent(n)" [disabled]="!opened().has(n.id)"
-                            [attr.title]="opened().has(n.id) ? null : 'Primero abre WhatsApp y envía el mensaje'">Ya lo envié</button>
-                    <button type="button" class="btn !min-h-10 text-corporate hover:bg-mist/30" (click)="skip(n)">Omitir</button>
-                  </div>
-                  <p class="mt-2 text-xs text-[var(--text-muted)]">WhatsApp se abre con el mensaje listo; el envío lo confirmas tú.</p>
+                  @if (n.automatic) {
+                    <p class="mt-3 text-sm font-semibold text-success">Se enviará automáticamente por WhatsApp Business.</p>
+                    <p class="mt-1 text-xs text-[var(--text-muted)]">No necesitas enviarlo tú. Verás aquí si el envío falla.</p>
+                  } @else {
+                    @if (n.deliveryStatus === 'FAILED') {
+                      <p class="notice notice-error mt-3 text-sm" role="note">El envío automático falló: {{ n.failureReason }}. Envíalo desde tu WhatsApp.</p>
+                    }
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                      <a class="btn btn-primary !min-h-10" [href]="n.whatsappUrl" target="_blank" rel="noopener noreferrer" (click)="open(n)">Abrir WhatsApp</a>
+                      <button type="button" class="btn btn-secondary !min-h-10" (click)="markSent(n)" [disabled]="!opened().has(n.id)"
+                              [attr.title]="opened().has(n.id) ? null : 'Primero abre WhatsApp y envía el mensaje'">Ya lo envié</button>
+                      <button type="button" class="btn !min-h-10 text-corporate hover:bg-mist/30" (click)="skip(n)">Omitir</button>
+                    </div>
+                    <p class="mt-2 text-xs text-[var(--text-muted)]">WhatsApp se abre con el mensaje listo; el envío lo confirmas tú.</p>
+                  }
                 </div>
               </li>
             }

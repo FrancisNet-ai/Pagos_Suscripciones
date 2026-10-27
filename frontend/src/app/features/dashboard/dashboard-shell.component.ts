@@ -40,6 +40,7 @@ export class DashboardShellComponent {
       children: [
         { label: 'Todos', route: '/panel/clientes' },
         { label: 'Registrar cliente', route: '/panel/clientes/nuevo' },
+        { label: 'Importar clientes', route: '/panel/clientes/importar' },
       ],
     },
     {
@@ -65,6 +66,7 @@ export class DashboardShellComponent {
         { label: 'Enlace público', route: '/panel/configuracion/enlace' },
         { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
         { label: 'Avisos de renovación', route: '/panel/configuracion/renovaciones' },
+        { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
         { label: 'Mi plan', route: '/panel/plan' },
       ],
     },

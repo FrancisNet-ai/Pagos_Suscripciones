@@ -116,7 +116,7 @@ class ReportsService(
             )!!,
             renewalsMonth = paidRenewals(businessId, startOfMonth, tomorrow),
             notificationsDue = jdbc.queryForObject(
-                "select count(*) from renewal_notifications where business_id = ? and delivery_status = 'PENDING' and scheduled_at <= ?",
+                "select count(*) from renewal_notifications where business_id = ? and delivery_status in ('PENDING', 'FAILED') and scheduled_at <= ?",
                 Long::class.java, businessId, ts(now),
             )!!,
             customers = jdbc.queryForObject("select count(*) from customers where business_id = ?", Long::class.java, businessId)!!,

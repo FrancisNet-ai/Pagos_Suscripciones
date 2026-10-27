@@ -35,6 +35,12 @@ elección de plan en el registro, pago del plan por Yape/Plin verificado manualm
 límites de productos y clientes, funciones por plan, panel de superadministración con ingresos SaaS
 separados de las ventas, suspensión y reactivación de negocios y auditoría.
 
+**Fase 7 — Integraciones avanzadas: completada.** WhatsApp Business Platform por negocio (token cifrado,
+número verificado con Meta, plantillas aprobadas), envío automático de recordatorios solo a clientes que
+lo autorizaron, webhooks firmados con estados de entrega y respuestas Sí/No por botón, importación de
+clientes desde CSV o Excel con vista previa, y CI con GitHub Actions. Pagos automáticos: no aplican
+mientras Yape y Plin no ofrezcan una API oficial.
+
 Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/BACKLOG.md).
 
 ## Tecnologías

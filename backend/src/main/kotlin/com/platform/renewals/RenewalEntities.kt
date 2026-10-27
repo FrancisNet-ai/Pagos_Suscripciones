@@ -82,7 +82,8 @@ enum class NotificationChannel { MANUAL_LINK, WHATSAPP_API }
 
 /**
  * PENDING: listo para enviar. SENT_MANUALLY: el vendedor indicó que lo envió desde su WhatsApp.
- * SENT / DELIVERED / FAILED: reservados para la integración oficial. SKIPPED: no se envía.
+ * SENT / DELIVERED: enviado por la integración oficial (DELIVERED lo confirma el webhook).
+ * FAILED: el envío automático falló; el vendedor puede enviarlo a mano. SKIPPED: no se envía.
  */
 enum class DeliveryStatus { PENDING, SENT_MANUALLY, SENT, DELIVERED, FAILED, SKIPPED }
 
@@ -99,16 +100,29 @@ class RenewalNotification(
     var sentAt: Instant? = null,
     var sentBy: UUID? = null,
     var providerMessageId: String? = null,
-) : VersionedEntity()
+    @Column(nullable = false) var attempts: Int = 0,
+    var failureReason: String? = null,
+    var deliveredAt: Instant? = null,
+    var readAt: Instant? = null,
+) : VersionedEntity() {
+    /** Aún puede enviarse (a mano): pendiente o con envío automático fallido. */
+    val actionable: Boolean get() = deliveryStatus == DeliveryStatus.PENDING || deliveryStatus == DeliveryStatus.FAILED
+}
 
 interface RenewalNotificationRepository : JpaRepository<RenewalNotification, UUID> {
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): RenewalNotification?
     fun findByRenewalRequestId(requestId: UUID): List<RenewalNotification>
-    fun findByBusinessIdAndDeliveryStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
-        businessId: UUID, status: DeliveryStatus, before: Instant, pageable: Pageable,
+    fun findByBusinessIdAndDeliveryStatusInAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
+        businessId: UUID, statuses: Collection<DeliveryStatus>, before: Instant, pageable: Pageable,
     ): Page<RenewalNotification>
 
-    fun countByBusinessIdAndDeliveryStatusAndScheduledAtLessThanEqual(businessId: UUID, status: DeliveryStatus, before: Instant): Long
+    fun countByBusinessIdAndDeliveryStatusInAndScheduledAtLessThanEqual(businessId: UUID, statuses: Collection<DeliveryStatus>, before: Instant): Long
+
+    fun findByProviderMessageIdAndBusinessId(providerMessageId: String, businessId: UUID): RenewalNotification?
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select n from RenewalNotification n where n.id = :id")
+    fun lockById(id: UUID): RenewalNotification?
     fun existsByRenewalRequestIdAndNotificationType(requestId: UUID, type: NotificationType): Boolean
 }
 

@@ -33,6 +33,8 @@ class EntitlementInterceptor(private val entitlements: EntitlementService) : Han
             "/api/v1/orders/*/cancel",
             "/api/v1/subscriptions/*/activate", "/api/v1/subscriptions/*/cancel", "/api/v1/subscriptions/*/release-capacity",
             "/api/v1/customers/*/notifications",
+            // Desconectar WhatsApp borra credenciales: siempre debe poder hacerse.
+            "/api/v1/business/me/whatsapp",
         )
     }
 }

@@ -72,6 +72,7 @@ class RenewalService(
     private val rateLimiter: RateLimiter,
     private val audit: AuditService,
     private val entitlements: EntitlementService,
+    private val whatsAppIntegrations: com.platform.whatsapp.WhatsAppIntegrationService,
     private val jdbc: JdbcTemplate,
     private val properties: AppProperties,
     private val clock: Clock,
@@ -140,9 +141,27 @@ class RenewalService(
     fun respond(token: String, response: RenewalResponse, ip: String): PublicRenewalResponse {
         rateLimiter.check("renewal:ip:$ip", limit = 30, window = Duration.ofMinutes(15))
         val r = find(token, lock = true)
-        if (r.status != RenewalStatus.OPEN && !(r.status == RenewalStatus.AWAITING_PAYMENT && response == RenewalResponse.DECLINED)) {
-            throw ApiException.conflict("RENEWAL_CLOSED", "Esta solicitud de renovación ya no admite cambios.")
-        }
+        if (!acceptsResponse(r, response)) throw ApiException.conflict("RENEWAL_CLOSED", "Esta solicitud de renovación ya no admite cambios.")
+        applyResponse(r, response, ip, channel = "WEB")
+        return describe(r)
+    }
+
+    /**
+     * Respuesta «Sí» o «No» desde un botón de WhatsApp (webhook firmado). Devuelve la solicitud si se
+     * aplicó, o `null` si ya no admite cambios. Igual que en la web: decir que sí no es pagar.
+     */
+    @Transactional
+    fun respondViaWhatsApp(businessId: UUID, requestId: UUID, response: RenewalResponse): RenewalRequest? {
+        val r = requests.lockById(requestId)?.takeIf { it.businessId == businessId } ?: return null
+        if (!clock.instant().isBefore(r.tokenExpiresAt) || !acceptsResponse(r, response)) return null
+        applyResponse(r, response, ip = null, channel = "WHATSAPP")
+        return r
+    }
+
+    private fun acceptsResponse(r: RenewalRequest, response: RenewalResponse) =
+        r.status == RenewalStatus.OPEN || (r.status == RenewalStatus.AWAITING_PAYMENT && response == RenewalResponse.DECLINED)
+
+    private fun applyResponse(r: RenewalRequest, response: RenewalResponse, ip: String?, channel: String) {
         val s = subscriptions.entity(r.businessId, r.subscriptionId)
         r.response = response
         r.respondedAt = clock.instant()
@@ -151,7 +170,7 @@ class RenewalService(
                 // Registrar la intención no renueva: se espera el pago verificado.
                 r.status = RenewalStatus.AWAITING_PAYMENT
                 subscriptions.markRenewalPending(s)
-                audit.record(AuditActions.RENEWAL_ACCEPTED, businessId = r.businessId, entityType = "RENEWAL", entityId = r.id, metadata = mapOf("product" to s.productNameSnapshot), ipAddress = ip)
+                audit.record(AuditActions.RENEWAL_ACCEPTED, businessId = r.businessId, entityType = "RENEWAL", entityId = r.id, metadata = mapOf("product" to s.productNameSnapshot, "channel" to channel), ipAddress = ip)
             }
             RenewalResponse.DECLINED -> {
                 // Conserva el servicio hasta el fin del periodo pagado; luego el cupo queda por liberar.
@@ -159,11 +178,10 @@ class RenewalService(
                 skipPending(r.id)
                 subscriptions.settleUnrenewed(s)
                 schedule(r, NotificationType.FAREWELL, clock.instant(), isOptedOut(r.customerId))
-                audit.record(AuditActions.RENEWAL_DECLINED, businessId = r.businessId, entityType = "RENEWAL", entityId = r.id, metadata = mapOf("product" to s.productNameSnapshot), ipAddress = ip)
+                audit.record(AuditActions.RENEWAL_DECLINED, businessId = r.businessId, entityType = "RENEWAL", entityId = r.id, metadata = mapOf("product" to s.productNameSnapshot, "channel" to channel), ipAddress = ip)
             }
             RenewalResponse.NONE -> throw ApiException.invalidField("response", "Elige si deseas renovar")
         }
-        return describe(r)
     }
 
     /** Crea (o reutiliza) el pedido de renovación. Aceptar implícitamente si aún no respondió. */
@@ -246,8 +264,8 @@ class RenewalService(
     @Transactional(readOnly = true)
     fun dueNotifications(businessId: UUID, page: Int, size: Int): PageResponse<NotificationItem> {
         val business = businesses.findById(businessId).orElseThrow()
-        val result = notifications.findByBusinessIdAndDeliveryStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
-            businessId, DeliveryStatus.PENDING, clock.instant(), PageRequest.of(maxOf(page, 0), size.coerceIn(1, PageResponse.MAX_SIZE)),
+        val result = notifications.findByBusinessIdAndDeliveryStatusInAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
+            businessId, ACTIONABLE, clock.instant(), PageRequest.of(maxOf(page, 0), size.coerceIn(1, PageResponse.MAX_SIZE)),
         )
         return PageResponse.of(result) { n -> toItem(n, business) }
     }
@@ -255,7 +273,7 @@ class RenewalService(
     @Transactional
     fun markSent(businessId: UUID, actorId: UUID, notificationId: UUID): NotificationItem {
         val n = notifications.findByIdAndBusinessId(notificationId, businessId) ?: throw ApiException.notFound("El aviso no existe.")
-        if (n.deliveryStatus != DeliveryStatus.PENDING) throw ApiException.conflict("NOTIFICATION_PROCESSED", "Este aviso ya fue procesado.")
+        if (!n.actionable) throw ApiException.conflict("NOTIFICATION_PROCESSED", "Este aviso ya fue procesado.")
         // Solo el vendedor puede afirmar que lo envió: abrir WhatsApp no garantiza el envío.
         n.deliveryStatus = DeliveryStatus.SENT_MANUALLY
         n.sentAt = clock.instant()
@@ -267,12 +285,12 @@ class RenewalService(
     @Transactional
     fun skip(businessId: UUID, notificationId: UUID) {
         val n = notifications.findByIdAndBusinessId(notificationId, businessId) ?: throw ApiException.notFound("El aviso no existe.")
-        if (n.deliveryStatus == DeliveryStatus.PENDING) n.deliveryStatus = DeliveryStatus.SKIPPED
+        if (n.actionable) n.deliveryStatus = DeliveryStatus.SKIPPED
     }
 
     @Transactional(readOnly = true)
     fun overview(businessId: UUID): RenewalsOverview = RenewalsOverview(
-        notificationsDue = notifications.countByBusinessIdAndDeliveryStatusAndScheduledAtLessThanEqual(businessId, DeliveryStatus.PENDING, clock.instant()),
+        notificationsDue = notifications.countByBusinessIdAndDeliveryStatusInAndScheduledAtLessThanEqual(businessId, ACTIONABLE, clock.instant()),
         upcoming = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.OPEN),
         accepted = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.AWAITING_PAYMENT),
         declined = requests.countByBusinessIdAndStatus(businessId, RenewalStatus.DECLINED),
@@ -304,7 +322,7 @@ class RenewalService(
         pref.source = source
         if (optedOut) {
             jdbc.update(
-                "update renewal_notifications set delivery_status = 'SKIPPED', version = version + 1, updated_at = now() where customer_id = ? and delivery_status = 'PENDING'",
+                "update renewal_notifications set delivery_status = 'SKIPPED', version = version + 1, updated_at = now() where customer_id = ? and delivery_status in ('PENDING', 'FAILED')",
                 customerId,
             )
         }
@@ -332,7 +350,7 @@ class RenewalService(
 
     private fun skipPending(requestId: UUID) {
         notifications.findByRenewalRequestId(requestId)
-            .filter { it.deliveryStatus == DeliveryStatus.PENDING && it.notificationType != NotificationType.FAREWELL }
+            .filter { it.actionable && it.notificationType != NotificationType.FAREWELL }
             .forEach { it.deliveryStatus = DeliveryStatus.SKIPPED }
     }
 
@@ -383,8 +401,11 @@ class RenewalService(
                 link = link(r.id),
             )
         }
-        val consent = consents.findByCustomerIdOrderByCreatedAtDesc(c.id).firstOrNull { it.purpose == ConsentPurpose.RENEWAL_REMINDERS }
-            ?.let { it.granted && it.revokedAt == null } ?: false
+        val consent = hasReminderConsent(c.id)
+        val wa = whatsAppIntegrations.active(business.id)?.integration
+        // Se enviará solo por la integración oficial: el vendedor no debe enviarlo también a mano.
+        val automatic = n.deliveryStatus == DeliveryStatus.PENDING && consent && wa != null &&
+            (n.notificationType != NotificationType.FAREWELL || wa.farewellTemplate != null)
         return NotificationItem(
             id = n.id, type = n.notificationType,
             typeLabel = when (n.notificationType) {
@@ -394,6 +415,16 @@ class RenewalService(
             },
             customerId = c.id, customerName = c.fullName, customerPhone = c.phone, productName = s.productNameSnapshot,
             scheduledAt = n.scheduledAt, message = message, whatsappUrl = whatsapp.prepare(c.phone, message).manualUrl!!, consent = consent,
+            deliveryStatus = n.deliveryStatus, automatic = automatic, failureReason = n.failureReason,
         )
+    }
+
+    /** Última decisión del cliente sobre recordatorios de renovación (historial de consentimientos). */
+    fun hasReminderConsent(customerId: UUID): Boolean =
+        consents.findByCustomerIdOrderByCreatedAtDesc(customerId).firstOrNull { it.purpose == ConsentPurpose.RENEWAL_REMINDERS }
+            ?.let { it.granted && it.revokedAt == null } ?: false
+
+    private companion object {
+        val ACTIONABLE = setOf(DeliveryStatus.PENDING, DeliveryStatus.FAILED)
     }
 }

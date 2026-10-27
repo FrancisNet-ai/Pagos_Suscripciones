@@ -14,14 +14,18 @@
 * Sin plan vigente el panel queda en solo lectura (interceptor central), salvo «Mi plan» y las operaciones que se deben a compradores que ya pagaron.
 * Un cambio de plan empieza al verificar el pago y no prorratea los días restantes; renovar el mismo plan continúa desde el vencimiento.
 * Las funciones de un plan se guardan como columnas booleanas (`feature_*`) en lugar de JSONB: son pocas, tipadas y consultables en SQL.
+* WhatsApp: la plataforma opera una app de Meta (secreto y token de verificación del webhook); cada negocio aporta su número, su token y sus plantillas. El envío automático exige autorización de recordatorios del cliente; los clientes importados no la tienen.
+* La importación guarda la vista previa y aplica exactamente esas filas; cada fila se escribe en su propia transacción.
 * Los avisos de renovación se preparan para envío manual: abrir WhatsApp no cuenta como enviado; el vendedor confirma con «Ya lo envié».
 * El token de renovación es un HMAC de la solicitud con `APP_RENEWAL_TOKEN_SECRET`; cambiar el secreto invalida los enlaces ya enviados.
 * El enlace del pedido usa un token aleatorio de 256 bits (solo se guarda su hash). Un reintento con la misma `Idempotency-Key` emite un enlace nuevo para el mismo pedido.
 
 ## Pendientes
-- [ ] Importación masiva de clientes desde CSV/Excel con vista previa (Fase 7).
 - [ ] Tareas del vendedor (`seller_tasks`) como entidad propia; hoy los pendientes se derivan del estado (cupos por liberar, avisos por enviar, pagos por verificar).
-- [ ] Envío automático de avisos de renovación con WhatsApp Business Platform (Fase 7); hoy el envío es manual.
+- [ ] *Embedded Signup* de Meta para conectar WhatsApp sin copiar identificadores ni tokens (requiere app verificada como Tech Provider).
+- [ ] Plantillas de WhatsApp para confirmaciones de pedido y de pago (hoy solo recordatorios y despedida).
+- [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
+- [ ] Despliegue continuo (CD) cuando exista un entorno de producción.
 - [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
 - [ ] Playwright como suite versionada en el repositorio (hoy los flujos E2E se ejecutan como scripts de verificación).
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
@@ -33,6 +37,5 @@
 - [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.
 - [ ] Evaluar Row Level Security de PostgreSQL como defensa en profundidad.
 - [ ] Bloqueo distribuido de tareas programadas y rate limiting compartido si se usan varias instancias.
-- [ ] CI/CD (GitHub Actions) al alcanzar una versión estable.
 - [ ] Copias de seguridad automatizadas en el servidor de producción (script base en `infrastructure/scripts`).
 - [ ] Adquirir licencias de Voga y Bodoni FLF si se desea la identidad tipográfica original.

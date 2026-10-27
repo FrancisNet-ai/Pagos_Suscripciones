@@ -105,6 +105,17 @@ erDiagram
 `businesses` añade `reminder_days_before` (0–15), `reminder_on_due_day` y `renewal_grace_days` (0–30).
 `orders.renewal_request_id` es obligatorio si y solo si `kind = 'RENEWAL'`.
 
+### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
+
+| Tabla | Columnas clave | Notas |
+|---|---|---|
+| `whatsapp_integrations` | `business_id` (PK), `phone_number_id` (único), `waba_id`, `display_phone`, `access_token_encrypted` (AES-GCM), `reminder_template`, `farewell_template`, `template_language`, `enabled`, `status` (`UNVERIFIED`, `VERIFIED`, `ERROR`), `last_verified_at`, `last_error` | `CHECK(NOT enabled OR status = 'VERIFIED')` |
+| `whatsapp_webhook_events` | `event_key` (PK: `st:<id>:<estado>` o `msg:<id>`), `business_id`, `kind`, `received_at` | Idempotencia de entregas repetidas |
+| `customer_imports` | `id`, `business_id`, `file_name`, `status` (`PREVIEW`, `COMMITTED`, `DISCARDED`), `rows` JSONB, `total_rows`, `valid_rows`, `result` JSONB, `created_by`, `expires_at`, `committed_at` | La confirmación usa exactamente las filas de la vista previa |
+
+`renewal_notifications` añade `attempts`, `failure_reason`, `delivered_at`, `read_at` y un índice único parcial por
+`provider_message_id`.
+
 ## Integridad y concurrencia
 
 * Todas las FK con `ON DELETE RESTRICT` salvo tablas dependientes puras (`order_items`,

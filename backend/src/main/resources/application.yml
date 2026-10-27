@@ -83,6 +83,12 @@ app:
     order-ttl: ${APP_CHECKOUT_ORDER_TTL:P2D}
   renewals:
     token-secret: ${APP_RENEWAL_TOKEN_SECRET:}
+  secrets:
+    encryption-key: ${APP_SECRETS_ENCRYPTION_KEY:}
+  whatsapp:
+    graph-base-url: ${APP_WHATSAPP_GRAPH_BASE_URL:https://graph.facebook.com/v21.0}
+    app-secret: ${APP_WHATSAPP_APP_SECRET:}
+    verify-token: ${APP_WHATSAPP_VERIFY_TOKEN:}
   bootstrap:
     super-admin-email: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:}
     super-admin-password: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:}

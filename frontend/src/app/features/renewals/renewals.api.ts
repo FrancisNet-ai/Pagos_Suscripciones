@@ -51,6 +51,10 @@ export interface NotificationItem {
   message: string;
   whatsappUrl: string;
   consent: boolean;
+  deliveryStatus: 'PENDING' | 'FAILED';
+  /** Lo enviará la integración oficial de WhatsApp: no requiere acción. */
+  automatic: boolean;
+  failureReason: string | null;
 }
 
 export interface RenewalsOverview {

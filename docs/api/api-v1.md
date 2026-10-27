@@ -264,3 +264,35 @@ Errores: `PLAN_REQUIRED` / `BUSINESS_SUSPENDED` (403) en operaciones que modific
 | `GET` | `/admin/audit-logs?businessId=&action=` | Metadatos e IP solo en acciones de plataforma |
 | `GET` / `PUT` | `/admin/settings` | Soporte (WhatsApp, correo) y días de gracia |
 | `PUT` | `/admin/settings/payment-methods/{yape\|plin}` | Cuenta de la plataforma; `POST`/`DELETE …/qr` para el QR |
+
+## Fase 7 — implementado
+
+### WhatsApp Business (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/business/me/whatsapp` | Estado de la conexión, plantillas, último error, si el plan lo permite y si la plataforma recibe webhooks. El token nunca se devuelve |
+| `PUT` | `/business/me/whatsapp` | `{ phoneNumberId, wabaId?, accessToken? (vacío = conservar), reminderTemplate, farewellTemplate?, templateLanguage, enabled }`. Verifica el número contra la Graph API; con error queda `status = ERROR` y sin habilitar. Requiere la función de avisos automáticos |
+| `DELETE` | `/business/me/whatsapp` | Desconecta y borra el token (disponible aunque el plan no esté vigente) |
+
+`GET /renewals/notifications` incluye avisos `PENDING` y `FAILED` con `deliveryStatus`, `automatic` (lo enviará
+la integración; no requiere acción) y `failureReason`. `POST …/sent` y `…/skip` aceptan avisos fallidos.
+
+### Webhook de Meta (público)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/public/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=&hub.challenge=` | Alta del webhook: responde el `challenge` si el token coincide con `APP_WHATSAPP_VERIFY_TOKEN` |
+| `POST` | `/public/webhooks/whatsapp` | Eventos con `X-Hub-Signature-256` (HMAC-SHA256 del cuerpo con `APP_WHATSAPP_APP_SECRET`); sin firma válida → `401`. `statuses` actualiza la entrega; botones `RNW:<aviso>:Y\|N` aplican la respuesta; texto «BAJA»/«STOP» excluye al cliente. Si un evento falla responde `500` para que Meta reintente (los ya procesados se omiten) |
+
+### Importación de clientes (OWNER)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/customers/imports` | Multipart `file` (CSV o `.xlsx`, ≤ 2 MB, ≤ 2000 filas) → vista previa con `summary` y filas (`CREATE`, `EXISTING`, `ERROR` con motivos). No crea nada |
+| `GET` | `/customers/imports/{id}` | Vista previa o resultado |
+| `POST` | `/customers/imports/{id}/commit` | Aplica la vista previa (válida 24 h): `result { created, subscriptionsAdded, unchanged, failed, skipped }` y resultado por fila |
+| `POST` | `/customers/imports/{id}/discard` | Descarta la vista previa |
+
+Columnas reconocidas (sin importar tildes ni mayúsculas): `nombre`*, `celular`*, `producto`, `inicio`,
+`duracion_dias` o `vencimiento`, `precio`, `estado` (activa, vencida, cancelada), `notas`.

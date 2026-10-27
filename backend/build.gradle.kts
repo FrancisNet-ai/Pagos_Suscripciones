@@ -22,6 +22,7 @@ repositories {
 val springdocVersion = "3.2.0"
 val mockkVersion = "1.14.11"
 val springMockkVersion = "5.0.1"
+val poiVersion = "5.4.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -35,6 +36,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+    // Lectura de hojas .xlsx para importar clientes (no se generan archivos de Office).
+    implementation("org.apache.poi:poi-ooxml:$poiVersion")
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")

@@ -70,6 +70,11 @@ data class NotificationItem(
     val whatsappUrl: String,
     /** El cliente autorizó recordatorios al comprar. */
     val consent: Boolean,
+    val deliveryStatus: DeliveryStatus,
+    /** Lo enviará la integración oficial de WhatsApp; no requiere acción del vendedor. */
+    val automatic: Boolean,
+    /** Motivo del último fallo del envío automático (el vendedor puede enviarlo a mano). */
+    val failureReason: String?,
 )
 
 data class RenewalsOverview(

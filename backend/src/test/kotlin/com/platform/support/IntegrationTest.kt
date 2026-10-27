@@ -16,6 +16,8 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import java.util.UUID
@@ -41,6 +43,15 @@ class TestBeans {
 @ActiveProfiles("test")
 @Import(TestcontainersConfig::class, TestBeans::class)
 abstract class IntegrationTest {
+    companion object {
+        /** Todas las pruebas comparten el mismo contexto: la Graph API simulada se inyecta aquí. */
+        @JvmStatic
+        @DynamicPropertySource
+        fun whatsappProperties(registry: DynamicPropertyRegistry) {
+            registry.add("app.whatsapp.graph-base-url") { FakeWhatsAppGraph.baseUrl }
+        }
+    }
+
     @Autowired
     protected lateinit var mockMvc: MockMvc
 

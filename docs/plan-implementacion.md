@@ -90,6 +90,15 @@ pago de un producto `SUBSCRIPTION` (incluidos los pedidos ya pagados en esta fas
 | Superadministración | Panel propio en `/admin`: resumen con ingresos SaaS (separados de las ventas de los vendedores), pagos SaaS con comprobante auditado, negocios con suspensión/reactivación, planes, configuración general y auditoría sin datos de compradores |
 | Pruebas | Backend 134 (pago ≠ activación, doble verificación, rechazo, plan gratuito, registro con plan, límites, funciones, suspensión, gracia y vencimiento, acceso de roles, auditoría minimizada); frontend 60; flujo Playwright completo |
 
-## Fase 7 — Integraciones avanzadas
-WhatsApp Business Platform (`WhatsAppCloudApiProvider`, plantillas, webhooks firmados), pagos
-automáticos con proveedor autorizado, importación CSV/Excel con vista previa. CI/CD al estabilizar.
+## Fase 7 — Integraciones avanzadas ✅
+
+| Entregable | Detalle |
+|---|---|
+| Migración | `V7__whatsapp_and_imports.sql`: `whatsapp_integrations` (token cifrado, un número por negocio), `whatsapp_webhook_events` (idempotencia), estado de entrega en `renewal_notifications`, `customer_imports` |
+| WhatsApp Business Platform | Cada negocio conecta su número (Cloud API) con identificador, token y plantillas aprobadas. El número se verifica contra la Graph API antes de habilitar el envío; el token se cifra con AES-256-GCM y nunca se devuelve |
+| Mensajes automáticos | `RenewalDispatchJob` envía la plantilla de recordatorio (con botones Sí/No y enlace de renovación) y la de despedida solo a clientes que autorizaron recordatorios y no se excluyeron, con plan que incluye avisos automáticos. Reintentos con espera ante fallos temporales; un fallo definitivo vuelve el aviso a la bandeja manual con el motivo |
+| Webhooks | `/api/v1/public/webhooks/whatsapp`: alta con token de verificación, eventos con firma `X-Hub-Signature-256` e idempotencia por evento. Registra entregado/leído/fallido, aplica respuestas Sí/No por botón (solo del mismo celular; decir que sí no es pagar) y contesta en la conversación con el enlace de pago o la despedida; «BAJA» excluye al cliente |
+| Importación | CSV (coma o punto y coma, UTF-8 o Windows-1252) y Excel `.xlsx`, hasta 2000 filas y 2 MB, con vista previa por fila (celular inválido o repetido, producto inexistente, fechas incoherentes, límite del plan) y confirmación con transacción por fila. Las suscripciones importadas no cuentan como ventas y ocupan cupo si están activas |
+| Pagos automáticos | No aplica: Yape y Plin no ofrecen una API oficial de verificación para terceros. Se mantiene `PaymentProvider` con verificación manual |
+| CI | GitHub Actions: pruebas del backend con Testcontainers, pruebas y build del frontend |
+| Pruebas | Backend 150 (cifrado, verificación con Graph API simulada, envío solo con consentimiento, reintentos y fallos, firma e idempotencia del webhook, respuestas Sí/No y BAJA, importación CSV/Excel, límites); frontend 63; flujo Playwright con Graph API simulada y webhook firmado |
