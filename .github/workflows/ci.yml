@@ -62,7 +62,8 @@ jobs:
   e2e:
     name: E2E (Playwright desktop + mobile)
     needs: [backend, frontend]
-    runs-on: ubuntu-latest
+    # Evita cambios de imagen y dependencias durante la migración de ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
       postgres:
@@ -110,7 +111,8 @@ jobs:
       - run: npm install -g npm@11
       - run: npm ci
         working-directory: frontend
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps --only-shell chromium
+        timeout-minutes: 5
         working-directory: frontend
       - name: Iniciar aplicación y esperar disponibilidad
         run: |

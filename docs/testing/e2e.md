@@ -23,6 +23,9 @@ El flujo `.github/workflows/ci.yml` tiene tres trabajos:
    local de pruebas e inicia Angular con su proxy. Espera al health check y a la API a través de Angular
    antes de ejecutar `npm run e2e`.
 
+El trabajo E2E fija Ubuntu 24.04 para mantener estables las dependencias de Chromium e instala solo
+su variante headless. La instalación tiene un límite de cinco minutos; el trabajo completo, veinte.
+
 Las credenciales declaradas en ese trabajo pertenecen exclusivamente al runner desechable. No se
 usan secretos, servidores ni cuentas de producción. La configuración `dev` habilita cookies locales
 para HTTP; no debe trasladarse a producción. Los pagos usan referencias ficticias identificadas como
