@@ -73,6 +73,8 @@ data class AdminBusinessDetail(
     val usage: BusinessUsage,
     val invoices: List<InvoiceResponse>,
     val activity: List<AdminAuditEntry>,
+    /** Hasta cuándo el titular autorizó a soporte a consultar pedidos y clientes (`null`: sin autorización). */
+    val supportAccessUntil: Instant? = null,
 )
 
 data class AdminSaasPayment(

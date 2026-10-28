@@ -169,6 +169,10 @@ class AdminService(
             ),
             invoices = invoices.findByBusinessIdOrderByCreatedAtDesc(businessId, PageRequest.of(0, 24)).map(billing::toResponse),
             activity = auditLogs(businessId, null, platformOnly = true, page = 0, size = 30).items,
+            supportAccessUntil = jdbc.query(
+                "select max(expires_at) from support_grants where business_id = ? and revoked_at is null and expires_at > ?",
+                { rs, _ -> rs.getTimestamp(1)?.toInstant() }, businessId, java.sql.Timestamp.from(clock.instant()),
+            ).firstOrNull(),
         )
     }
 

@@ -73,6 +73,9 @@ object AuditActions {
     const val STAFF_REVOKED = "STAFF_REVOKED"
     const val STAFF_REACTIVATED = "STAFF_REACTIVATED"
     const val TASK_ASSIGNED = "TASK_ASSIGNED"
+    const val SUPPORT_ACCESS_GRANTED = "SUPPORT_ACCESS_GRANTED"
+    const val SUPPORT_ACCESS_REVOKED = "SUPPORT_ACCESS_REVOKED"
+    const val SUPPORT_DATA_VIEWED = "SUPPORT_DATA_VIEWED"
 }
 
 /** Evidencia inmutable de una acción; los módulos interesados reaccionan dentro de la transacción. */

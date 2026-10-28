@@ -142,6 +142,12 @@ añade `refunded_at` para el ciclo anulado.
 `PENDING`/`SENT`/`DELIVERED`/`FAILED`, `attempts`, fechas de envío, entrega y lectura, `provider_message_id`)
 con un mensaje por tipo y pedido.
 
+### Acceso de soporte (`V14__support_access.sql`)
+
+`support_grants` (`business_id`, `granted_by`, `note`, `expires_at`, `revoked_at`, `revoked_by`): autorización
+temporal del titular. Cada consulta del superadministrador queda en `audit_logs` (`SUPPORT_DATA_VIEWED`, con
+recurso y motivo).
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

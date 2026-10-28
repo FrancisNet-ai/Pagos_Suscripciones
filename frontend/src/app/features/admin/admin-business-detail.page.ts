@@ -5,12 +5,13 @@ import { ApiError } from '../../core/services/api-error';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
 import { SolesPipe } from '../../shared/pipes/soles.pipe';
 import { formatDate } from '../billing/billing.api';
+import { AdminSupportPanelComponent } from '../support/admin-support-panel.component';
 import { AdminApi, AdminBusinessDetail, SUBSCRIPTION_LABEL, actionLabel, subscriptionTone } from './admin.api';
 
 @Component({
   selector: 'app-admin-business-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, SolesPipe, StatusBadgeComponent],
+  imports: [ReactiveFormsModule, RouterLink, SolesPipe, StatusBadgeComponent, AdminSupportPanelComponent],
   template: `
     <a routerLink="/admin/negocios" class="text-sm text-corporate no-underline hover:underline">← Negocios</a>
     @if (error(); as e) { <p class="notice notice-error mt-6" role="alert">{{ e }}</p> }
@@ -64,6 +65,8 @@ import { AdminApi, AdminBusinessDetail, SUBSCRIPTION_LABEL, actionLabel, subscri
           <button type="button" class="btn btn-secondary mt-4 !text-danger" [disabled]="busy()" (click)="suspend(d)">Suspender negocio</button>
         }
       </section>
+
+      <app-admin-support-panel [businessId]="d.summary.id" [until]="d.supportAccessUntil ?? null" />
 
       <!-- Cobros -->
       <section class="mt-12" aria-labelledby="cobros-titulo">

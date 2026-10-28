@@ -113,6 +113,7 @@ export class DashboardShellComponent {
         { label: 'Avisos de renovación', route: '/panel/configuracion/renovaciones' },
         { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
         { label: 'Equipo', route: '/panel/configuracion/equipo' },
+        { label: 'Soporte', route: '/panel/configuracion/soporte' },
         { label: 'Mi plan', route: '/panel/plan' },
       ],
     },

@@ -58,6 +58,8 @@ export interface AdminBusinessDetail {
   usage: { products: number; customers: number; ordersPaid: number };
   invoices: Invoice[];
   activity: AdminAuditEntry[];
+  /** Autorización vigente del titular para consultas de soporte. */
+  supportAccessUntil?: string | null;
 }
 
 export interface AdminSaasPayment {

@@ -22,6 +22,7 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/panel/reportes` | `reports` | owner o `REPORTS` | 4 |
 | `/panel/renovaciones` (`?vista=`) | `renewals` | owner o `RENEWALS` | 5 |
 | `/panel/configuracion/negocio`, `/enlace`, `/cobros`, `/renovaciones`, `/whatsapp` | `settings`, `whatsapp` | solo owner | 2 / 5 / 7 |
+| `/panel/configuracion/soporte` | `support` (autorizar consultas de soporte y ver cada una) | solo owner | soporte |
 | `/panel/configuracion/equipo` | `staff` (invitar, permisos, revocar) | solo owner | colaboradores |
 | `/invitacion/:token` | `staff/accept-invitation` | público (token de invitación) | colaboradores |
 | `/tienda/:slug` | `storefront` | público | 3 |

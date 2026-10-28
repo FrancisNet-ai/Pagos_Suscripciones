@@ -389,3 +389,15 @@ realizadas sin una tarea previa.
 `GET /public/media/{key}?size=sm` devuelve la versión de 640 px de ancho generada al subir la imagen
 (JPEG si es opaca, PNG si tiene transparencia) cuando pesa menos que el original; si no existe (WebP o
 imágenes anteriores) devuelve el original. Cualquier otro valor de `size` devuelve el original.
+
+## Acceso de soporte — implementado
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/business/me/support-access` | titular | Autorización vigente, historial y cada consulta de soporte (recurso, motivo, fecha) |
+| `POST` | `/business/me/support-access` | titular | `{ hours: 1–72, note? }`: autoriza consultas de solo lectura (reemplaza la vigente) |
+| `DELETE` | `/business/me/support-access` | titular | Retira la autorización de inmediato |
+| `GET` | `/admin/businesses/{id}/support/orders?reason=&query=&page=` | `SUPER_ADMIN` | Pedidos del negocio. Sin autorización vigente `403 SUPPORT_ACCESS_REQUIRED`; `reason` de 10–300 caracteres obligatorio; cada consulta se audita |
+| `GET` | `/admin/businesses/{id}/support/customers?reason=&query=&page=` | `SUPER_ADMIN` | Clientes del negocio, mismas reglas |
+
+`GET /admin/businesses/{id}` incluye `supportAccessUntil`.

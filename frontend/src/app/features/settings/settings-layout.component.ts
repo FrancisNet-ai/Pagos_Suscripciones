@@ -36,5 +36,6 @@ export class SettingsLayoutComponent {
     { label: 'Renovaciones', route: '/panel/configuracion/renovaciones' },
     { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
     { label: 'Equipo', route: '/panel/configuracion/equipo' },
+    { label: 'Soporte', route: '/panel/configuracion/soporte' },
   ];
 }

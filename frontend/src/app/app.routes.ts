@@ -206,6 +206,11 @@ export const routes: Routes = [
             loadComponent: () => import('./features/staff/team.page').then((m) => m.TeamPage),
           },
           {
+            path: 'soporte',
+            title: 'Acceso de soporte',
+            loadComponent: () => import('./features/support/support-access.page').then((m) => m.SupportAccessPage),
+          },
+          {
             path: 'cobros',
             title: 'Yape y Plin',
             loadComponent: () => import('./features/settings/payment-methods.page').then((m) => m.PaymentMethodsPage),
