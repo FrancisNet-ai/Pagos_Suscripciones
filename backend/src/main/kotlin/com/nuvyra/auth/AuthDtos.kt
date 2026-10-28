@@ -46,6 +46,19 @@ data class RegisterRequest(
     val planId: UUID? = null,
 )
 
+data class ChangePasswordRequest(
+    @field:NotBlank(message = "Ingresa tu contraseña actual")
+    @field:Size(max = 200)
+    val currentPassword: String?,
+
+    @field:NotBlank(message = "Ingresa la nueva contraseña")
+    @field:Size(min = PASSWORD_MIN, max = PASSWORD_MAX, message = "La contraseña debe tener entre 10 y 72 caracteres")
+    val newPassword: String?,
+)
+
+/** `otherSessionsClosed`: sesiones abiertas en otros dispositivos que se cerraron por seguridad. */
+data class ChangePasswordResponse(val otherSessionsClosed: Int)
+
 data class LoginRequest(
     @field:NotBlank(message = "Ingresa tu correo electrónico")
     @field:Size(max = 254)

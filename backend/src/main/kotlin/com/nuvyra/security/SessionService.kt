@@ -72,6 +72,10 @@ class SessionService(
         sessions.findById(sessionId).ifPresent { if (it.revokedAt == null) it.revokedAt = clock.instant() }
     }
 
+    /** Cierra todas las sesiones de la persona salvo la actual. Devuelve cuántas cerró. */
+    @Transactional
+    fun revokeOthers(userId: UUID, keepSessionId: UUID): Int = sessions.revokeOthersForUser(userId, keepSessionId, clock.instant())
+
     @Transactional
     fun revokeAll(userId: UUID) {
         sessions.revokeAllForUser(userId, clock.instant())

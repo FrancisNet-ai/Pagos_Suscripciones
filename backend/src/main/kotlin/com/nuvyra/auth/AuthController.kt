@@ -70,6 +70,11 @@ class AuthController(
         cookies.clear(response)
     }
 
+    @PostMapping("/password")
+    @Operation(summary = "Cambia la contraseña (exige la actual) y cierra las demás sesiones")
+    fun changePassword(user: AuthenticatedUser, @Valid @RequestBody body: ChangePasswordRequest, request: HttpServletRequest): ChangePasswordResponse =
+        authService.changePassword(user, body, request.client())
+
     @PostMapping("/business")
     @Operation(summary = "Cambia el negocio activo de la sesión")
     fun switchBusiness(user: AuthenticatedUser, @Valid @RequestBody body: SwitchBusinessRequest): SessionResponse =
