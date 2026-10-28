@@ -10,7 +10,7 @@ export interface SessionUser {
 
 export type BusinessRole = 'OWNER' | 'STAFF';
 /** Secciones que el titular habilita a cada colaborador. */
-export type StaffPermission = 'PRODUCTS' | 'ORDERS' | 'CUSTOMERS' | 'RENEWALS' | 'REPORTS';
+export type StaffPermission = 'PRODUCTS' | 'ORDERS' | 'PAYMENTS' | 'CUSTOMERS' | 'RENEWALS' | 'REPORTS';
 
 export interface BusinessSummary {
   id: string;

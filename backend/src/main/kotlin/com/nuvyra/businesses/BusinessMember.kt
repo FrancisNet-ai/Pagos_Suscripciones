@@ -20,7 +20,8 @@ enum class MemberStatus { ACTIVE, REVOKED }
  */
 enum class StaffPermission(val label: String) {
     PRODUCTS("Catálogo de productos"),
-    ORDERS("Pedidos y verificación de pagos"),
+    ORDERS("Pedidos y atención de compradores"),
+    PAYMENTS("Aprobación y rechazo de pagos"),
     CUSTOMERS("Clientes y suscripciones"),
     RENEWALS("Renovaciones y avisos"),
     REPORTS("Ingresos y reportes"),

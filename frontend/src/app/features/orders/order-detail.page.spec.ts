@@ -25,6 +25,7 @@ describe('OrderDetailPage', () => {
   });
 
   it('aprobar exige confirmar la recepción del dinero', async () => {
+    asRole('OWNER');
     const fixture = TestBed.createComponent(OrderDetailPage);
     fixture.componentRef.setInput('id', 'o1');
     fixture.detectChanges();
@@ -50,7 +51,9 @@ describe('OrderDetailPage', () => {
     const session: SessionResponse = {
       user: { id: 'u', fullName: 'Ana', email: 'a@ejemplo.pe', phone: '+51987654321', roles: [role === 'OWNER' ? 'BUSINESS_OWNER' : 'BUSINESS_STAFF'] },
       business: {
-        id: 'b', uniqueCode: 'NV-1', slug: 'norte', businessName: 'Norte', status: 'ACTIVE', role, permissions: ['ORDERS'],
+        id: 'b', uniqueCode: 'NV-1', slug: 'norte', businessName: 'Norte', status: 'ACTIVE', role,
+        // El titular recibe todas las secciones; el colaborador de este caso solo atiende pedidos.
+        permissions: role === 'OWNER' ? ['PRODUCTS', 'ORDERS', 'PAYMENTS', 'CUSTOMERS', 'RENEWALS', 'REPORTS'] : ['ORDERS'],
         access: { active: true, block: null, message: null, subscriptionStatus: 'ACTIVE', planName: 'Crece', expiresAt: null, usableUntil: null, features: [] },
       },
     };

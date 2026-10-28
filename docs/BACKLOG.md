@@ -36,7 +36,7 @@
 - [ ] Codificar las versiones reducidas en WebP (Java no escribe WebP sin bibliotecas nativas; evaluar libwebp o un servicio de imágenes).
 - [x] Historial paginado de pendientes resueltos con autor y evidencia de auditoría, limitado al negocio y los permisos actuales.
 - [ ] Varios negocios por cuenta (hoy un usuario pertenece a un solo negocio, como titular o colaborador).
-- [ ] Permisos más finos para colaboradores (p. ej., verificar pagos sin ver ingresos del pedido).
+- [x] Permiso propio para aprobar o rechazar pagos (`PAYMENTS`), separado de atender pedidos (`ORDERS`); los ingresos siguen en `REPORTS` y los reembolsos son del titular.
 - [ ] Acceso de soporte a datos de compradores con motivo y auditoría (hoy el SUPER_ADMIN no tiene ningún acceso a ellos).
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
 - [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).

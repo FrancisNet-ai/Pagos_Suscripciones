@@ -83,7 +83,7 @@ export class DashboardShellComponent {
           label: 'Por verificar',
           route: '/panel/ventas',
           queryParams: { filtro: 'TO_VERIFY' },
-          access: 'ORDERS',
+          access: 'PAYMENTS',
         },
         { label: 'Reportes', route: '/panel/reportes', access: 'REPORTS' },
       ],

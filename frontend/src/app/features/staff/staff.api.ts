@@ -108,7 +108,8 @@ export class StaffApi {
 
 export const PERMISSION_LABEL: Record<StaffPermission, string> = {
   PRODUCTS: 'Catálogo de productos',
-  ORDERS: 'Pedidos y verificación de pagos',
+  ORDERS: 'Pedidos y atención de compradores',
+  PAYMENTS: 'Aprobación y rechazo de pagos',
   CUSTOMERS: 'Clientes y suscripciones',
   RENEWALS: 'Renovaciones y avisos',
   REPORTS: 'Ingresos y reportes',

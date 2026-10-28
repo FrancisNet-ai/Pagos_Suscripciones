@@ -331,7 +331,8 @@ Enlace usado, cancelado, vencido o inexistente → `410 INVITATION_INVALID`.
 |---|---|
 | (ninguno) | `GET /business/me` |
 | `PRODUCTS` | `/products/**` (el listado `GET /products` también con `CUSTOMERS`) |
-| `ORDERS` | `/orders/**`, `/payments/**` |
+| `ORDERS` | `/orders/**` (ver, cancelar), comprobantes |
+| `PAYMENTS` | `POST /payments/{id}/verify\|reject`, ver pedidos y comprobantes (V13 lo otorga a quien ya tenía `ORDERS`) |
 | `CUSTOMERS` | `/customers/**` (incluida la importación), `/subscriptions/**` |
 | `RENEWALS` | `/renewals/**` (ajustes solo lectura), `GET /subscriptions` y `POST /subscriptions/{id}/release-capacity` |
 | `REPORTS` | `/reports/**` |

@@ -29,7 +29,8 @@ describe('DashboardShellComponent', () => {
   it('el colaborador solo ve sus secciones, sin configuración ni plan', () => {
     const links = render(session('STAFF', ['ORDERS']));
     expect(links).toContain('Pedidos');
-    expect(links).toContain('Por verificar');
+    // Aprobar pagos es otro permiso: sin él no aparece «Por verificar».
+    expect(links).not.toContain('Por verificar');
     expect(links).toContain('Pendientes');
     expect(links).not.toContain('Productos');
     expect(links).not.toContain('Reportes');

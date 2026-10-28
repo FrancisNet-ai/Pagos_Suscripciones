@@ -16,7 +16,8 @@ interface Shortcut {
 }
 
 const SHORTCUTS: Shortcut[] = [
-  { permission: 'ORDERS', icon: 'wallet', title: 'Pedidos', text: 'Revisa pedidos y verifica pagos de Yape y Plin.', route: '/panel/ventas' },
+  { permission: 'ORDERS', icon: 'wallet', title: 'Pedidos', text: 'Revisa pedidos y atiende a tus compradores.', route: '/panel/ventas' },
+  { permission: 'PAYMENTS', icon: 'check', title: 'Pagos por verificar', text: 'Aprueba o rechaza los pagos de Yape y Plin.', route: '/panel/ventas' },
   { permission: 'PRODUCTS', icon: 'box', title: 'Productos', text: 'Actualiza el catálogo, precios y cupos.', route: '/panel/productos' },
   { permission: 'CUSTOMERS', icon: 'users', title: 'Clientes', text: 'Consulta clientes y sus suscripciones.', route: '/panel/clientes' },
   { permission: 'RENEWALS', icon: 'renew', title: 'Renovaciones', text: 'Envía los avisos de renovación pendientes.', route: '/panel/renovaciones' },
@@ -79,7 +80,7 @@ export class StaffHomePage {
   protected readonly shortcuts = computed(() => SHORTCUTS.filter((s) => this.auth.can(s.permission)));
 
   protected readonly toVerify = toSignal(
-    this.auth.can('ORDERS')
+    this.auth.can('ORDERS') || this.auth.can('PAYMENTS')
       ? inject(OrdersApi)
           .summary()
           .pipe(

@@ -116,13 +116,13 @@ export const routes: Routes = [
       },
       {
         path: 'ventas',
-        canActivate: [permissionGuard('ORDERS')],
+        canActivate: [permissionGuard('ORDERS', 'PAYMENTS')],
         title: 'Pedidos',
         loadComponent: () => import('./features/orders/orders-list.page').then((m) => m.OrdersListPage),
       },
       {
         path: 'ventas/:id',
-        canActivate: [permissionGuard('ORDERS')],
+        canActivate: [permissionGuard('ORDERS', 'PAYMENTS')],
         title: 'Pedido',
         loadComponent: () => import('./features/orders/order-detail.page').then((m) => m.OrderDetailPage),
       },

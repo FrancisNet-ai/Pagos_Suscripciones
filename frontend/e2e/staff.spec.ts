@@ -26,7 +26,7 @@ test('el titular invita a un colaborador que solo ve sus secciones y luego le re
   const email = `colaborador-${crypto.randomUUID().slice(0, 8)}@example.test`;
   await owner.getByLabel('Nombre', { exact: true }).fill('Ana Apoyo');
   await owner.getByLabel('Correo', { exact: true }).fill(email);
-  await owner.getByLabel('Pedidos y verificación de pagos').check();
+  await owner.getByLabel('Pedidos y atención de compradores').check();
   await owner.getByRole('button', { name: 'Crear invitación' }).click();
   const link = (await owner.getByTestId('invitation-link').textContent())!.trim();
   expect(link).toMatch(/\/invitacion\/[A-Za-z0-9_-]{43}$/);

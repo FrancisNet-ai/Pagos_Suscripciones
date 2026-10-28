@@ -48,12 +48,13 @@ export class OrderDetailPage implements OnInit {
 
   /** Pago vigente: el más reciente. */
   protected readonly current = computed<PaymentDetail | null>(() => this.order()?.payments[0] ?? null);
-  protected readonly canVerify = computed(() => this.current()?.status === 'PENDING_VERIFICATION');
+  /** El backend también lo valida: aprobar dinero y cancelar pedidos son permisos distintos. */
+  protected readonly canVerify = computed(() => this.auth.can('PAYMENTS') && this.current()?.status === 'PENDING_VERIFICATION');
   /** Solo el titular registra reembolsos de pagos verificados. */
   protected readonly canRefund = computed(() => this.auth.isOwner() && this.current()?.status === 'VERIFIED');
   protected readonly confirmReturned = new FormControl(false, { nonNullable: true });
   protected readonly refundReference = new FormControl('', { nonNullable: true, validators: [Validators.maxLength(40)] });
-  protected readonly canCancel = computed(() => ['AWAITING_PAYMENT', 'PAYMENT_REPORTED'].includes(this.order()?.status ?? ''));
+  protected readonly canCancel = computed(() => this.auth.can('ORDERS') && ['AWAITING_PAYMENT', 'PAYMENT_REPORTED'].includes(this.order()?.status ?? ''));
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.revokeReceipt());
