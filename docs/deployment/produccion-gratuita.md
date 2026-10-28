@@ -82,18 +82,23 @@ Avance del paso 1, para completar al terminar:
 
 ## Paso 2 — Archivos del repositorio (los prepara el asistente; no requieren cuentas)
 
-- [ ] Caddy en `compose.yaml` con HTTPS automático para el subdominio.
-- [ ] Copia de seguridad diaria con `infrastructure/scripts/backup-db.sh` y envío a Object Storage.
-- [ ] Workflow de GitHub Actions que despliega en el servidor al fusionar en `main`.
-- [ ] Guía de creación del servidor en Oracle (VM ARM Ubuntu, puertos 80 y 443, Docker, SSH).
+- [x] Caddy con HTTPS automático para el subdominio (`compose.prod.yaml` e `infrastructure/caddy/Caddyfile`).
+- [x] Copia de seguridad diaria, cifrada y enviada a Object Storage (`infrastructure/scripts/backup-offsite.sh`).
+- [x] Workflow de GitHub Actions que despliega en el servidor cuando el CI pasa en `main`
+  (`.github/workflows/despliegue.yml`). Queda inactivo hasta definir `DEPLOY_ENABLED=true`.
+- [x] Guía de creación del servidor en Oracle: VM ARM Ubuntu, puertos 80 y 443, Docker y SSH
+  ([oracle-servidor.md](oracle-servidor.md)).
 
 ## Paso 3 — Poner en marcha (con las cuentas listas)
+
+Cada casilla está explicada paso a paso en [oracle-servidor.md](oracle-servidor.md).
 
 - [ ] Crear la VM ARM «Always Free» en Oracle y abrir los puertos 80 y 443.
 - [ ] Apuntar el subdominio de DuckDNS a la IP pública del servidor.
 - [ ] Instalar Docker en el servidor y crear el `.env` de producción, con secretos generados en el
   servidor.
-- [ ] Guardar en GitHub los secretos del despliegue: acceso SSH y token de DuckDNS.
+- [ ] Guardar en GitHub los secretos del despliegue (acceso SSH). El token de DuckDNS queda solo en el
+  `.env` del servidor.
 - [ ] Primer despliegue y comprobación de `https://<subdominio>.duckdns.org/actuator/health`.
 - [ ] Crear el superadministrador (`APP_BOOTSTRAP_SUPER_ADMIN_*`) y, desde `/admin`, las cuentas
   Yape/Plin de la plataforma y los planes.

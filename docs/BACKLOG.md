@@ -28,7 +28,7 @@
 - [ ] *Embedded Signup* de Meta para conectar WhatsApp sin copiar identificadores ni tokens (requiere app verificada como Tech Provider).
 - [x] Confirmaciones de pago recibido y pago verificado por WhatsApp (plantillas opcionales del negocio, solo a compradores que lo autorizan al comprar).
 - [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
-- [ ] Despliegue continuo (CD) cuando exista un entorno de producción.
+- [x] Despliegue continuo (CD): `.github/workflows/despliegue.yml` publica en el servidor cuando el CI pasa en `main`, con vuelta automática a la versión anterior. Falta crear el servidor ([guía](deployment/oracle-servidor.md)).
 - [x] Reembolsos manuales (`REFUNDED`): el titular registra la devolución que ya hizo por Yape/Plin; el pago deja de contar como ingreso, la compra cancela la suscripción y la renovación devuelve la vigencia anterior.
 - [x] Playwright versionado y ejecutado en CI, con PostgreSQL desechable, recorridos de escritorio/móvil e informe de diagnóstico.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
@@ -43,7 +43,7 @@
 - [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.
 - [ ] Adoptar Row Level Security por etapas antes de producción (evaluado en [ADR-007](decisions/ADR-007-row-level-security.md)).
 - [ ] Bloqueo distribuido de tareas programadas y rate limiting compartido si se usan varias instancias.
-- [ ] Copias de seguridad automatizadas en el servidor de producción (script base en `infrastructure/scripts`).
+- [x] Copias de seguridad diarias, cifradas y enviadas a Oracle Object Storage (`backup-offsite.sh`). Falta crear el bucket y probar una restauración en el servidor real.
 - [ ] Adquirir licencias de Voga y Bodoni FLF si se desea la identidad tipográfica original.
 
 ### Seguridad de cuentas

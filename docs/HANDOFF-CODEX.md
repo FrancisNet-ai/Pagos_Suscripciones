@@ -54,7 +54,7 @@ updates* en *Settings → Code security*.
 **Depende de algo externo:**
 - Embedded Signup de Meta.
 - Pagos automáticos: Yape/Plin no tienen API oficial.
-- CD y copias de seguridad en producción: plan gratuito con Oracle Cloud Always Free y DuckDNS, con avance en `docs/deployment/produccion-gratuita.md`.
+- Poner en marcha producción: el repositorio ya trae Caddy, despliegue automático y copias cifradas; falta que el titular cree el servidor en Oracle y configure los secretos (`docs/deployment/oracle-servidor.md`, avance en `docs/deployment/produccion-gratuita.md`).
 - SMTP real.
 - Textos legales (Ley 29733).
 - Comprobantes SUNAT.

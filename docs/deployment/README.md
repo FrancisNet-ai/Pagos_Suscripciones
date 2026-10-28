@@ -10,7 +10,8 @@ docker compose up --build
 
 ## Producción gratuita
 Plan elegido (Oracle Cloud Always Free + DuckDNS) y lista de avance:
-[produccion-gratuita.md](produccion-gratuita.md).
+[produccion-gratuita.md](produccion-gratuita.md). Puesta en marcha del servidor, despliegue automático y
+copias en Object Storage: [oracle-servidor.md](oracle-servidor.md).
 
 ## Producción (resumen)
 1. Servidor con Docker y un proxy TLS delante (Caddy, Traefik o Nginx con Let's Encrypt) que termine HTTPS
@@ -33,8 +34,9 @@ Plan elegido (Oracle Cloud Always Free + DuckDNS) y lista de avance:
 infrastructure/scripts/backup-db.sh            # genera backups/AAAAmmdd-HHMMSS.dump y …-files.tar.gz
 infrastructure/scripts/restore-db.sh <archivo.dump> [archivo-files.tar.gz]  # restaura base e imágenes
 ```
-Programar `backup-db.sh` diariamente (cron) y copiar los archivos fuera del servidor. Probar la
-restauración periódicamente en un entorno aislado.
+En el servidor de producción, `backup-offsite.sh` corre cada día (cron de `preparar-servidor.sh`):
+cifra ambos archivos y los envía a Object Storage. Probar la restauración periódicamente en un entorno
+aislado.
 
 ## Política de actualizaciones
 Actualizar imágenes base y dependencias mensualmente; parches de seguridad de inmediato. Desplegar

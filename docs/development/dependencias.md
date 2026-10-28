@@ -11,7 +11,7 @@ de verdad es el archivo indicado en cada sección.
 | Backend (Kotlin / Spring Boot) | `backend/gradle/libs.versions.toml` | BOM de Spring Boot |
 | Frontend (Angular) | `frontend/package.json` | `frontend/package-lock.json` |
 | Herramientas de ejecución | `.github/workflows/ci.yml` (Java, Node, npm) | — |
-| Imágenes de contenedor | `infrastructure/docker/*.Dockerfile` | — |
+| Imágenes de contenedor | `infrastructure/docker/*.Dockerfile`, `compose.yaml`, `compose.prod.yaml` | — |
 
 `backend/build.gradle.kts` no declara versiones: usa los alias del catálogo (`libs.…`). Las
 bibliotecas del catálogo sin `version` las fija el BOM de Spring Boot, así todas quedan
@@ -48,12 +48,14 @@ desarrollo (`devDependencies`).
 - **Java:** 21 o 26 (Temurin). El CI prueba ambas y Windows con 26.
 - **Node 24 y npm 11:** fijados en `package.json` (`engines`, `packageManager`) y en el CI.
 - **PostgreSQL 17:** en el CI E2E y en `infrastructure/docker`.
-- **Imágenes:** `eclipse-temurin` para el backend, y `node` más `nginx` para la web.
+- **Imágenes:** `eclipse-temurin` para el backend, `node` más `nginx` para la web y `caddy` como
+  proxy HTTPS en producción.
 
 ## Revisión automática
 
 - **Dependabot** (`.github/dependabot.yml`):
-  - Abre los lunes PR agrupados por ecosistema: Gradle, npm, GitHub Actions y Docker.
+  - Abre PR agrupados por ecosistema: Gradle y npm los lunes; GitHub Actions, Dockerfiles y Compose
+    una vez al mes.
   - Las actualizaciones de seguridad llegan apenas se publican.
   - Cada PR pasa por el CI completo antes de fusionarse.
 - **Seguridad de dependencias** (`.github/workflows/seguridad-dependencias.yml`):
