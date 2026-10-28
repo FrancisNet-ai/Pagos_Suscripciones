@@ -32,6 +32,7 @@ class OrderService(
     private val capacity: CapacityService,
     private val subscriptions: SubscriptionService,
     private val audit: AuditService,
+    private val orderUpdates: com.nuvyra.whatsapp.OrderNotificationService,
 ) {
     /** Ventas del negocio. Las fechas se interpretan en la zona horaria del negocio. */
     @Transactional(readOnly = true)
@@ -110,6 +111,7 @@ class OrderService(
             subscriptionStatus = subscription?.let { SubscriptionLabels.of(it.status) },
             createdAt = order.createdAt,
             paidAt = order.paidAt,
+            whatsappUpdates = orderUpdates.forOrder(order.id).map { OrderUpdateItem(it.kind, it.status, it.sentAt, it.deliveredAt, it.readAt, it.failureReason) },
         )
     }
 

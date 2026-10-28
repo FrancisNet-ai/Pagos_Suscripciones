@@ -53,6 +53,8 @@ class WhatsAppIntegrationService(
         integration.accessTokenEncrypted = encrypted
         integration.reminderTemplate = request.reminderTemplate!!.trim()
         integration.farewellTemplate = request.farewellTemplate?.trim()?.ifEmpty { null }
+        integration.orderTemplate = request.orderTemplate?.trim()?.ifEmpty { null }
+        integration.paymentTemplate = request.paymentTemplate?.trim()?.ifEmpty { null }
         integration.templateLanguage = request.templateLanguage!!.trim()
 
         // Verificación real contra Meta: sin ella el envío automático no se habilita.
@@ -96,6 +98,11 @@ class WhatsAppIntegrationService(
         return ActiveWhatsApp(i, cipher.decrypt(i.accessTokenEncrypted, businessId.toString()))
     }
 
+    /** Integración activa sin descifrar el token (para decidir qué ofrecer). */
+    @Transactional(readOnly = true)
+    fun isActive(businessId: UUID): Boolean =
+        integrations.findById(businessId).orElse(null)?.active == true && entitlements.hasFeature(businessId, PlanFeature.REMINDERS)
+
     @Transactional(readOnly = true)
     fun activeByPhoneNumberId(phoneNumberId: String): ActiveWhatsApp? =
         integrations.findByPhoneNumberId(phoneNumberId)?.let { active(it.businessId) }
@@ -120,6 +127,8 @@ class WhatsAppIntegrationService(
         tokenSaved = i != null,
         reminderTemplate = i?.reminderTemplate,
         farewellTemplate = i?.farewellTemplate,
+        orderTemplate = i?.orderTemplate,
+        paymentTemplate = i?.paymentTemplate,
         templateLanguage = i?.templateLanguage ?: "es",
         enabled = i?.enabled ?: false,
         status = i?.status,

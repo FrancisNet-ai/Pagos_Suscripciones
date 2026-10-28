@@ -65,6 +65,17 @@ export interface OrderDetail {
   subscriptionStatus: string | null;
   createdAt: string;
   paidAt: string | null;
+  whatsappUpdates?: OrderUpdate[];
+}
+
+/** Confirmación enviada al comprador por la integración oficial de WhatsApp. */
+export interface OrderUpdate {
+  kind: 'PAYMENT_RECEIVED' | 'PAYMENT_VERIFIED';
+  status: 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED';
+  sentAt: string | null;
+  deliveredAt: string | null;
+  readAt: string | null;
+  failureReason: string | null;
 }
 
 export interface OrderQuery {

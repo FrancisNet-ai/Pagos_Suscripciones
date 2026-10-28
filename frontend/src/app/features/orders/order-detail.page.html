@@ -145,6 +145,17 @@
           <p class="type-numeric">{{ localPhone(o.customerPhone) }}</p>
           <a class="btn btn-secondary mt-3" [href]="o.customerWhatsappUrl" target="_blank" rel="noopener noreferrer">Escribir por WhatsApp</a>
           <p class="mt-3 text-xs text-[var(--text-muted)]">Recordatorios de renovación: {{ o.renewalRemindersConsent ? 'autorizados' : 'no autorizados' }}.</p>
+          @if (o.whatsappUpdates?.length) {
+            <ul class="mt-3 grid gap-1 text-xs" aria-label="Confirmaciones por WhatsApp">
+              @for (u of o.whatsappUpdates; track u.kind) {
+                <li>
+                  {{ u.kind === 'PAYMENT_RECEIVED' ? 'Confirmación de pago recibido' : 'Confirmación de pago verificado' }}:
+                  <strong class="text-night">{{ updateLabel(u) }}</strong>
+                  @if (u.failureReason) { <span class="text-[var(--text-muted)]"> · {{ u.failureReason }}</span> }
+                </li>
+              }
+            </ul>
+          }
         </section>
 
         <section aria-labelledby="producto-titulo">

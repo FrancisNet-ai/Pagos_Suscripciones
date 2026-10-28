@@ -39,6 +39,7 @@ export class CheckoutPage implements OnInit {
     acceptTerms: [false, [Validators.requiredTrue]],
     acceptDataProcessing: [false, [Validators.requiredTrue]],
     acceptRenewalReminders: [false],
+    acceptOrderUpdates: [false],
   });
 
   ngOnInit(): void {
@@ -77,6 +78,7 @@ export class CheckoutPage implements OnInit {
           acceptTerms: v.acceptTerms,
           acceptDataProcessing: v.acceptDataProcessing,
           acceptRenewalReminders: v.acceptRenewalReminders,
+          acceptOrderUpdates: offersUpdates(this.store()) && v.acceptOrderUpdates,
         },
         this.idempotencyKey,
       )
@@ -91,4 +93,9 @@ export class CheckoutPage implements OnInit {
         },
       });
   }
+}
+
+/** Solo se registra la autorización si la tienda realmente ofrece las confirmaciones. */
+function offersUpdates(store: PublicStore | null): boolean {
+  return store?.orderUpdatesByWhatsapp ?? false;
 }

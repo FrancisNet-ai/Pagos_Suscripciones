@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import { ApiError } from '../../core/services/api-error';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
 import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
-import { METHOD_LABEL, OrderDetail, OrdersApi, PaymentDetail, formatDateTime, orderTone } from './orders.api';
+import { METHOD_LABEL, OrderDetail, OrderUpdate, OrdersApi, PaymentDetail, formatDateTime, orderTone } from './orders.api';
 
 type Panel = 'none' | 'reject' | 'cancel' | 'refund';
 
@@ -110,6 +110,11 @@ export class OrderDetailPage implements OnInit {
     const c = this.reason;
     if (!c.touched || !c.errors) return null;
     return c.errors['required'] ? 'Indica el motivo' : 'El motivo debe tener entre 5 y 300 caracteres';
+  }
+
+  protected updateLabel(u: OrderUpdate): string {
+    if (u.readAt) return 'leída';
+    return { PENDING: 'en cola', SENT: 'enviada', DELIVERED: 'entregada', FAILED: 'no se pudo enviar' }[u.status];
   }
 
   protected localPhone(e164: string): string {

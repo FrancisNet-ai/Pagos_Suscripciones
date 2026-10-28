@@ -372,3 +372,13 @@ realizadas sin una tarea previa.
 | Método | Ruta | Descripción |
 |---|---|---|
 | `POST` | `/payments/{id}/refund` | **Solo titular.** `{ reason, refundReference? }`. Registra una devolución que el titular ya hizo por Yape/Plin (Nuvyra no mueve dinero). Solo pagos `VERIFIED` (`409 PAYMENT_NOT_REFUNDABLE`). El pago pasa a `REFUNDED` y el pedido a `REFUNDED` (filtro `REFUNDED`), deja de contar como ingreso. Compra: la suscripción se cancela; sin activar libera el cupo, activada deja el acceso por retirar (pendiente `RELEASE_ACCESS`). Renovación: vuelve la vigencia anterior; solo la más reciente (`409 NOT_LATEST_RENEWAL`) |
+
+## Confirmaciones por WhatsApp — implementado
+
+- `PUT /business/me/whatsapp` acepta `orderTemplate` y `paymentTemplate` (opcionales; cuerpo con 4 variables:
+  nombre del comprador, número de pedido, importe y negocio).
+- `GET /public/stores/{slug}` devuelve `orderUpdatesByWhatsapp`; el pedido público acepta `acceptOrderUpdates`
+  (consentimiento `ORDER_UPDATES`, opcional).
+- Al reportar o verificar el pago se encola la confirmación (misma transacción) solo si el comprador la
+  autorizó y la plantilla existe; un proceso la envía con reintentos y el webhook registra entrega y lectura.
+- `GET /orders/{id}` incluye `whatsappUpdates` con el estado de cada confirmación.

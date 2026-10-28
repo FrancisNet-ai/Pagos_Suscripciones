@@ -38,6 +38,7 @@ class WhatsAppWebhookService(
     private val integrations: WhatsAppIntegrationRepository,
     private val integrationService: WhatsAppIntegrationService,
     private val notifications: RenewalNotificationRepository,
+    private val orderNotifications: OrderNotificationService,
     private val customers: CustomerRepository,
     private val renewals: RenewalService,
     private val client: WhatsAppCloudClient,
@@ -90,8 +91,17 @@ class WhatsAppWebhookService(
         val state = status.path("status").asString("")
         tx.executeWithoutResult {
             if (!firstTime("st:$messageId:$state", businessId, "STATUS")) return@executeWithoutResult
-            val n = notifications.findByProviderMessageIdAndBusinessId(messageId, businessId) ?: return@executeWithoutResult
             val at = status.path("timestamp").asString(null)?.toLongOrNull()?.let(Instant::ofEpochSecond) ?: clock.instant()
+            val n = notifications.findByProviderMessageIdAndBusinessId(messageId, businessId)
+            if (n == null) {
+                // Confirmación de pedido o pago (no es un aviso de renovación).
+                val error = status.path("errors").path(0)
+                orderNotifications.onStatus(
+                    businessId, messageId, state, at,
+                    error.path("error_data").path("details").asString(null) ?: error.path("title").asString("WhatsApp no pudo entregar el mensaje."),
+                )
+                return@executeWithoutResult
+            }
             when (state) {
                 "delivered" -> if (n.deliveryStatus == DeliveryStatus.SENT) {
                     n.deliveryStatus = DeliveryStatus.DELIVERED

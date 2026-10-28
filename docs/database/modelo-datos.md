@@ -135,6 +135,13 @@ por negocio/tipo de entidad/entidad/fecha. Una tarea abierta no puede contener d
 de fecha y motivo en estado `REFUNDED`); `orders.status` admite `REFUNDED`; `subscription_renewals`
 añade `refunded_at` para el ciclo anulado.
 
+### Confirmaciones por WhatsApp (`V12__whatsapp_order_updates.sql`)
+
+`whatsapp_integrations` añade `order_template` y `payment_template`; `customer_consents.purpose` admite
+`ORDER_UPDATES`. `order_notifications` (`order_id`, `kind` `PAYMENT_RECEIVED`/`PAYMENT_VERIFIED`, `status`
+`PENDING`/`SENT`/`DELIVERED`/`FAILED`, `attempts`, fechas de envío, entrega y lectura, `provider_message_id`)
+con un mensaje por tipo y pedido.
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

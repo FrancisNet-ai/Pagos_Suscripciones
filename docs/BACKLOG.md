@@ -26,7 +26,7 @@
 
 ## Pendientes
 - [ ] *Embedded Signup* de Meta para conectar WhatsApp sin copiar identificadores ni tokens (requiere app verificada como Tech Provider).
-- [ ] Plantillas de WhatsApp para confirmaciones de pedido y de pago (hoy solo recordatorios y despedida).
+- [x] Confirmaciones de pago recibido y pago verificado por WhatsApp (plantillas opcionales del negocio, solo a compradores que lo autorizan al comprar).
 - [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
 - [ ] Despliegue continuo (CD) cuando exista un entorno de producción.
 - [x] Reembolsos manuales (`REFUNDED`): el titular registra la devolución que ya hizo por Yape/Plin; el pago deja de contar como ingreso, la compra cancela la suscripción y la renovación devuelve la vigencia anterior.

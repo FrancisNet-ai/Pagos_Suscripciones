@@ -15,6 +15,8 @@ export interface PublicStore {
   acceptingOrders: boolean;
   notice: string | null;
   paymentMethods: { method: PaymentMethodType; label: string }[];
+  /** La tienda envía confirmaciones del pedido por WhatsApp a quien lo autorice. */
+  orderUpdatesByWhatsapp: boolean;
 }
 
 export interface PublicProduct {
@@ -40,6 +42,7 @@ export interface CreateOrderPayload {
   acceptTerms: boolean;
   acceptDataProcessing: boolean;
   acceptRenewalReminders: boolean;
+  acceptOrderUpdates: boolean;
 }
 
 export interface PaymentInstructions {

@@ -141,6 +141,12 @@
             @if (err('acceptDataProcessing'); as e) {
               <p class="field-error pl-8">{{ e }}</p>
             }
+            @if (s.orderUpdatesByWhatsapp) {
+              <label class="flex gap-3">
+                <input class="checkbox" type="checkbox" formControlName="acceptOrderUpdates" />
+                <span>Opcional: quiero recibir por WhatsApp la confirmación de mi pago y de su verificación.</span>
+              </label>
+            }
             @if (p.productType === 'SUBSCRIPTION') {
               <label class="flex gap-3">
                 <input class="checkbox" type="checkbox" formControlName="acceptRenewalReminders" />
