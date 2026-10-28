@@ -366,3 +366,9 @@ un envío ni una entrega. Los registros históricos sin autor se conservan con `
 Para cierres sincronizados sin evidencia, `resolvedAt` es el momento de detección del cambio de estado.
 El historial registra las tareas que llegaron a abrirse; la auditoría general conserva además las acciones
 realizadas sin una tarea previa.
+
+## Reembolsos — implementado
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/payments/{id}/refund` | **Solo titular.** `{ reason, refundReference? }`. Registra una devolución que el titular ya hizo por Yape/Plin (Nuvyra no mueve dinero). Solo pagos `VERIFIED` (`409 PAYMENT_NOT_REFUNDABLE`). El pago pasa a `REFUNDED` y el pedido a `REFUNDED` (filtro `REFUNDED`), deja de contar como ingreso. Compra: la suscripción se cancela; sin activar libera el cupo, activada deja el acceso por retirar (pendiente `RELEASE_ACCESS`). Renovación: vuelve la vigencia anterior; solo la más reciente (`409 NOT_LATEST_RENEWAL`) |

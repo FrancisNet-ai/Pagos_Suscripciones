@@ -30,7 +30,7 @@ class EntitlementInterceptor(private val entitlements: EntitlementService) : Han
         )
 
         val EXEMPT = listOf(
-            "/api/v1/payments/*/verify", "/api/v1/payments/*/reject",
+            "/api/v1/payments/*/verify", "/api/v1/payments/*/reject", "/api/v1/payments/*/refund",
             "/api/v1/orders/*/cancel",
             "/api/v1/subscriptions/*/activate", "/api/v1/subscriptions/*/cancel", "/api/v1/subscriptions/*/release-capacity",
             "/api/v1/customers/*/notifications",

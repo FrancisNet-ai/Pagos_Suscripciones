@@ -129,6 +129,12 @@ en su misma transacción. No se deduce el autor de `assigned_to`; los cierres an
 evidencia permanecen sin autor. Se indexa el historial por negocio/fecha y la búsqueda de evidencia
 por negocio/tipo de entidad/entidad/fecha. Una tarea abierta no puede contener datos de resolución.
 
+### Reembolsos (`V11__refunds.sql`)
+
+`customer_payments` añade `refunded_at`, `refunded_by`, `refund_reason`, `refund_reference` (con `CHECK`
+de fecha y motivo en estado `REFUNDED`); `orders.status` admite `REFUNDED`; `subscription_renewals`
+añade `refunded_at` para el ciclo anulado.
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

@@ -29,7 +29,7 @@
 - [ ] Plantillas de WhatsApp para confirmaciones de pedido y de pago (hoy solo recordatorios y despedida).
 - [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
 - [ ] Despliegue continuo (CD) cuando exista un entorno de producción.
-- [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
+- [x] Reembolsos manuales (`REFUNDED`): el titular registra la devolución que ya hizo por Yape/Plin; el pago deja de contar como ingreso, la compra cancela la suscripción y la renovación devuelve la vigencia anterior.
 - [x] Playwright versionado y ejecutado en CI, con PostgreSQL desechable, recorridos de escritorio/móvil e informe de diagnóstico.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
 - [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.

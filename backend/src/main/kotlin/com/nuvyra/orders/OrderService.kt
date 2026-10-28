@@ -151,7 +151,7 @@ class OrderService(
     companion object {
         fun paymentDetail(p: CustomerPayment) = PaymentDetail(
             p.id, p.methodSnapshot, p.holderNameSnapshot, p.receiverPhoneSnapshot, p.amount, p.status, p.transactionReference,
-            p.receiptKey != null, p.reportedAt, p.verifiedAt, p.rejectedAt, p.rejectionReason,
+            p.receiptKey != null, p.reportedAt, p.verifiedAt, p.rejectedAt, p.rejectionReason, p.refundedAt, p.refundReason, p.refundReference,
         )
     }
 }

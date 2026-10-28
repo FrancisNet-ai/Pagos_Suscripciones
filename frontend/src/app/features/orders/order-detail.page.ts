@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 import { Observable } from 'rxjs';
 import { ApiError } from '../../core/services/api-error';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
 import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { METHOD_LABEL, OrderDetail, OrdersApi, PaymentDetail, formatDateTime, orderTone } from './orders.api';
 
-type Panel = 'none' | 'reject' | 'cancel';
+type Panel = 'none' | 'reject' | 'cancel' | 'refund';
 
 const PAYMENT_LABEL: Record<string, string> = {
   PENDING: 'Sin reportar',
@@ -29,6 +30,7 @@ export class OrderDetailPage implements OnInit {
   readonly id = input.required<string>();
 
   private readonly api = inject(OrdersApi);
+  private readonly auth = inject(AuthService);
   protected readonly methodLabel = METHOD_LABEL;
   protected readonly paymentLabel = PAYMENT_LABEL;
   protected readonly tone = orderTone;
@@ -47,6 +49,10 @@ export class OrderDetailPage implements OnInit {
   /** Pago vigente: el más reciente. */
   protected readonly current = computed<PaymentDetail | null>(() => this.order()?.payments[0] ?? null);
   protected readonly canVerify = computed(() => this.current()?.status === 'PENDING_VERIFICATION');
+  /** Solo el titular registra reembolsos de pagos verificados. */
+  protected readonly canRefund = computed(() => this.auth.isOwner() && this.current()?.status === 'VERIFIED');
+  protected readonly confirmReturned = new FormControl(false, { nonNullable: true });
+  protected readonly refundReference = new FormControl('', { nonNullable: true, validators: [Validators.maxLength(40)] });
   protected readonly canCancel = computed(() => ['AWAITING_PAYMENT', 'PAYMENT_REPORTED'].includes(this.order()?.status ?? ''));
 
   constructor() {
@@ -63,6 +69,8 @@ export class OrderDetailPage implements OnInit {
   protected openPanel(panel: Panel): void {
     this.panel.set(panel);
     this.reason.reset();
+    this.confirmReturned.reset();
+    this.refundReference.reset();
     this.actionError.set(null);
   }
 
@@ -78,6 +86,11 @@ export class OrderDetailPage implements OnInit {
       return;
     }
     const value = this.reason.value.trim();
+    if (this.panel() === 'refund') {
+      if (!this.confirmReturned.value) return;
+      this.run(this.api.refund(this.current()!.id, value, this.refundReference.value.trim() || null));
+      return;
+    }
     const request = this.panel() === 'reject' ? this.api.reject(this.current()!.id, value) : this.api.cancel(this.order()!.id, value);
     this.run(request);
   }

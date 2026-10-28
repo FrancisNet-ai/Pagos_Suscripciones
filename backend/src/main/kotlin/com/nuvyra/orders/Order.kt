@@ -18,7 +18,8 @@ import java.util.UUID
 
 enum class OrderKind { PURCHASE, RENEWAL }
 
-enum class OrderStatus { AWAITING_PAYMENT, PAYMENT_REPORTED, PAID, CANCELLED, EXPIRED }
+/** REFUNDED: el vendedor devolvió el dinero por su cuenta y lo registró; deja de contar como venta. */
+enum class OrderStatus { AWAITING_PAYMENT, PAYMENT_REPORTED, PAID, CANCELLED, EXPIRED, REFUNDED }
 
 @Entity
 @Table(name = "orders")

@@ -59,8 +59,8 @@ class StaffAccessInterceptor : HandlerInterceptor {
             Rule("/api/v1/tasks/**", null),
         )
 
-        /** Cambios siempre del titular, aunque el colaborador tenga la sección: la política de avisos del negocio. */
-        private val OWNER_ONLY = listOf("/api/v1/renewals/settings/**")
+        /** Siempre del titular, aunque el colaborador tenga la sección: la política de avisos y los reembolsos. */
+        private val OWNER_ONLY = listOf("/api/v1/renewals/settings/**", "/api/v1/payments/*/refund")
 
         private const val OWNER_MESSAGE = "Esta sección es exclusiva del titular del negocio."
 

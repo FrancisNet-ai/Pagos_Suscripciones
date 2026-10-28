@@ -42,6 +42,13 @@ class PaymentController(
         return orders.detail(current.businessId, orderId)
     }
 
+    @PostMapping("/{id}/refund")
+    @Operation(summary = "Registra el reembolso que el titular ya hizo por Yape/Plin (no mueve dinero)")
+    fun refund(current: CurrentBusiness, @PathVariable id: UUID, @Valid @RequestBody body: RefundRequest): OrderDetail {
+        val orderId = verification.refund(current.businessId, current.userId, id, body.reason!!, body.refundReference)
+        return orders.detail(current.businessId, orderId)
+    }
+
     @GetMapping("/{id}/receipt")
     @Operation(summary = "Descarga el comprobante (solo el vendedor dueño del pago)")
     fun receipt(current: CurrentBusiness, @PathVariable id: UUID): ResponseEntity<Resource> {
@@ -54,3 +61,11 @@ class PaymentController(
             .body(FileSystemResource(path))
     }
 }
+
+data class RefundRequest(
+    @field:jakarta.validation.constraints.NotBlank(message = "Indica el motivo del reembolso")
+    @field:jakarta.validation.constraints.Size(min = 5, max = 300, message = "El motivo debe tener entre 5 y 300 caracteres")
+    val reason: String?,
+    @field:jakarta.validation.constraints.Size(max = 40, message = "El código de operación tiene como máximo 40 caracteres")
+    val refundReference: String? = null,
+)

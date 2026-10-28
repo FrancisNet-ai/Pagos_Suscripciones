@@ -33,6 +33,10 @@
               <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Código de operación</dt><dd class="type-numeric font-semibold text-night">{{ p.transactionReference ?? 'Aún no reportado' }}</dd></div>
               @if (p.reportedAt) { <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Reportado</dt><dd class="text-night">{{ date(p.reportedAt) }}</dd></div> }
               @if (p.verifiedAt) { <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Verificado</dt><dd class="text-night">{{ date(p.verifiedAt) }}</dd></div> }
+              @if (p.refundedAt) {
+                <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Reembolsado</dt><dd class="text-right text-night">{{ date(p.refundedAt) }}@if (p.refundReference) { · <span class="type-numeric">{{ p.refundReference }}</span> }</dd></div>
+                <div class="flex justify-between gap-4 py-3"><dt class="text-[var(--text-muted)]">Motivo</dt><dd class="text-right text-night">{{ p.refundReason }}</dd></div>
+              }
             </dl>
 
             @if (canVerify()) {
@@ -66,7 +70,39 @@
           </section>
         }
 
-        @if (panel() !== 'none') {
+        @if (canRefund() && panel() === 'none') {
+          <button type="button" class="link self-start text-sm text-danger" (click)="openPanel('refund')">Registrar un reembolso</button>
+        }
+
+        @if (panel() === 'refund') {
+          <section class="rounded-[var(--radius-panel)] border border-[var(--line-strong)] bg-white p-5" aria-labelledby="reembolso-titulo">
+            <h3 id="reembolso-titulo" class="font-semibold text-night">Registrar un reembolso</h3>
+            <p class="mt-1 text-sm">
+              Nuvyra no devuelve dinero: primero devuélvelo tú por {{ methodLabel[current()!.method] }} y luego regístralo aquí.
+              El pago dejará de contar como ingreso.
+              {{ order()!.kind === 'RENEWAL' ? 'La suscripción volverá a su vencimiento anterior.' : 'La suscripción se cancelará; si ya entregaste el acceso, quedará pendiente retirarlo.' }}
+            </p>
+            <label class="field mt-4">
+              <span class="field-label">Motivo</span>
+              <textarea class="input min-h-24" [formControl]="reason" maxlength="300" placeholder="Ej.: El servicio no funcionó para el cliente"></textarea>
+              @if (reasonError(); as e) { <span class="field-error">{{ e }}</span> }
+            </label>
+            <label class="field mt-4">
+              <span class="field-label">Código de operación de la devolución (opcional)</span>
+              <input class="input type-numeric" [formControl]="refundReference" maxlength="40" autocomplete="off" />
+            </label>
+            <label class="mt-4 flex gap-3 text-[0.9375rem]">
+              <input class="checkbox" type="checkbox" [formControl]="confirmReturned" />
+              <span>Confirmo que ya devolví {{ current()!.amount | soles }} al cliente.</span>
+            </label>
+            <div class="mt-4 flex flex-wrap gap-3">
+              <button type="button" class="btn bg-danger text-snow hover:brightness-95" [disabled]="busy() || !confirmReturned.value" (click)="submitReason()">Registrar reembolso</button>
+              <button type="button" class="btn btn-secondary" [disabled]="busy()" (click)="panel.set('none')">Volver</button>
+            </div>
+          </section>
+        }
+
+        @if (panel() === 'reject' || panel() === 'cancel') {
           <section class="rounded-[var(--radius-panel)] border border-[var(--line-strong)] bg-white p-5" aria-labelledby="motivo-titulo">
             <h3 id="motivo-titulo" class="font-semibold text-night">{{ panel() === 'reject' ? 'Rechazar el pago' : 'Cancelar el pedido' }}</h3>
             <p class="mt-1 text-sm">

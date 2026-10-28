@@ -17,7 +17,7 @@ import java.util.UUID
 /**
  * PENDING: pedido creado, aún sin reporte. PENDING_VERIFICATION: el comprador reportó el pago.
  * VERIFIED: SOLO tras aprobación explícita del vendedor (o un proveedor autorizado en el futuro).
- * REPORTED y REFUNDED quedan reservados para integraciones futuras.
+ * REFUNDED: el vendedor registró que devolvió el dinero. REPORTED queda reservado para integraciones.
  */
 enum class PaymentStatus { PENDING, REPORTED, PENDING_VERIFICATION, VERIFIED, REJECTED, CANCELLED, REFUNDED }
 
@@ -40,6 +40,10 @@ class CustomerPayment(
     var verifiedBy: UUID? = null,
     var rejectedAt: Instant? = null,
     var rejectionReason: String? = null,
+    var refundedAt: Instant? = null,
+    var refundedBy: UUID? = null,
+    var refundReason: String? = null,
+    var refundReference: String? = null,
 ) : VersionedEntity()
 
 interface CustomerPaymentRepository : JpaRepository<CustomerPayment, UUID> {

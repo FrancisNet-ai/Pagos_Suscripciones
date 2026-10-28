@@ -306,11 +306,12 @@ class SellerTaskService(
                 select s.id, coalesce(s.paid_at, s.created_at) as since
                 from customer_subscriptions s where s.business_id = :b and s.status = 'PENDING_ACTIVATION'
             """,
-            // Solo cuando el acceso ya terminó: antes, el cliente aún tiene derecho a usarlo.
+            // Cuando el acceso ya terminó o se canceló (p. ej. por reembolso): antes, el cliente aún tiene derecho a usarlo.
             TaskType.RELEASE_ACCESS to """
                 select a.id, coalesce(s.expires_at, a.updated_at) as since
                 from capacity_allocations a left join customer_subscriptions s on s.id = a.customer_subscription_id
-                where a.business_id = :b and a.allocation_status = 'RELEASE_PENDING' and (s.expires_at is null or s.expires_at <= :now)
+                where a.business_id = :b and a.allocation_status = 'RELEASE_PENDING'
+                  and (s.expires_at is null or s.expires_at <= :now or s.status = 'CANCELLED')
             """,
             // Los avisos que enviará la integración oficial de WhatsApp no requieren al vendedor.
             TaskType.SEND_RENEWAL_NOTICE to """

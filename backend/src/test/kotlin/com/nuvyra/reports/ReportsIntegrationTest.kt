@@ -49,7 +49,8 @@ class ReportsIntegrationTest : IntegrationTest() {
         fx.paidOrder(store, phone = "911000002")
         fx.placeOrder(store, phone = "911000003")
 
-        val today = LocalDate.now().toString()
+        // El reporte usa la zona del negocio (Lima): con LocalDate.now() en UTC fallaba de 00:00 a 05:00 UTC.
+        val today = LocalDate.now(java.time.ZoneId.of("America/Lima")).toString()
         mockMvc.perform(get("/api/v1/reports/sales").cookie(store.seller).param("from", today).param("to", today))
             .andExpect(jsonPath("$.confirmed.amount").value(70.0))
             .andExpect(jsonPath("$.confirmed.count").value(3))

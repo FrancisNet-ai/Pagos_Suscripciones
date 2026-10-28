@@ -11,6 +11,7 @@ object OrderLabels {
         OrderStatus.PAID -> "Pago verificado"
         OrderStatus.CANCELLED -> "Pedido cancelado"
         OrderStatus.EXPIRED -> "Pedido vencido"
+        OrderStatus.REFUNDED -> "Pago reembolsado"
     }
 
     fun messageStage(order: OrderStatus) = when (order) {

@@ -137,8 +137,11 @@ class SubscriptionRenewal(
     @Column(nullable = false, updatable = false) val newExpiresAt: Instant,
     @Column(nullable = false, updatable = false) val amount: BigDecimal,
     @Column(nullable = false, updatable = false) val createdAt: Instant,
-) : AbstractEntity()
+) : AbstractEntity() {
+    var refundedAt: Instant? = null
+}
 
 interface SubscriptionRenewalRepository : JpaRepository<SubscriptionRenewal, UUID> {
+    fun findByOrderId(orderId: UUID): SubscriptionRenewal?
     fun findBySubscriptionIdOrderByCreatedAtDesc(subscriptionId: UUID): List<SubscriptionRenewal>
 }

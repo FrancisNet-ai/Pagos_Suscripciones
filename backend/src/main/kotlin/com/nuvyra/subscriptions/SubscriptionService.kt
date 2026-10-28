@@ -93,6 +93,27 @@ class SubscriptionService(
         return toResponse(s)
     }
 
+    /**
+     * Reembolso de una compra: sin entregar, se cancela y el cupo vuelve a estar disponible; entregada,
+     * se cancela y queda por retirar el acceso (el vendedor lo confirma como cualquier cancelación).
+     */
+    @Transactional
+    fun closeForRefund(businessId: UUID, actorId: UUID, orderId: UUID, reason: String) {
+        val s = subscriptions.findByOrderIdAndBusinessId(orderId, businessId) ?: return
+        when (s.status) {
+            SubscriptionStatus.PENDING_ACTIVATION -> {
+                s.status = SubscriptionStatus.CANCELLED
+                s.cancelledAt = clock.instant()
+                s.cancellationReason = "Reembolso: $reason".take(300)
+                capacity.releaseForSubscription(businessId, s.id)
+                audit.record(AuditActions.SUBSCRIPTION_CANCELLED, actorId = actorId, businessId = businessId, entityType = "SUBSCRIPTION", entityId = s.id, metadata = mapOf("reason" to s.cancellationReason))
+            }
+            SubscriptionStatus.ACTIVE, SubscriptionStatus.RENEWAL_PENDING, SubscriptionStatus.EXPIRED ->
+                cancel(businessId, actorId, s.id, "Reembolso: $reason".take(300))
+            SubscriptionStatus.CANCELLED, SubscriptionStatus.ENDED -> Unit
+        }
+    }
+
     /** El vendedor confirma que retiró el acceso en el servicio externo: el cupo vuelve a estar disponible. */
     @Transactional
     fun confirmAccessRemoved(businessId: UUID, actorId: UUID, subscriptionId: UUID): SubscriptionResponse {

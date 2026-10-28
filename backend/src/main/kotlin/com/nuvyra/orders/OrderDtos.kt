@@ -17,6 +17,7 @@ enum class OrderFilter(val statuses: Set<OrderStatus>) {
     AWAITING_PAYMENT(setOf(OrderStatus.AWAITING_PAYMENT)),
     PAID(setOf(OrderStatus.PAID)),
     CLOSED(setOf(OrderStatus.CANCELLED, OrderStatus.EXPIRED)),
+    REFUNDED(setOf(OrderStatus.REFUNDED)),
 }
 
 data class OrderSummary(
@@ -48,6 +49,9 @@ data class PaymentDetail(
     val verifiedAt: Instant?,
     val rejectedAt: Instant?,
     val rejectionReason: String?,
+    val refundedAt: Instant?,
+    val refundReason: String?,
+    val refundReference: String?,
 )
 
 data class OrderItemDetail(
