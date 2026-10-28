@@ -8,6 +8,10 @@ docker compose up --build
 * Aplicación: http://localhost:8080 (Nginx sirve Angular y reenvía `/api` al backend).
 * PostgreSQL persiste en el volumen `pgdata`; las imágenes subidas (logos, portadas, productos, QR) en `media`.
 
+## Producción gratuita
+Plan elegido (Oracle Cloud Always Free + DuckDNS) y lista de avance:
+[produccion-gratuita.md](produccion-gratuita.md).
+
 ## Producción (resumen)
 1. Servidor con Docker y un proxy TLS delante (Caddy, Traefik o Nginx con Let's Encrypt) que termine HTTPS
    y reenvíe al contenedor `web`.
