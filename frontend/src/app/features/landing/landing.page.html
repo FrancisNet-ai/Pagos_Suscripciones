@@ -10,8 +10,7 @@
       <app-brand-mark />
       <div class="site-nav-links">
         <a href="#inicio">Inicio</a><a href="#beneficios">Soluciones</a
-        ><a href="#como-funciona">Cómo funciona</a><a href="#planes">Planes</a
-        ><a href="#preguntas">Ayuda</a>
+        ><a href="#planes">Planes</a>
       </div>
       <div class="site-nav-actions">
         @if (auth.isAuthenticated()) {
@@ -26,8 +25,7 @@
       <details class="mobile-site-menu">
         <summary aria-label="Abrir navegación"><app-icon name="menu" /></summary>
         <nav aria-label="Navegación móvil">
-          <a href="#beneficios">Soluciones</a><a href="#como-funciona">Cómo funciona</a
-          ><a href="#planes">Planes</a><a href="#preguntas">Ayuda</a>
+          <a href="#beneficios">Soluciones</a><a href="#planes">Planes</a>
           @if (auth.isAuthenticated()) {
             <a [routerLink]="auth.homeRoute()">Ir a mi panel</a>
           } @else {
@@ -45,10 +43,8 @@
           lugar, con una tienda que lleva tu nombre.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" routerLink="/registro"
-            >Comenzar ahora <app-icon name="arrow"
-          /></a>
-          <a class="btn btn-secondary" href="#como-funciona">Conocer más</a>
+          <a class="btn btn-primary" href="#planes">Comenzar ahora <app-icon name="arrow" /></a>
+          <a class="btn btn-secondary" href="#beneficios">Ver soluciones</a>
         </div>
         <div class="hero-points">
           <div class="hero-point">
@@ -115,52 +111,14 @@
       </ol>
     </section>
 
-    <section id="como-funciona" class="steps-band" aria-labelledby="pasos-titulo">
-      <div class="marketing-section">
-        <div class="section-heading">
-          <p class="type-eyebrow">Así de sencillo</p>
-          <h2 id="pasos-titulo">Tu negocio empieza contigo.<br />El orden, con Nuvyra.</h2>
-        </div>
-        <ol class="steps-grid">
-          @for (step of steps; track step.title; let i = $index) {
-            <li>
-              <span class="step-index">0{{ i + 1 }}</span>
-              <h3>{{ step.title }}</h3>
-              <p>{{ step.text }}</p>
-            </li>
-          }
-        </ol>
-      </div>
-    </section>
-
-    <section class="marketing-section" aria-labelledby="funciones-titulo">
-      <div class="section-heading">
-        <p class="type-eyebrow">Cada detalle, conectado</p>
-        <h2 id="funciones-titulo">Todo lo que necesitas.<br />En el mismo lugar.</h2>
-      </div>
-      <div class="feature-grid">
-        @for (feature of features; track feature.group) {
-          <section class="feature-group">
-            <h3>{{ feature.group }}</h3>
-            <ul>
-              @for (item of feature.items; track item) {
-                <li>
-                  <app-icon name="check" /><span>{{ item }}</span>
-                </li>
-              }
-            </ul>
-          </section>
-        }
-      </div>
-    </section>
-
     <section id="planes" class="pricing-section" aria-labelledby="planes-titulo">
       <div class="marketing-section">
         <div class="section-heading">
           <p class="type-eyebrow">Un plan para tu siguiente paso</p>
           <h2 id="planes-titulo">Invierte en tu negocio.<br />Conserva tus ventas.</h2>
           <p>
-            Un precio fijo por Nuvyra. Tus compradores pagan directamente a tus cuentas Yape y Plin.
+            Pagas solo tu plan de Nuvyra. Lo que vendes llega directo a tus cuentas Yape y Plin;
+            nosotros no intervenimos en tus ventas.
           </p>
         </div>
         @if (plans(); as list) {
@@ -190,32 +148,6 @@
       </div>
     </section>
 
-    <section id="preguntas" class="marketing-section faq-section" aria-labelledby="faq-titulo">
-      <div class="section-heading">
-        <p class="type-eyebrow">Estamos para ayudarte</p>
-        <h2 id="faq-titulo">Respuestas claras.<br />Desde el comienzo.</h2>
-      </div>
-      <div class="mt-9">
-        @for (faq of faqs; track faq.q) {
-          <details>
-            <summary>{{ faq.q }} <span aria-hidden="true">+</span></summary>
-            <p>{{ faq.a }}</p>
-          </details>
-        }
-      </div>
-    </section>
-
-    <section class="closing-band" aria-labelledby="cierre-titulo">
-      <app-wave-art class="absolute inset-0 -z-10" />
-      <div class="marketing-section">
-        <p class="type-eyebrow !text-mist">El siguiente paso es tuyo</p>
-        <h2 id="cierre-titulo" class="type-h1 mt-4">Dale espacio a tu próximo logro.</h2>
-        <p class="mt-5">Tu negocio. Tus clientes. Tus posibilidades.</p>
-        <a class="btn btn-light mt-7 !rounded-full" routerLink="/registro"
-          >Comenzar con Nuvyra <app-icon name="arrow"
-        /></a>
-      </div>
-    </section>
   </main>
   <footer class="site-footer">
     <app-brand-mark />

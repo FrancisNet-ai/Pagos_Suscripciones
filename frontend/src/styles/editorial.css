@@ -418,59 +418,6 @@
     font-size: 0.85rem;
     line-height: 1.8;
   }
-  .steps-band {
-    background: #eaf3f9;
-    border-block: 1px solid #e0ecf4;
-  }
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 35px;
-    margin-top: 45px;
-  }
-  .step-index {
-    font: 500 2.6rem var(--font-display);
-    color: #4a7ea7;
-  }
-  .steps-grid h3 {
-    margin-top: 12px;
-    font-size: 0.93rem;
-    font-weight: 600;
-  }
-  .steps-grid p {
-    margin-top: 9px;
-    font-size: 0.83rem;
-    line-height: 1.8;
-  }
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 45px;
-    margin-top: 45px;
-  }
-  .feature-group {
-    border-top: 1px solid #b3cfe5;
-    padding-top: 25px;
-  }
-  .feature-group h3 {
-    font: 500 1.8rem var(--font-display);
-  }
-  .feature-group ul {
-    display: grid;
-    gap: 13px;
-    margin-top: 20px;
-    font-size: 0.85rem;
-  }
-  .feature-group li {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .feature-group .ui-icon {
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-  }
   .pricing-section {
     background: #eaf2f8;
   }
@@ -486,45 +433,6 @@
     border: 1px solid #d7e5ef;
     border-radius: 18px;
     padding: 28px;
-  }
-  .faq-section {
-    max-width: 900px;
-  }
-  .faq-section details {
-    border-bottom: 1px solid #dce8f1;
-    padding: 23px 0;
-  }
-  .faq-section summary {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    list-style: none;
-    color: #0a1931;
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-  .faq-section details p {
-    max-width: 680px;
-    margin-top: 14px;
-    font-size: 0.9rem;
-    line-height: 1.8;
-  }
-  .closing-band {
-    background: #0a1931;
-    color: #c9deed;
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-  }
-  .closing-band app-wave-art {
-    opacity: 0.28;
-  }
-  .closing-band h2 {
-    color: #fff;
-  }
-  .closing-band .marketing-section {
-    text-align: center;
-    padding-block: 70px;
   }
   .site-footer {
     max-width: 1200px;
@@ -1562,14 +1470,6 @@
   .benefits-layout {
     grid-template-columns: 1fr;
     gap: 35px;
-  }
-  .steps-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px 24px;
-  }
-  .feature-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
   }
   .section-heading h2 {
     font-size: 2.65rem;
