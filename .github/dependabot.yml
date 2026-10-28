@@ -1,0 +1,49 @@
+# Revisión automática de dependencias. Dependabot abre PR semanales agrupados para que el CI
+# los pruebe antes de fusionar; las actualizaciones de seguridad llegan aparte, apenas se publican
+# (requiere activar «Dependabot alerts» y «Dependabot security updates» en Settings → Code security).
+version: 2
+updates:
+  # Backend: las versiones viven en backend/gradle/libs.versions.toml.
+  - package-ecosystem: gradle
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Lima
+    open-pull-requests-limit: 5
+    groups:
+      spring-y-kotlin:
+        patterns: ['org.springframework*', 'org.jetbrains.kotlin*', 'io.spring*']
+      backend-otras:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # Frontend: frontend/package.json.
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Lima
+    open-pull-requests-limit: 5
+    groups:
+      angular:
+        patterns: ['@angular/*', '@angular-devkit/*', 'typescript', 'rxjs']
+      frontend-otras:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # Acciones de GitHub usadas en .github/workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      acciones:
+        patterns: ['*']
+
+  # Imágenes base de infrastructure/docker.
+  - package-ecosystem: docker
+    directory: /infrastructure/docker
+    schedule:
+      interval: monthly
