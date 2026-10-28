@@ -42,6 +42,12 @@ updates:
       acciones:
         patterns: ['*']
 
+  # Imágenes de compose.yaml y compose.prod.yaml (PostgreSQL, Caddy).
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: monthly
+
   # Imágenes base de infrastructure/docker.
   - package-ecosystem: docker
     directory: /infrastructure/docker
