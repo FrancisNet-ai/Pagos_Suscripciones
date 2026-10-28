@@ -14,7 +14,10 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (Kotlin + Testcontainers)
+    name: Backend (Java ${{ matrix.java }} + Testcontainers)
+    strategy:
+      matrix:
+        java: ['21', '26']
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
@@ -25,20 +28,38 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ matrix.java }}
       - uses: gradle/actions/setup-gradle@v4
       # Testcontainers usa el Docker que trae el runner de GitHub.
       - run: ./gradlew test bootJar --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: backend-app
+          name: backend-app-java-${{ matrix.java }}
           path: backend/build/libs/app.jar
           retention-days: 1
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-test-report
+          name: backend-test-report-java-${{ matrix.java }}
           path: backend/build/reports/tests/test
+
+  backend-windows:
+    name: Backend (Windows + Java 26)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '26'
+      - uses: gradle/actions/setup-gradle@v4
+      # Verifica el mismo wrapper .bat y empaquetado nativo que usa el propietario, sin Docker.
+      - run: .\gradlew.bat --version
+      - run: .\gradlew.bat bootJar --no-daemon
 
   frontend:
     name: Frontend (Angular)
@@ -51,10 +72,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24.20.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm install -g npm@11
+      - run: npm install -g npm@11.19.0
       - run: npm ci
       - run: npx ng test --watch=false
       - run: npx ng build
@@ -98,17 +119,18 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '26'
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24.20.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - uses: actions/download-artifact@v4
         with:
-          name: backend-app
+          # Prueba el artefacto compilado en Java 21 sobre el Java 26 del entorno del propietario.
+          name: backend-app-java-21
           path: backend/build/libs
-      - run: npm install -g npm@11
+      - run: npm install -g npm@11.19.0
       - run: npm ci
         working-directory: frontend
       # La imagen ubuntu-24.04 incluye Chrome y sus bibliotecas; no reinstalar fuentes/Xvfb

@@ -71,7 +71,7 @@ el [sistema visual](docs/architecture/sistema-visual.md). Se conservan las funci
 | Capa | Stack |
 |---|---|
 | Frontend | Angular 21 (standalone, signals, zoneless), TypeScript estricto, Tailwind CSS 4, Angular CDK, Vitest |
-| Backend | Kotlin 2.3, Spring Boot 4.1 (Web MVC, Security, Data JPA, Validation, Actuator), Flyway, springdoc-openapi |
+| Backend | Kotlin 2.4, Spring Boot 4.1 (Web MVC, Security, Data JPA, Validation, Actuator), Flyway, springdoc-openapi |
 | Datos | PostgreSQL 17 |
 | Pruebas | JUnit 5, MockK, Spring Boot Test, Testcontainers |
 | Infraestructura | Docker, Docker Compose, Nginx (proxy de mismo origen) |
@@ -89,18 +89,24 @@ compose.yaml      Entorno completo con Docker
 
 ## Desarrollo local
 
-Requisitos: Java 21, Node 22 con npm 11, Docker.
+Requisitos recomendados: **Node 24.20**, **npm 11.19** y **JDK 21 LTS o JDK 26**. Gradle 9.4.1 usa el
+JDK activo (`JAVA_HOME`) y genera código compatible con Java 21; desarrollar con Java 26 no exige
+instalar Java 21. El contenedor de producción conserva Java 21 LTS.
+
+Para ejecutar en Windows sin Docker ni virtualización, ver [la guía paso a paso](docs/development/windows.md).
+La aplicación necesita PostgreSQL 17 local. Las pruebas backend con Testcontainers sí requieren Docker;
+también se ejecutan automáticamente en GitHub Actions con Java 21 y Java 26.
 
 ```bash
 # 1. Base de datos
 docker run -d --name pg-dev -p 5432:5432 \
-  -e POSTGRES_DB=platform -e POSTGRES_USER=platform -e POSTGRES_PASSWORD=platform postgres:17-alpine
+  -e POSTGRES_DB=nuvyra -e POSTGRES_USER=nuvyra -e POSTGRES_PASSWORD=nuvyra postgres:17-alpine
 
 # 2. Backend (perfil dev: http://localhost:8080, Swagger en /api/docs)
 cd backend && ./gradlew bootRun
 
 # 3. Frontend (http://localhost:4200, reenvía /api al backend)
-cd frontend && npm install && npm start
+cd frontend && npm ci && npm start
 ```
 
 En desarrollo, el enlace de recuperación de contraseña se escribe en el log del backend porque no hay SMTP.

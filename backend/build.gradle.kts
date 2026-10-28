@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "2.3.21"
-    kotlin("plugin.spring") version "2.3.21"
-    kotlin("plugin.jpa") version "2.3.21"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.spring") version "2.4.21"
+    kotlin("plugin.jpa") version "2.4.21"
     id("org.springframework.boot") version "4.1.2"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -9,10 +9,18 @@ plugins {
 group = "com.nuvyra"
 version = "0.1.0"
 
+// Alinea stdlib, reflect y bibliotecas Kotlin con la versión de los plugins.
+extra["kotlin.version"] = "2.4.21"
+
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    // Usa el JDK que ejecuta Gradle (JAVA_HOME), incluido Java 26, sin exigir instalar otro JDK.
+    // El artefacto conserva el mínimo Java 21 LTS para el contenedor de producción.
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(21)
 }
 
 repositories {
@@ -53,7 +61,8 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xjdk-release=21")
     }
 }
 
