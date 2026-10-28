@@ -41,6 +41,7 @@ y `/api/docs/openapi.json` (deshabilitada en producción salvo que se active `AP
 | `GET` | `/auth/me` | sesión | Usuario, roles y negocio actual |
 | `POST` | `/auth/password-reset` | público | Solicita enlace de recuperación (siempre 202) |
 | `POST` | `/auth/password-reset/confirm` | público | Establece nueva contraseña con token |
+| `POST` | `/auth/password` | sesión | `{ currentPassword, newPassword }` (10–72) → `{ otherSessionsClosed }`. Exige la contraseña actual y una distinta; cierra las demás sesiones del usuario y conserva la actual. Límite: 5 intentos cada 15 min |
 
 `POST /auth/register`
 

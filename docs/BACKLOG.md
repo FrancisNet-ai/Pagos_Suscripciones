@@ -45,3 +45,13 @@
 - [ ] Bloqueo distribuido de tareas programadas y rate limiting compartido si se usan varias instancias.
 - [ ] Copias de seguridad automatizadas en el servidor de producción (script base en `infrastructure/scripts`).
 - [ ] Adquirir licencias de Voga y Bodoni FLF si se desea la identidad tipográfica original.
+
+### Seguridad de cuentas
+- [x] Cambiar la contraseña desde el panel («Mi cuenta»), cerrando las demás sesiones.
+- [x] El backend no arranca en producción con secretos de ejemplo o de desarrollo.
+- [x] Revisión automática de dependencias (Dependabot y `npm audit` en CI). Falta activar las alertas en *Settings → Code security* del repositorio.
+- [ ] Verificación en dos pasos (TOTP) opcional para titulares y obligatoria para el superadministrador.
+- [ ] Lista de sesiones abiertas con dispositivo y opción de cerrar cada una.
+- [ ] Verificar el correo al registrarse (requiere SMTP real).
+- [ ] Aviso por correo de inicio de sesión desde un dispositivo nuevo (requiere SMTP real).
+- [ ] Rechazar contraseñas filtradas (consulta por prefijo de hash, sin enviar la contraseña).

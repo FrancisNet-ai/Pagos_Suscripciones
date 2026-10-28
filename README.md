@@ -141,4 +141,5 @@ en [docs/deployment](docs/deployment/README.md).
 * [Rutas del frontend](docs/architecture/rutas-frontend.md)
 * [Sistema visual](docs/architecture/sistema-visual.md)
 * [Seguridad y riesgos](docs/architecture/seguridad.md)
+* [Dependencias y su revisión automática](docs/development/dependencias.md)
 * [Decisiones técnicas (ADR)](docs/decisions)
