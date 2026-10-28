@@ -35,13 +35,13 @@
 - [x] Versión reducida (640 px) de las imágenes públicas al subirlas: JPEG para fotos, PNG si hay transparencia; los listados la piden con `?size=sm`.
 - [ ] Codificar las versiones reducidas en WebP (Java no escribe WebP sin bibliotecas nativas; evaluar libwebp o un servicio de imágenes).
 - [x] Historial paginado de pendientes resueltos con autor y evidencia de auditoría, limitado al negocio y los permisos actuales.
-- [ ] Varios negocios por cuenta (hoy un usuario pertenece a un solo negocio, como titular o colaborador).
+- [x] Varios negocios por cuenta: crear otro negocio, cambiar de negocio en la sesión y unirse como colaborador con una cuenta existente.
 - [x] Permiso propio para aprobar o rechazar pagos (`PAYMENTS`), separado de atender pedidos (`ORDERS`); los ingresos siguen en `REPORTS` y los reembolsos son del titular.
 - [x] Acceso de soporte a pedidos y clientes: solo con autorización temporal del titular (1–72 h, revocable), motivo obligatorio en cada consulta y registro visible para el titular.
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
 - [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).
 - [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.
-- [ ] Evaluar Row Level Security de PostgreSQL como defensa en profundidad.
+- [ ] Adoptar Row Level Security por etapas antes de producción (evaluado en [ADR-007](decisions/ADR-007-row-level-security.md)).
 - [ ] Bloqueo distribuido de tareas programadas y rate limiting compartido si se usan varias instancias.
 - [ ] Copias de seguridad automatizadas en el servidor de producción (script base en `infrastructure/scripts`).
 - [ ] Adquirir licencias de Voga y Bodoni FLF si se desea la identidad tipográfica original.

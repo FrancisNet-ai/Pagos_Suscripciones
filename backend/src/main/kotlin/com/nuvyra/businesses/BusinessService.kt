@@ -28,6 +28,14 @@ class BusinessService(
         return business
     }
 
+    /** Negocios en los que la persona es miembro activo, del más antiguo al más reciente. */
+    @Transactional(readOnly = true)
+    fun memberships(userId: UUID): List<com.nuvyra.auth.MembershipDto> {
+        val list = members.findByUserIdAndStatusOrderByCreatedAtAsc(userId, MemberStatus.ACTIVE)
+        val names = businesses.findAllById(list.map { it.businessId }).associate { it.id to it.businessName }
+        return list.mapNotNull { m -> names[m.businessId]?.let { com.nuvyra.auth.MembershipDto(m.businessId, it, m.role) } }
+    }
+
     @Transactional(readOnly = true)
     fun get(businessId: UUID): Business = businesses.findById(businessId).orElseThrow { ApiException.notFound() }
 

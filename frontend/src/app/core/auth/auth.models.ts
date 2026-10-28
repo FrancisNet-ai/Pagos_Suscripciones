@@ -43,6 +43,14 @@ export interface AccessSummary {
 export interface SessionResponse {
   user: SessionUser;
   business: BusinessSummary | null;
+  /** Negocios en los que la persona es miembro activo (titular o colaboradora). */
+  memberships?: Membership[];
+}
+
+export interface Membership {
+  businessId: string;
+  businessName: string;
+  role: BusinessRole;
 }
 
 export interface RegisterPayload {

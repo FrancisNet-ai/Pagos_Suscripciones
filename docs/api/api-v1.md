@@ -401,3 +401,15 @@ imágenes anteriores) devuelve el original. Cualquier otro valor de `size` devue
 | `GET` | `/admin/businesses/{id}/support/customers?reason=&query=&page=` | `SUPER_ADMIN` | Clientes del negocio, mismas reglas |
 
 `GET /admin/businesses/{id}` incluye `supportAccessUntil`.
+
+## Varios negocios por cuenta — implementado
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/auth/businesses` | `{ businessName }` → `201`. Crea otro negocio para la cuenta (titular, sin plan) y lo activa en la sesión. No disponible para `SUPER_ADMIN` |
+| `POST` | `/auth/business` | `{ businessId }`. Cambia el negocio activo; solo a uno del que sea miembro activo (`404` si no) |
+| `POST` | `/public/invitations/{token}/join` | Une la cuenta con sesión iniciada al negocio de la invitación (mismo correo; `401 LOGIN_REQUIRED`, `403 INVITATION_OTHER_ACCOUNT`) |
+
+`/auth/me` y las respuestas de sesión incluyen `memberships` (`businessId`, `businessName`, `role`).
+`GET /public/invitations/{token}` incluye `existingAccount`. Invitar un correo con cuenta ya no se rechaza,
+salvo que ya sea del equipo. Revocar a quien pertenece a otros negocios no desactiva su cuenta.

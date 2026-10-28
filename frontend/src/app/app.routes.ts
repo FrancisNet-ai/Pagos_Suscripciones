@@ -92,6 +92,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tasks/task-history.page').then((m) => m.TaskHistoryPage),
       },
       {
+        path: 'negocios/nuevo',
+        title: 'Crear otro negocio',
+        loadComponent: () => import('./features/businesses/new-business.page').then((m) => m.NewBusinessPage),
+      },
+      {
         path: 'pendientes',
         title: 'Pendientes',
         loadComponent: () => import('./features/tasks/tasks.page').then((m) => m.TasksPage),

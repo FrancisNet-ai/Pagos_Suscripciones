@@ -58,6 +58,15 @@ class SessionService(
         return IssuedSession(token, session)
     }
 
+    /** Cambia el negocio activo de la sesión; solo a uno en el que la persona sea miembro activo. */
+    @Transactional
+    fun switchBusiness(sessionId: UUID, userId: UUID, businessId: UUID): Boolean {
+        members.findByBusinessIdAndUserIdAndStatus(businessId, userId, MemberStatus.ACTIVE) ?: return false
+        val session = sessions.findById(sessionId).orElse(null)?.takeIf { it.userId == userId && it.isActive(clock.instant()) } ?: return false
+        session.activeBusinessId = businessId
+        return true
+    }
+
     @Transactional
     fun revoke(sessionId: UUID) {
         sessions.findById(sessionId).ifPresent { if (it.revokedAt == null) it.revokedAt = clock.instant() }
@@ -73,8 +82,22 @@ class SessionService(
     fun authenticate(token: String): AuthenticatedUser? {
         val now = clock.instant()
         val session = sessions.findByTokenHash(SecureTokens.sha256Hex(token))?.takeIf { it.isActive(now) } ?: return null
+        return principal(session, now)
+    }
+
+    /** Principal de una sesión ya identificada (p. ej. tras cambiar de negocio en la misma petición). */
+    @Transactional
+    fun principal(sessionId: UUID): AuthenticatedUser? {
+        val now = clock.instant()
+        val session = sessions.findById(sessionId).orElse(null)?.takeIf { it.isActive(now) } ?: return null
+        return principal(session, now)
+    }
+
+    private fun principal(session: UserSession, now: Instant): AuthenticatedUser? {
         val user = users.findById(session.userId).orElse(null)?.takeIf { it.status == UserStatus.ACTIVE } ?: return null
-        val membership = members.findFirstByUserIdAndStatusOrderByCreatedAtAsc(user.id, MemberStatus.ACTIVE)
+        // El negocio elegido en la sesión, si la membresía sigue activa; si no, el más antiguo.
+        val membership = session.activeBusinessId?.let { members.findByBusinessIdAndUserIdAndStatus(it, user.id, MemberStatus.ACTIVE) }
+            ?: members.findFirstByUserIdAndStatusOrderByCreatedAtAsc(user.id, MemberStatus.ACTIVE)
 
         val roles = buildSet {
             if (user.platformRole == PlatformRole.SUPER_ADMIN) add(Roles.SUPER_ADMIN)

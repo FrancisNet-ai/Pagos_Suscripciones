@@ -71,8 +71,17 @@ class StaffService(
     fun invite(businessId: UUID, actorId: UUID, request: InviteStaffRequest): InvitationCreated {
         rateLimiter.check("staff-invite:$businessId", limit = 20, window = Duration.ofHours(1))
         val email = AuthService.normalizeEmail(request.email!!)
-        if (users.existsByEmail(email)) {
-            throw ApiException.invalidField("email", "Este correo ya tiene una cuenta en Nuvyra. Usa otro correo para el colaborador.")
+        // Una cuenta existente puede unirse a otro negocio; solo se evita invitar a quien ya es del equipo.
+        users.findByEmail(email)?.let { existing ->
+            val member = members.findByBusinessIdAndUserId(businessId, existing.id)
+            if (member != null) {
+                throw ApiException.invalidField(
+                    "email",
+                    if (member.status == MemberStatus.ACTIVE) "Esta persona ya es parte de tu equipo."
+                    else "Esta persona ya estuvo en tu equipo: reactiva su acceso en lugar de invitarla.",
+                )
+            }
+            if (existing.platformRole != null) throw ApiException.invalidField("email", "Este correo no puede unirse a un negocio.")
         }
         if (invitations.existsByBusinessIdAndEmailAndStatus(businessId, email, InvitationStatus.PENDING)) {
             throw ApiException.invalidField("email", "Ya hay una invitación pendiente para este correo.")
@@ -135,8 +144,12 @@ class StaffService(
         if (member.status == MemberStatus.REVOKED) return team(businessId)
         member.status = MemberStatus.REVOKED
         member.revokedAt = clock.instant()
-        users.findById(member.userId).ifPresent { it.status = UserStatus.DISABLED }
-        sessions.revokeAll(member.userId)
+        // Si la cuenta no pertenece a ningún otro negocio, se desactiva y se cierran sus sesiones; si
+        // pertenece a otros, conserva esos accesos y deja de entrar a este en su siguiente petición.
+        if (members.countByUserIdAndStatus(member.userId, MemberStatus.ACTIVE) == 0L) {
+            users.findById(member.userId).ifPresent { it.status = UserStatus.DISABLED }
+            sessions.revokeAll(member.userId)
+        }
         audit.record(AuditActions.STAFF_REVOKED, actorId = actorId, businessId = businessId, entityType = "BUSINESS_MEMBER", entityId = member.id)
         return team(businessId)
     }
@@ -165,6 +178,38 @@ class StaffService(
             email = invitation.email,
             permissions = invitation.permissions.map { PermissionOption(it, it.label) },
             expiresAt = invitation.expiresAt,
+            existingAccount = users.existsByEmail(invitation.email),
+        )
+    }
+
+    /**
+     * Une una cuenta existente al negocio: la persona debe haber iniciado sesión con el mismo correo
+     * de la invitación. El enlace queda usado.
+     */
+    @Transactional
+    fun join(token: String, principal: com.nuvyra.security.AuthenticatedUser, client: ClientInfo) {
+        val invitation = invitations.lockById(usable(token).id)!!
+        if (invitation.status != InvitationStatus.PENDING) throw invalidLink()
+        if (!principal.email.equals(invitation.email, ignoreCase = true)) {
+            throw ApiException(HttpStatus.FORBIDDEN, "INVITATION_OTHER_ACCOUNT", "Esta invitación es para ${invitation.email}. Inicia sesión con esa cuenta.")
+        }
+        if (members.findByBusinessIdAndUserId(invitation.businessId, principal.userId) != null) {
+            throw ApiException.conflict("ALREADY_MEMBER", "Ya eres parte de este negocio.")
+        }
+        lockSeats(invitation.businessId)
+        val limit = activePlanSeats(invitation.businessId)
+            ?: throw ApiException.conflict("PLAN_REQUIRED", "El plan del negocio no está vigente. Pide al titular que lo renueve.")
+        if (seatsUsed(invitation.businessId) > limit) {
+            throw ApiException.conflict("SEAT_LIMIT_REACHED", "El plan del negocio ya no admite más usuarios. Pide al titular que revise su plan.")
+        }
+        val member = members.save(BusinessMember(businessId = invitation.businessId, userId = principal.userId, role = BusinessRole.STAFF).apply { permissions = invitation.permissions })
+        invitation.status = InvitationStatus.ACCEPTED
+        invitation.acceptedUserId = principal.userId
+        invitation.acceptedAt = clock.instant()
+        sessions.switchBusiness(principal.sessionId, principal.userId, invitation.businessId)
+        audit.record(
+            AuditActions.STAFF_JOINED, actorId = principal.userId, businessId = invitation.businessId, entityType = "BUSINESS_MEMBER", entityId = member.id,
+            ipAddress = client.ip,
         )
     }
 
@@ -175,7 +220,7 @@ class StaffService(
         val invitation = invitations.lockById(usable(token).id)!!
         if (invitation.status != InvitationStatus.PENDING) throw invalidLink()
         if (users.existsByEmail(invitation.email)) {
-            throw ApiException.conflict("EMAIL_ALREADY_REGISTERED", "Este correo ya tiene una cuenta en Nuvyra. Pide al titular que te invite con otro correo.")
+            throw ApiException.conflict("EMAIL_ALREADY_REGISTERED", "Este correo ya tiene una cuenta en Nuvyra. Inicia sesión con ella para unirte al negocio.")
         }
         AuthService.ensurePasswordFitsBcrypt(request.password!!, "password")
         val phone = PeruPhone.normalize(request.phone) ?: throw ApiException.invalidField("phone", "Ingresa un celular peruano válido de 9 dígitos")

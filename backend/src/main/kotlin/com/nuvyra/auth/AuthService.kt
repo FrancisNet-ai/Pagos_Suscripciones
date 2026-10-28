@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
 import java.time.Duration
+import java.util.UUID
 
 data class ClientInfo(val ip: String, val userAgent: String?)
 
@@ -115,6 +116,29 @@ class AuthService(
         return toResponse(user, principal.roles, business, principal.businessRole, principal.permissions)
     }
 
+    /** Cambia el negocio activo de la sesión (solo a uno del que sea miembro activo). */
+    @Transactional
+    fun switchBusiness(principal: AuthenticatedUser, businessId: UUID): SessionResponse {
+        if (!sessionService.switchBusiness(principal.sessionId, principal.userId, businessId)) {
+            throw ApiException.notFound("No perteneces a ese negocio.")
+        }
+        return describe(sessionService.principal(principal.sessionId) ?: throw ApiException.unauthorized())
+    }
+
+    /** Crea otro negocio para la misma cuenta (sin plan: queda en solo lectura hasta elegirlo) y lo activa. */
+    @Transactional
+    fun createBusiness(principal: AuthenticatedUser, request: CreateBusinessRequest, client: ClientInfo): SessionResponse {
+        if (Roles.SUPER_ADMIN in principal.roles) {
+            throw ApiException.forbidden("La cuenta de superadministración no puede tener negocios. Usa otra cuenta.")
+        }
+        rateLimiter.check("business-create:${principal.userId}", limit = 5, window = Duration.ofDays(1))
+        val user = users.findById(principal.userId).orElseThrow { ApiException.unauthorized() }
+        val business = businessService.createForOwner(user.id, request.businessName!!, whatsappNumber = user.phone)
+        audit.record(AuditActions.BUSINESS_CREATED, actorId = user.id, businessId = business.id, entityType = "BUSINESS", entityId = business.id, ipAddress = client.ip)
+        sessionService.switchBusiness(principal.sessionId, user.id, business.id)
+        return describe(sessionService.principal(principal.sessionId) ?: throw ApiException.unauthorized())
+    }
+
     private fun toResponse(user: User, roles: Set<String>, business: Business?, role: BusinessRole?, permissions: Set<StaffPermission>) = SessionResponse(
         user = UserDto(user.id, user.fullName, user.email, user.phone, roles),
         business = business?.let {
@@ -123,6 +147,7 @@ class AuthService(
                 role ?: BusinessRole.OWNER, permissions,
             )
         },
+        memberships = businessService.memberships(user.id),
     )
 
     companion object {

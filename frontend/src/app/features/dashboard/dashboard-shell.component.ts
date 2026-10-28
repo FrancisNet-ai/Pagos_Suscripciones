@@ -220,6 +220,18 @@ export class DashboardShellComponent {
       .join('');
   }
 
+  protected readonly switching = signal(false);
+
+  /** Cambia de negocio y recarga el panel para no mostrar datos del negocio anterior. */
+  protected switchBusiness(businessId: string): void {
+    if (businessId === this.auth.business()?.id) return;
+    this.switching.set(true);
+    this.auth.switchBusiness(businessId).subscribe({
+      next: () => window.location.assign('/panel'),
+      error: () => this.switching.set(false),
+    });
+  }
+
   protected logout(): void {
     this.loggingOut.set(true);
     this.auth.logout().subscribe(() => void this.router.navigateByUrl('/ingresar'));

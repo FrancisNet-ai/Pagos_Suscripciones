@@ -42,7 +42,23 @@
     @if (auth.business(); as business) {
       <div class="sidebar-business">
         <p>{{ auth.isOwner() ? 'Tu espacio de trabajo' : 'Colaborador' }}</p>
-        <p>{{ business.businessName }}</p>
+        @if ((auth.session()?.memberships?.length ?? 0) > 1) {
+          <label class="sr-only" for="business-switch">Cambiar de negocio</label>
+          <select
+            id="business-switch"
+            class="business-switch"
+            [value]="business.id"
+            [disabled]="switching()"
+            (change)="switchBusiness($any($event.target).value)"
+          >
+            @for (m of auth.session()?.memberships; track m.businessId) {
+              <option [value]="m.businessId">{{ m.businessName }}{{ m.role === 'STAFF' ? ' · colaborador' : '' }}</option>
+            }
+          </select>
+        } @else {
+          <p>{{ business.businessName }}</p>
+        }
+        <a routerLink="/panel/negocios/nuevo" class="sidebar-new-business">+ Crear otro negocio</a>
       </div>
     }
     <nav class="sidebar-nav" aria-label="Secciones">

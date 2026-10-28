@@ -27,15 +27,21 @@ type Field = 'fullName' | 'phone' | 'password' | 'acceptTerms' | 'acceptPrivacy'
           {{ date(inv.expiresAt) }}.
         </p>
 
-        @if (auth.isAuthenticated()) {
+        @if (error(); as message) {
+          <p class="notice notice-error mt-6" role="alert">{{ message }}</p>
+        }
+        @if (auth.isAuthenticated() && sameAccount(inv)) {
+          <p class="mt-6">Ya tienes una cuenta en Nuvyra. Únete a {{ inv.businessName }} con ella y podrás cambiar de negocio desde el menú.</p>
+          <button type="button" class="btn btn-primary btn-block mt-4" [disabled]="loading()" (click)="join()">Unirme con mi cuenta</button>
+        } @else if (auth.isAuthenticated()) {
           <p class="notice notice-warning mt-6" role="alert">
-            Ya iniciaste sesión como {{ auth.user()?.email }}. Cierra esa sesión para crear el acceso de {{ inv.email }}.
+            Ya iniciaste sesión como {{ auth.user()?.email }}. Esta invitación es para {{ inv.email }}: cierra esa sesión para continuar.
           </p>
           <button type="button" class="btn btn-secondary btn-block mt-4" (click)="logout()">Cerrar sesión</button>
+        } @else if (inv.existingAccount) {
+          <p class="mt-6">{{ inv.email }} ya tiene una cuenta en Nuvyra. Inicia sesión con ella para unirte al negocio.</p>
+          <a class="btn btn-primary btn-block mt-4" routerLink="/ingresar" [queryParams]="{ volver: '/invitacion/' + token() }">Iniciar sesión</a>
         } @else {
-          @if (error(); as message) {
-            <p class="notice notice-error mt-6" role="alert">{{ message }}</p>
-          }
           <form class="mt-8 grid gap-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <div class="field">
               <label class="field-label" for="inviteEmail">Correo</label>
@@ -129,6 +135,25 @@ export class AcceptInvitationPage {
 
   protected date(iso: string): string {
     return formatDate(iso);
+  }
+
+  protected sameAccount(inv: PublicInvitation): boolean {
+    return this.auth.user()?.email.toLowerCase() === inv.email.toLowerCase();
+  }
+
+  protected join(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.api.join(this.token()).subscribe({
+      next: (session) => {
+        this.auth.startSession(session);
+        void this.router.navigateByUrl('/panel');
+      },
+      error: (e: unknown) => {
+        this.error.set(ApiError.from(e).message);
+        this.loading.set(false);
+      },
+    });
   }
 
   protected logout(): void {

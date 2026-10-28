@@ -148,6 +148,15 @@ con un mensaje por tipo y pedido.
 temporal del titular. Cada consulta del superadministrador queda en `audit_logs` (`SUPPORT_DATA_VIEWED`, con
 recurso y motivo).
 
+### Varios negocios por cuenta (`V15__multiple_businesses.sql`)
+
+Se elimina la restricción de un negocio por cuenta (`uq_business_members_user`). `user_sessions` añade
+`active_business_id`: el negocio elegido en la sesión, validado contra las membresías activas en cada petición.
+
+### Permiso de pagos (`V13__payments_permission.sql`)
+
+Otorga `PAYMENTS` a los colaboradores e invitaciones pendientes que tenían `ORDERS`.
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

@@ -44,4 +44,19 @@ describe('DashboardShellComponent', () => {
     expect(links).toContain('Equipo');
     expect(links).toContain('Mi plan');
   });
+
+  it('con varios negocios muestra el selector para cambiar de negocio', () => {
+    const s = session('OWNER', ['PRODUCTS', 'ORDERS', 'PAYMENTS', 'CUSTOMERS', 'RENEWALS', 'REPORTS']);
+    s.memberships = [
+      { businessId: 'b', businessName: 'Norte Digital', role: 'OWNER' },
+      { businessId: 'c', businessName: 'Sur Digital', role: 'STAFF' },
+    ];
+    TestBed.configureTestingModule({ imports: [DashboardShellComponent], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.inject(AuthService).startSession(s);
+    const fixture = TestBed.createComponent(DashboardShellComponent);
+    fixture.detectChanges();
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('#business-switch')!;
+    expect(Array.from(select.options).map((o) => o.textContent?.trim())).toEqual(['Norte Digital', 'Sur Digital · colaborador']);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Crear otro negocio');
+  });
 });

@@ -59,4 +59,8 @@ interface BusinessMemberRepository : JpaRepository<BusinessMember, UUID> {
     fun findByBusinessIdOrderByCreatedAtAsc(businessId: UUID): List<BusinessMember>
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): BusinessMember?
     fun countByBusinessIdAndStatus(businessId: UUID, status: MemberStatus): Long
+    fun findByBusinessIdAndUserIdAndStatus(businessId: UUID, userId: UUID, status: MemberStatus): BusinessMember?
+    fun findByBusinessIdAndUserId(businessId: UUID, userId: UUID): BusinessMember?
+    fun findByUserIdAndStatusOrderByCreatedAtAsc(userId: UUID, status: MemberStatus): List<BusinessMember>
+    fun countByUserIdAndStatus(userId: UUID, status: MemberStatus): Long
 }

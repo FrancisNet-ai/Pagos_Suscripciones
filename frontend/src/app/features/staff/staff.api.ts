@@ -53,6 +53,8 @@ export interface PublicInvitation {
   email: string;
   permissions: PermissionOption[];
   expiresAt: string;
+  /** El correo ya tiene cuenta: se une iniciando sesión, sin registrarse de nuevo. */
+  existingAccount?: boolean;
 }
 
 export interface AcceptInvitationPayload {
@@ -99,6 +101,10 @@ export class StaffApi {
 
   view(token: string): Observable<PublicInvitation> {
     return this.http.get<PublicInvitation>(`/api/v1/public/invitations/${encodeURIComponent(token)}`);
+  }
+
+  join(token: string): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`/api/v1/public/invitations/${encodeURIComponent(token)}/join`, {});
   }
 
   accept(token: string, body: AcceptInvitationPayload): Observable<SessionResponse> {
