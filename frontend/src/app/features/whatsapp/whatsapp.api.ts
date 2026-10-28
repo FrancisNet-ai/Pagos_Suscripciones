@@ -10,6 +10,8 @@ export interface WhatsAppIntegration {
   tokenSaved: boolean;
   reminderTemplate: string | null;
   farewellTemplate: string | null;
+  orderTemplate: string | null;
+  paymentTemplate: string | null;
   templateLanguage: string;
   enabled: boolean;
   status: 'UNVERIFIED' | 'VERIFIED' | 'ERROR' | null;
@@ -26,6 +28,8 @@ export interface WhatsAppIntegrationPayload {
   accessToken: string | null;
   reminderTemplate: string;
   farewellTemplate: string | null;
+  orderTemplate: string | null;
+  paymentTemplate: string | null;
   templateLanguage: string;
   enabled: boolean;
 }

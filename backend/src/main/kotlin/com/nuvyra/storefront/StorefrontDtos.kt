@@ -26,6 +26,8 @@ data class PublicStoreResponse(
     val acceptingOrders: Boolean,
     val notice: String?,
     val paymentMethods: List<PublicPaymentOption>,
+    /** La tienda envía confirmaciones de pedido o pago por WhatsApp a quien lo autorice. */
+    val orderUpdatesByWhatsapp: Boolean = false,
 )
 
 data class PublicProductResponse(
@@ -67,6 +69,8 @@ data class CreateOrderRequest(
 
     /** Opcional: recordatorios de renovación por WhatsApp. */
     val acceptRenewalReminders: Boolean? = false,
+    /** Confirmaciones del pedido y del pago por WhatsApp; solo se ofrece si la tienda las tiene activas. */
+    val acceptOrderUpdates: Boolean? = false,
 )
 
 data class CreateOrderResponse(val publicToken: String, val orderNumber: String)

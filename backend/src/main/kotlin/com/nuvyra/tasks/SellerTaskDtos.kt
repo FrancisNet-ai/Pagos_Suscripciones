@@ -11,8 +11,8 @@ import java.util.UUID
  * colaborador ve la tarea (el titular las ve todas). [slaHours]: plazo sugerido desde que surge.
  */
 enum class TaskType(val label: String, val slaHours: Long, vararg val anyOf: StaffPermission) {
-    VERIFY_PAYMENT("Verificar pago", 24, StaffPermission.ORDERS),
-    REVIEW_INCIDENT("Revisar pago con incidencia", 12, StaffPermission.ORDERS),
+    VERIFY_PAYMENT("Verificar pago", 24, StaffPermission.PAYMENTS),
+    REVIEW_INCIDENT("Revisar pago con incidencia", 12, StaffPermission.PAYMENTS),
     ACTIVATE_SERVICE("Activar servicio", 24, StaffPermission.CUSTOMERS),
     RELEASE_ACCESS("Retirar acceso y liberar cupo", 24, StaffPermission.CUSTOMERS, StaffPermission.RENEWALS),
     SEND_RENEWAL_NOTICE("Enviar aviso de renovación", 24, StaffPermission.RENEWALS),

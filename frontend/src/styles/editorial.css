@@ -692,13 +692,34 @@
     text-transform: uppercase;
     letter-spacing: 0.17em;
   }
-  .sidebar-business p:last-child {
+  .sidebar-business p:nth-of-type(2) {
     margin-top: 6px;
     color: #edf5fb;
     font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .business-switch {
+    margin-top: 6px;
+    width: 100%;
+    border: 1px solid rgb(179 207 229 / 24%);
+    border-radius: 8px;
+    background: #10263c;
+    color: #edf5fb;
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+  .sidebar-new-business {
+    display: inline-block;
+    margin-top: 8px;
+    color: #a9cfe9;
+    font-size: 0.72rem;
+    text-decoration: none;
+  }
+  .sidebar-new-business:hover {
+    color: #fff;
+    text-decoration: underline;
   }
   .sidebar-nav {
     overflow-y: auto;

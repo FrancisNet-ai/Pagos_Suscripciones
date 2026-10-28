@@ -83,7 +83,7 @@ export class DashboardShellComponent {
           label: 'Por verificar',
           route: '/panel/ventas',
           queryParams: { filtro: 'TO_VERIFY' },
-          access: 'ORDERS',
+          access: 'PAYMENTS',
         },
         { label: 'Reportes', route: '/panel/reportes', access: 'REPORTS' },
       ],
@@ -113,6 +113,7 @@ export class DashboardShellComponent {
         { label: 'Avisos de renovación', route: '/panel/configuracion/renovaciones' },
         { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
         { label: 'Equipo', route: '/panel/configuracion/equipo' },
+        { label: 'Soporte', route: '/panel/configuracion/soporte' },
         { label: 'Mi plan', route: '/panel/plan' },
       ],
     },
@@ -217,6 +218,18 @@ export class DashboardShellComponent {
       .slice(0, 2)
       .map((p) => p[0]!.toUpperCase())
       .join('');
+  }
+
+  protected readonly switching = signal(false);
+
+  /** Cambia de negocio y recarga el panel para no mostrar datos del negocio anterior. */
+  protected switchBusiness(businessId: string): void {
+    if (businessId === this.auth.business()?.id) return;
+    this.switching.set(true);
+    this.auth.switchBusiness(businessId).subscribe({
+      next: () => window.location.assign('/panel'),
+      error: () => this.switching.set(false),
+    });
   }
 
   protected logout(): void {

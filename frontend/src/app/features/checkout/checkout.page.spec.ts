@@ -62,7 +62,7 @@ describe('CheckoutPage', () => {
     const req = http.expectOne('/api/v1/public/stores/mi-tienda/orders');
     expect(req.request.body).toEqual({
       productId: 'p1', customerName: 'Carlos Ramírez', phone: '987654321', paymentMethod: 'PLIN',
-      acceptTerms: true, acceptDataProcessing: true, acceptRenewalReminders: false,
+      acceptTerms: true, acceptDataProcessing: true, acceptRenewalReminders: false, acceptOrderUpdates: false,
     });
     expect(req.request.body.price).toBeUndefined();
     expect(req.request.headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);

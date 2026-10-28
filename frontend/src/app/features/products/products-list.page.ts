@@ -19,6 +19,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge.compo
 import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { FILTERS, STATUS_LABELS, availabilityLabel, typeLabel } from './product-labels';
 import { Product, ProductFilter, ProductsApi } from './products.api';
+import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 
 type State =
   | { status: 'loading' }
@@ -30,7 +31,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-products-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [SmallImagePipe, 
     IconComponent,
     ReactiveFormsModule,
     RouterLink,

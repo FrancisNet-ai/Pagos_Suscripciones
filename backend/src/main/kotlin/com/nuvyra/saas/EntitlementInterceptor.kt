@@ -30,10 +30,12 @@ class EntitlementInterceptor(private val entitlements: EntitlementService) : Han
         )
 
         val EXEMPT = listOf(
-            "/api/v1/payments/*/verify", "/api/v1/payments/*/reject",
+            "/api/v1/payments/*/verify", "/api/v1/payments/*/reject", "/api/v1/payments/*/refund",
             "/api/v1/orders/*/cancel",
             "/api/v1/subscriptions/*/activate", "/api/v1/subscriptions/*/cancel", "/api/v1/subscriptions/*/release-capacity",
             "/api/v1/customers/*/notifications",
+            // Soporte debe poder ayudar aunque el plan venció; retirar el acceso también.
+            "/api/v1/business/me/support-access",
             // Quitar accesos del equipo es una medida de seguridad: siempre debe poder hacerse.
             "/api/v1/business/me/staff/*/revoke", "/api/v1/business/me/staff/invitations/*",
             // Desconectar WhatsApp borra credenciales: siempre debe poder hacerse.

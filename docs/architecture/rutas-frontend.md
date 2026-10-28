@@ -11,6 +11,7 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/recuperar` | `auth/forgot-password` | solo invitados | 1 |
 | `/restablecer?token=` | `auth/reset-password` | público | 1 |
 | `/panel` | `dashboard` (shell con menú lateral); inicio propio del colaborador | `BUSINESS_OWNER`, `BUSINESS_STAFF` | 1 |
+| `/panel/negocios/nuevo` | `businesses` (crear otro negocio con la misma cuenta) | cualquier miembro | varios negocios |
 | `/panel/pendientes` | `tasks` (pendientes con responsable y plazo) | owner y colaboradores (según sus secciones) | pendientes |
 | `/panel/pendientes/historial` | `tasks` (casos cerrados, autor real y paginación) | owner y colaboradores (según sus secciones) | historial |
 | `/panel/productos` | `products` | owner o permiso `PRODUCTS` | 2 |
@@ -22,6 +23,7 @@ Componentes standalone, `ChangeDetectionStrategy.OnPush`, signals para estado lo
 | `/panel/reportes` | `reports` | owner o `REPORTS` | 4 |
 | `/panel/renovaciones` (`?vista=`) | `renewals` | owner o `RENEWALS` | 5 |
 | `/panel/configuracion/negocio`, `/enlace`, `/cobros`, `/renovaciones`, `/whatsapp` | `settings`, `whatsapp` | solo owner | 2 / 5 / 7 |
+| `/panel/configuracion/soporte` | `support` (autorizar consultas de soporte y ver cada una) | solo owner | soporte |
 | `/panel/configuracion/equipo` | `staff` (invitar, permisos, revocar) | solo owner | colaboradores |
 | `/invitacion/:token` | `staff/accept-invitation` | público (token de invitación) | colaboradores |
 | `/tienda/:slug` | `storefront` | público | 3 |

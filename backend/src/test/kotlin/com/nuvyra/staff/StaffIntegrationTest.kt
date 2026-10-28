@@ -258,4 +258,35 @@ class StaffIntegrationTest : IntegrationTest() {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.items.length()").value(0))
     }
+
+    @Test
+    fun `aprobar pagos es un permiso aparte de atender pedidos`() {
+        val ownerEmail = uniqueEmail()
+        val ownerCookie = registerSeller(email = ownerEmail)
+        jdbc.update(
+            "insert into saas_plans (name, price, billing_period, admin_user_limit) values ('Plan equipo 5', 10, 'MONTHLY', 5) on conflict (name) do nothing",
+        )
+        grantPlan(businessIdOf(ownerEmail), jdbc.queryForObject("select id from saas_plans where name = 'Plan equipo 5'", UUID::class.java)!!)
+        val fx = com.nuvyra.support.StoreFixture(mockMvc)
+        val store = fx.create(ownerCookie)
+        fx.report(fx.placeOrder(store, "914500001")).andExpect(status().isOk)
+        val (orderId, paymentId) = fx.latestPaymentId(ownerCookie)
+        val (_, attends) = staff(ownerCookie, """["ORDERS"]""")
+        val (_, approves) = staff(ownerCookie, """["PAYMENTS"]""")
+
+        // Atiende pedidos: los ve, pero no aprueba dinero.
+        mockMvc.perform(get("/api/v1/orders/$orderId").cookie(attends)).andExpect(status().isOk)
+        mockMvc.perform(post("/api/v1/payments/$paymentId/verify").with(csrf()).cookie(attends))
+            .andExpect(status().isForbidden).andExpect(jsonPath("$.code").value("STAFF_FORBIDDEN"))
+        // Aprueba pagos: ve el pedido y aprueba, pero no cancela pedidos.
+        mockMvc.perform(get("/api/v1/orders").cookie(approves)).andExpect(status().isOk)
+        mockMvc.perform(
+            post("/api/v1/orders/$orderId/cancel").with(csrf()).cookie(approves).contentType(MediaType.APPLICATION_JSON).content("""{"reason":"Prueba de permisos"}"""),
+        ).andExpect(status().isForbidden)
+        mockMvc.perform(post("/api/v1/payments/$paymentId/verify").with(csrf()).cookie(approves)).andExpect(status().isOk)
+        // Reembolsar sigue siendo exclusivo del titular.
+        mockMvc.perform(
+            post("/api/v1/payments/$paymentId/refund").with(csrf()).cookie(approves).contentType(MediaType.APPLICATION_JSON).content("""{"reason":"Prueba de permisos"}"""),
+        ).andExpect(status().isForbidden)
+    }
 }

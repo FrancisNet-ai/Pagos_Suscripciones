@@ -26,21 +26,22 @@
 
 ## Pendientes
 - [ ] *Embedded Signup* de Meta para conectar WhatsApp sin copiar identificadores ni tokens (requiere app verificada como Tech Provider).
-- [ ] Plantillas de WhatsApp para confirmaciones de pedido y de pago (hoy solo recordatorios y despedida).
+- [x] Confirmaciones de pago recibido y pago verificado por WhatsApp (plantillas opcionales del negocio, solo a compradores que lo autorizan al comprar).
 - [ ] Pagos automáticos: solo si Yape/Plin u otro proveedor autorizado ofrece una API oficial de verificación.
 - [ ] Despliegue continuo (CD) cuando exista un entorno de producción.
-- [ ] Reembolsos (`REFUNDED`): definir el flujo manual del vendedor antes de habilitarlo.
+- [x] Reembolsos manuales (`REFUNDED`): el titular registra la devolución que ya hizo por Yape/Plin; el pago deja de contar como ingreso, la compra cancela la suscripción y la renovación devuelve la vigencia anterior.
 - [x] Playwright versionado y ejecutado en CI, con PostgreSQL desechable, recorridos de escritorio/móvil e informe de diagnóstico.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
-- [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.
+- [x] Versión reducida (640 px) de las imágenes públicas al subirlas: JPEG para fotos, PNG si hay transparencia; los listados la piden con `?size=sm`.
+- [ ] Codificar las versiones reducidas en WebP (Java no escribe WebP sin bibliotecas nativas; evaluar libwebp o un servicio de imágenes).
 - [x] Historial paginado de pendientes resueltos con autor y evidencia de auditoría, limitado al negocio y los permisos actuales.
-- [ ] Varios negocios por cuenta (hoy un usuario pertenece a un solo negocio, como titular o colaborador).
-- [ ] Permisos más finos para colaboradores (p. ej., verificar pagos sin ver ingresos del pedido).
-- [ ] Acceso de soporte a datos de compradores con motivo y auditoría (hoy el SUPER_ADMIN no tiene ningún acceso a ellos).
+- [x] Varios negocios por cuenta: crear otro negocio, cambiar de negocio en la sesión y unirse como colaborador con una cuenta existente.
+- [x] Permiso propio para aprobar o rechazar pagos (`PAYMENTS`), separado de atender pedidos (`ORDERS`); los ingresos siguen en `REPORTS` y los reembolsos son del titular.
+- [x] Acceso de soporte a pedidos y clientes: solo con autorización temporal del titular (1–72 h, revocable), motivo obligatorio en cada consulta y registro visible para el titular.
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
 - [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).
 - [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.
-- [ ] Evaluar Row Level Security de PostgreSQL como defensa en profundidad.
+- [ ] Adoptar Row Level Security por etapas antes de producción (evaluado en [ADR-007](decisions/ADR-007-row-level-security.md)).
 - [ ] Bloqueo distribuido de tareas programadas y rate limiting compartido si se usan varias instancias.
 - [ ] Copias de seguridad automatizadas en el servidor de producción (script base en `infrastructure/scripts`).
 - [ ] Adquirir licencias de Voga y Bodoni FLF si se desea la identidad tipográfica original.

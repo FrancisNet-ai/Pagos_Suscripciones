@@ -20,7 +20,8 @@ enum class MemberStatus { ACTIVE, REVOKED }
  */
 enum class StaffPermission(val label: String) {
     PRODUCTS("Catálogo de productos"),
-    ORDERS("Pedidos y verificación de pagos"),
+    ORDERS("Pedidos y atención de compradores"),
+    PAYMENTS("Aprobación y rechazo de pagos"),
     CUSTOMERS("Clientes y suscripciones"),
     RENEWALS("Renovaciones y avisos"),
     REPORTS("Ingresos y reportes"),
@@ -58,4 +59,8 @@ interface BusinessMemberRepository : JpaRepository<BusinessMember, UUID> {
     fun findByBusinessIdOrderByCreatedAtAsc(businessId: UUID): List<BusinessMember>
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): BusinessMember?
     fun countByBusinessIdAndStatus(businessId: UUID, status: MemberStatus): Long
+    fun findByBusinessIdAndUserIdAndStatus(businessId: UUID, userId: UUID, status: MemberStatus): BusinessMember?
+    fun findByBusinessIdAndUserId(businessId: UUID, userId: UUID): BusinessMember?
+    fun findByUserIdAndStatusOrderByCreatedAtAsc(userId: UUID, status: MemberStatus): List<BusinessMember>
+    fun countByUserIdAndStatus(userId: UUID, status: MemberStatus): Long
 }

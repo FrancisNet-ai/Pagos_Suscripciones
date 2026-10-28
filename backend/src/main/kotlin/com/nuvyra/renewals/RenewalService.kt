@@ -244,6 +244,26 @@ class RenewalService(
         )
     }
 
+    /**
+     * Reembolso de una renovación: la suscripción vuelve a la vigencia previa. Solo la renovación más
+     * reciente puede anularse, para no dejar huecos en el historial de ciclos.
+     */
+    @Transactional
+    fun revertRefundedRenewal(order: Order) {
+        val renewal = renewals.findByOrderId(order.id) ?: return
+        val latest = renewals.findBySubscriptionIdOrderByCreatedAtDesc(renewal.subscriptionId).firstOrNull { it.refundedAt == null }
+        if (latest?.id != renewal.id) {
+            throw ApiException.conflict("NOT_LATEST_RENEWAL", "Reembolsa primero la renovación más reciente de esta suscripción.")
+        }
+        val s = subscriptions.entity(order.businessId, renewal.subscriptionId)
+        s.expiresAt = renewal.previousExpiresAt
+        renewal.refundedAt = clock.instant()
+        audit.record(
+            AuditActions.RENEWAL_REFUNDED, businessId = order.businessId, entityType = "SUBSCRIPTION", entityId = s.id,
+            metadata = mapOf("orderNumber" to order.orderNumber, "refundedRenewal" to true, "expiresAt" to s.expiresAt.toString()),
+        )
+    }
+
     // ---------------------------------------------------------------- vendedor
 
     @Transactional(readOnly = true)

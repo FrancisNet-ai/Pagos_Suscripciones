@@ -154,7 +154,7 @@ class SellerTaskIntegrationTest : IntegrationTest() {
         val store = fx.create(registerSeller(email = ownerEmail))
         reportedOrder(store, "911100003")
         fx.paidOrder(store, phone = "911100004")
-        val (ordersEmail, orders) = staffOf(store.seller, ownerEmail, """["ORDERS"]""")
+        val (ordersEmail, orders) = staffOf(store.seller, ownerEmail, """["ORDERS","PAYMENTS"]""")
         val (customersEmail, customers) = staffOf(store.seller, ownerEmail, """["CUSTOMERS"]""")
 
         assertThat(types(store.seller)).containsExactlyInAnyOrder("VERIFY_PAYMENT", "ACTIVATE_SERVICE")
@@ -202,7 +202,7 @@ class SellerTaskIntegrationTest : IntegrationTest() {
         reportedOrder(store, "911100006")
         val task = taskOf(store.seller, "VERIFY_PAYMENT")
         assign(store.seller, task["id"].asString(), userIdOf(email)).andExpect(status().isOk)
-        val (staffEmail, staff) = staffOf(store.seller, email, """["ORDERS"]""")
+        val (staffEmail, staff) = staffOf(store.seller, email, """["ORDERS","PAYMENTS"]""")
         val (_, customersOnly) = staffOf(store.seller, email, """["CUSTOMERS"]""")
         val (_, payment) = fx.latestPaymentId(store.seller)
         mockMvc.perform(post("/api/v1/payments/$payment/verify").cookie(staff).with(csrf())).andExpect(status().isOk)

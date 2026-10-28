@@ -84,6 +84,15 @@ class PublicInvitationController(
         return auth.describe(sessions.authenticate(session.token)!!)
     }
 
+    @PostMapping("/join")
+    @Operation(summary = "Une la cuenta con la que se inició sesión al negocio (mismo correo de la invitación)")
+    fun join(@PathVariable token: String, request: HttpServletRequest): SessionResponse {
+        val principal = com.nuvyra.security.currentUserOrNull()
+            ?: throw ApiException(HttpStatus.UNAUTHORIZED, "LOGIN_REQUIRED", "Inicia sesión con tu cuenta para unirte al negocio.")
+        service.join(checked(token), principal, ClientInfo(request.clientIp(), request.getHeader("User-Agent")?.take(255)))
+        return auth.describe(sessions.principal(principal.sessionId)!!)
+    }
+
     private fun checked(token: String) = token.takeIf { TOKEN.matches(it) }
         ?: throw ApiException(HttpStatus.GONE, "INVITATION_INVALID", "Esta invitación ya no es válida. Pide al titular un enlace nuevo.")
 

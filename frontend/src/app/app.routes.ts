@@ -92,6 +92,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tasks/task-history.page').then((m) => m.TaskHistoryPage),
       },
       {
+        path: 'negocios/nuevo',
+        title: 'Crear otro negocio',
+        loadComponent: () => import('./features/businesses/new-business.page').then((m) => m.NewBusinessPage),
+      },
+      {
         path: 'pendientes',
         title: 'Pendientes',
         loadComponent: () => import('./features/tasks/tasks.page').then((m) => m.TasksPage),
@@ -116,13 +121,13 @@ export const routes: Routes = [
       },
       {
         path: 'ventas',
-        canActivate: [permissionGuard('ORDERS')],
+        canActivate: [permissionGuard('ORDERS', 'PAYMENTS')],
         title: 'Pedidos',
         loadComponent: () => import('./features/orders/orders-list.page').then((m) => m.OrdersListPage),
       },
       {
         path: 'ventas/:id',
-        canActivate: [permissionGuard('ORDERS')],
+        canActivate: [permissionGuard('ORDERS', 'PAYMENTS')],
         title: 'Pedido',
         loadComponent: () => import('./features/orders/order-detail.page').then((m) => m.OrderDetailPage),
       },
@@ -204,6 +209,11 @@ export const routes: Routes = [
             path: 'equipo',
             title: 'Equipo',
             loadComponent: () => import('./features/staff/team.page').then((m) => m.TeamPage),
+          },
+          {
+            path: 'soporte',
+            title: 'Acceso de soporte',
+            loadComponent: () => import('./features/support/support-access.page').then((m) => m.SupportAccessPage),
           },
           {
             path: 'cobros',

@@ -10,7 +10,7 @@ export interface SessionUser {
 
 export type BusinessRole = 'OWNER' | 'STAFF';
 /** Secciones que el titular habilita a cada colaborador. */
-export type StaffPermission = 'PRODUCTS' | 'ORDERS' | 'CUSTOMERS' | 'RENEWALS' | 'REPORTS';
+export type StaffPermission = 'PRODUCTS' | 'ORDERS' | 'PAYMENTS' | 'CUSTOMERS' | 'RENEWALS' | 'REPORTS';
 
 export interface BusinessSummary {
   id: string;
@@ -43,6 +43,14 @@ export interface AccessSummary {
 export interface SessionResponse {
   user: SessionUser;
   business: BusinessSummary | null;
+  /** Negocios en los que la persona es miembro activo (titular o colaboradora). */
+  memberships?: Membership[];
+}
+
+export interface Membership {
+  businessId: string;
+  businessName: string;
+  role: BusinessRole;
 }
 
 export interface RegisterPayload {

@@ -62,7 +62,7 @@ class PublicOrderService(
             OrderStatus.AWAITING_PAYMENT -> Unit
             OrderStatus.PAYMENT_REPORTED -> throw ApiException.conflict("PAYMENT_ALREADY_REPORTED", "Ya reportaste este pago. El vendedor lo está verificando.")
             OrderStatus.PAID -> throw ApiException.conflict("ORDER_ALREADY_PAID", "Este pedido ya fue pagado.")
-            OrderStatus.CANCELLED, OrderStatus.EXPIRED ->
+            OrderStatus.CANCELLED, OrderStatus.EXPIRED, OrderStatus.REFUNDED ->
                 throw ApiException.conflict("ORDER_CLOSED", "Este pedido ya no admite pagos. Escribe al vendedor por WhatsApp si ya transferiste.")
         }
         val reference = rawReference.trim().uppercase()

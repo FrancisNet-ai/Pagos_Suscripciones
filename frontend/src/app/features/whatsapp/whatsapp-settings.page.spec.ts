@@ -7,7 +7,7 @@ import { WhatsAppSettingsPage } from './whatsapp-settings.page';
 
 const saved: WhatsAppIntegration = {
   configured: true, phoneNumberId: '1234567890', wabaId: null, displayPhone: '+51 955 000 111', tokenSaved: true,
-  reminderTemplate: 'recordatorio_renovacion', farewellTemplate: null, templateLanguage: 'es', enabled: true, status: 'VERIFIED',
+  reminderTemplate: 'recordatorio_renovacion', farewellTemplate: null, orderTemplate: null, paymentTemplate: 'pago_verificado', templateLanguage: 'es', enabled: true, status: 'VERIFIED',
   lastVerifiedAt: '2026-10-27T10:00:00Z', lastError: null, planAllows: true, webhooksAvailable: true, webhookUrl: 'https://x/api/v1/public/webhooks/whatsapp',
 };
 
@@ -29,6 +29,8 @@ describe('WhatsAppSettingsPage', () => {
     const req = http.expectOne({ method: 'PUT', url: '/api/v1/business/me/whatsapp' });
     expect(req.request.body.accessToken).toBeNull();
     expect(req.request.body.reminderTemplate).toBe('recordatorio_renovacion');
+    expect(req.request.body.paymentTemplate).toBe('pago_verificado');
+    expect(req.request.body.orderTemplate).toBeNull();
     req.flush(saved);
   });
 

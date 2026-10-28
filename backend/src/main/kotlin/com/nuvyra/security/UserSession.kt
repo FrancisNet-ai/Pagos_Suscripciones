@@ -23,6 +23,8 @@ class UserSession(
     var revokedAt: Instant? = null,
     @Column(updatable = false) val ipAddress: String? = null,
     @Column(updatable = false) val userAgent: String? = null,
+    /** Negocio elegido en esta sesión; se valida contra las membresías activas en cada petición. */
+    var activeBusinessId: java.util.UUID? = null,
 ) : AbstractEntity() {
     fun isActive(now: Instant) = revokedAt == null && now.isBefore(idleExpiresAt) && now.isBefore(absoluteExpiresAt)
 }

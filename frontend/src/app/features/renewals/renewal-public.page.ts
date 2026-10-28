@@ -13,11 +13,12 @@ import { ApiError } from '../../core/services/api-error';
 import { storeTheme } from '../../shared/components/store-theme';
 import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { PublicRenewal, RenewalsApi } from './renewals.api';
+import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 
 @Component({
   selector: 'app-renewal-public-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SolesPipe, DurationPipe, IconComponent],
+  imports: [SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent],
   template: `
     <div [style]="theme()" class="buyer-stage">
       <main class="buyer-card renewal-card" [class.is-completed]="r()?.status === 'COMPLETED'">
@@ -29,7 +30,7 @@ import { PublicRenewal, RenewalsApi } from './renewals.api';
         } @else if (r(); as r) {
           <div class="flex items-center gap-3">
             @if (r.store.logoUrl) {
-              <img [src]="r.store.logoUrl" alt="" class="h-10 w-10 rounded-full object-cover" />
+              <img [src]="r.store.logoUrl | smallImage" alt="" class="h-10 w-10 rounded-full object-cover" />
             }
             <span class="font-semibold text-night">{{ r.store.businessName }}</span>
           </div>

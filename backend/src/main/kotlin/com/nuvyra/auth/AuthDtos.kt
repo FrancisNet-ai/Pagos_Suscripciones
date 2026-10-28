@@ -97,4 +97,16 @@ data class BusinessSummaryDto(
 data class SessionResponse(
     val user: UserDto,
     val business: BusinessSummaryDto?,
+    /** Todos los negocios en los que la persona es miembro activo, para cambiar de uno a otro. */
+    val memberships: List<MembershipDto> = emptyList(),
+)
+
+data class MembershipDto(val businessId: UUID, val businessName: String, val role: BusinessRole)
+
+data class SwitchBusinessRequest(@field:jakarta.validation.constraints.NotNull(message = "Elige un negocio") val businessId: UUID?)
+
+data class CreateBusinessRequest(
+    @field:NotBlank(message = "Ingresa el nombre comercial")
+    @field:Size(min = 2, max = 120, message = "El nombre debe tener entre 2 y 120 caracteres")
+    val businessName: String?,
 )

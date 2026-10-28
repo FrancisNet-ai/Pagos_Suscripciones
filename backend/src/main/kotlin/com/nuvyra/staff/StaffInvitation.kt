@@ -122,10 +122,12 @@ data class TeamResponse(
 /** El enlace se entrega una sola vez: después solo se guarda su hash. */
 data class InvitationCreated(val invitation: PendingInvitation, val link: String, val emailSent: Boolean, val team: TeamResponse)
 
+/** `existingAccount`: el correo ya tiene cuenta; se une iniciando sesión en lugar de registrarse. */
 data class PublicInvitation(
     val businessName: String,
     val fullName: String,
     val email: String,
     val permissions: List<PermissionOption>,
     val expiresAt: Instant,
+    val existingAccount: Boolean = false,
 )

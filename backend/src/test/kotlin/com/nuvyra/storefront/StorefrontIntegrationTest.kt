@@ -94,7 +94,7 @@ class StorefrontIntegrationTest : IntegrationTest() {
         val perBusiness = jdbc.queryForList("select business_id from customers where phone = '+51955444333'")
         assertThat(perBusiness).hasSize(2)
         val consents = jdbc.queryForObject("select count(*) from customer_consents c join customers u on u.id = c.customer_id where u.phone = '+51955444333'", Int::class.java)
-        assertThat(consents).isEqualTo(9) // 3 pedidos × (términos, datos, recordatorios)
+        assertThat(consents).isEqualTo(12) // 3 pedidos × (términos, datos, recordatorios, confirmaciones)
     }
 
     @Test

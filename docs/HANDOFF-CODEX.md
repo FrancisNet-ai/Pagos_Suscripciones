@@ -1,11 +1,12 @@
 # Traspaso a Codex — estado del proyecto Nuvyra
 
-Fecha: 27 de octubre de 2026. Repositorio: `FrancisNet-ai/Pagos_Suscripciones`.
+Fecha: 28 de octubre de 2026. Repositorio: `FrancisNet-ai/Pagos_Suscripciones`.
 
 ## Estado
 
-Todo está fusionado en `main` (último commit `513fdb6`, PR #8). No hay PR abierto ni trabajo sin subir.
-Para seguir, crea una rama nueva desde `main`.
+`main` incluye hasta el PR #9 (Java 26 y Node 24 en Windows sin Docker). El PR #12 agrega, en un commit
+cada una, todas las funciones del BACKLOG que solo dependían de código (ver la tabla). Si ya se fusionó,
+crea una rama nueva desde `main` para seguir.
 
 SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la marca **Nuvyra**
 («Tu negocio, bajo control.»).
@@ -26,21 +27,23 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Colaboradores (`BUSINESS_STAFF`) | Invitación por enlace de un solo uso, permisos por sección (`PRODUCTS`, `ORDERS`, `CUSTOMERS`, `RENEWALS`, `REPORTS`), revocar o reactivar, límite de usuarios según el plan. Migración V8 | #5 |
 | Pendientes (`seller_tasks`) | Página «Pendientes»: pagos por verificar, servicios por activar, cupos por liberar y avisos por enviar. Cada uno tiene responsable y plazo, y se cierra solo cuando la acción se hace. Migración V9 | #6 |
 | Historial de pendientes y E2E en CI | Página `/panel/pendientes/historial` y `GET /api/v1/tasks/history`: casos cerrados con el autor real, la acción y la fecha (el responsable asignado no acredita la resolución). Playwright se ejecuta en GitHub Actions con PostgreSQL 17 desechable, en escritorio y móvil. Migración V10 | #8 |
+| Desarrollo en Windows sin Docker | Java 21 o 26, Node 24, PostgreSQL nativo; guía en `docs/development/windows.md` | #9 |
+| Reembolsos manuales | El titular registra la devolución que ya hizo; deja de contar como ingreso; corrige suscripción o renovación. V11 | #12 |
+| Confirmaciones por WhatsApp | Pago recibido y pago verificado, solo a quien lo autoriza al comprar; plantillas opcionales. V12 | #12 |
+| Imágenes reducidas | Versión de 640 px al subir (`?size=sm`) usada en tienda y catálogo | #12 |
+| Permiso de pagos | `PAYMENTS` separado de `ORDERS` (atender pedidos). V13 | #12 |
+| Acceso de soporte | Solo con autorización temporal del titular, motivo en cada consulta y registro visible. V14 | #12 |
+| Varios negocios por cuenta | Crear otro negocio, cambiar de negocio en la sesión, unirse a otro con una cuenta existente. V15 | #12 |
+| Evaluación de RLS | Plan de adopción por etapas en `docs/decisions/ADR-007-row-level-security.md` | #12 |
 
-**Pruebas en el último estado** (según `docs/testing/e2e.md`): 173 del backend, 83 del frontend
-y 10 recorridos de Playwright (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta
-en tres trabajos: backend, frontend y E2E. `npx ng build` se comprobó en `main` el 27 de octubre de 2026.
+**Pruebas en el último estado (PR #12):** 189 del backend, 88 del frontend y los recorridos de Playwright
+(`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
 
 **Se puede hacer solo con código:**
-1. Plantillas de WhatsApp para confirmar pedidos y pagos (hoy solo hay recordatorios y despedida).
-2. Reembolsos (`REFUNDED`): primero hay que definir el flujo manual del vendedor.
-3. Miniaturas y WebP generados en el servidor.
-4. Permisos más finos para colaboradores, por ejemplo verificar pagos sin ver ingresos.
-5. Varios negocios por cuenta (hoy cada usuario pertenece a un solo negocio).
-6. Evaluar Row Level Security de PostgreSQL.
-7. Acceso de soporte a datos de compradores, con motivo y auditoría (hoy el `SUPER_ADMIN` no tiene acceso).
+1. Adoptar Row Level Security por etapas (plan en ADR-007).
+2. Codificar las imágenes reducidas en WebP (requiere bibliotecas nativas).
 
 **Depende de algo externo:**
 - Embedded Signup de Meta.
@@ -70,8 +73,10 @@ en tres trabajos: backend, frontend y E2E. `npx ng build` se comprobó en `main`
 - **Rutas nuevas del panel:** se agregan en tres lugares: `security/SecurityConfig.kt`,
   `StaffAccessInterceptor.PATHS` y `saas/EntitlementInterceptor.PATHS`. Sin plan vigente, el
   panel queda en modo de solo lectura.
-- **Migraciones:** las nuevas empiezan en `V11__…`
-  (`backend/src/main/resources/db/migration`); `V10` es el historial de pendientes.
+- **Migraciones:** las nuevas empiezan en `V16__…`
+  (`backend/src/main/resources/db/migration`).
+- **Varios negocios:** el negocio activo vive en la sesión (`user_sessions.active_business_id`) y se valida
+  contra `business_members` en cada petición; nunca se toma del cliente.
 - **Pendientes:** no tienen endpoint para «marcar como hecho». Se sincronizan con el estado de
   los datos en `tasks/SellerTaskService.kt`. Las acciones auditadas cierran la tarea en la misma
   transacción y guardan `resolved_by`, `resolution_action` y `resolution_audit_id`. Los cierres sin

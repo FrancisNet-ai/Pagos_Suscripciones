@@ -17,11 +17,12 @@ import { ApiError } from '../../core/services/api-error';
 import { storeTheme } from '../../shared/components/store-theme';
 import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { PublicProduct, PublicStore, StorefrontApi } from './storefront.api';
+import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 
 @Component({
   selector: 'app-storefront-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SolesPipe, DurationPipe, IconComponent, WaveArtComponent],
+  imports: [SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent, WaveArtComponent],
   templateUrl: './storefront.page.html',
 })
 export class StorefrontPage implements OnInit {

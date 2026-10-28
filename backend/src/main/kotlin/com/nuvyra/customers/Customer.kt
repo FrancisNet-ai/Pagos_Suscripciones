@@ -29,7 +29,7 @@ interface CustomerRepository : JpaRepository<Customer, UUID> {
     fun findByIdAndBusinessId(id: UUID, businessId: UUID): Customer?
 }
 
-enum class ConsentPurpose { PURCHASE_TERMS, DATA_PROCESSING, RENEWAL_REMINDERS, MARKETING_WHATSAPP }
+enum class ConsentPurpose { PURCHASE_TERMS, DATA_PROCESSING, RENEWAL_REMINDERS, MARKETING_WHATSAPP, ORDER_UPDATES }
 
 /** Historial de autorizaciones: nunca se sobrescribe, cada decisión es una fila nueva. */
 @Entity

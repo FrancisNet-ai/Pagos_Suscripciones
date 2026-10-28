@@ -85,6 +85,16 @@ export class AuthService {
     this.sessionState.set(session);
   }
 
+  /** Cambia el negocio activo de la sesión; el servidor valida la membresía. */
+  switchBusiness(businessId: string): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`${API}/business`, { businessId }).pipe(tap((s) => this.sessionState.set(s)));
+  }
+
+  /** Crea otro negocio para la misma cuenta y lo deja activo. */
+  createBusiness(businessName: string): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`${API}/businesses`, { businessName }).pipe(tap((s) => this.sessionState.set(s)));
+  }
+
   hasRole(role: Role): boolean {
     return this.user()?.roles.includes(role) ?? false;
   }

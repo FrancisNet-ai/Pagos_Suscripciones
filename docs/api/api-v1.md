@@ -331,7 +331,8 @@ Enlace usado, cancelado, vencido o inexistente → `410 INVITATION_INVALID`.
 |---|---|
 | (ninguno) | `GET /business/me` |
 | `PRODUCTS` | `/products/**` (el listado `GET /products` también con `CUSTOMERS`) |
-| `ORDERS` | `/orders/**`, `/payments/**` |
+| `ORDERS` | `/orders/**` (ver, cancelar), comprobantes |
+| `PAYMENTS` | `POST /payments/{id}/verify\|reject`, ver pedidos y comprobantes (V13 lo otorga a quien ya tenía `ORDERS`) |
 | `CUSTOMERS` | `/customers/**` (incluida la importación), `/subscriptions/**` |
 | `RENEWALS` | `/renewals/**` (ajustes solo lectura), `GET /subscriptions` y `POST /subscriptions/{id}/release-capacity` |
 | `REPORTS` | `/reports/**` |
@@ -366,3 +367,49 @@ un envío ni una entrega. Los registros históricos sin autor se conservan con `
 Para cierres sincronizados sin evidencia, `resolvedAt` es el momento de detección del cambio de estado.
 El historial registra las tareas que llegaron a abrirse; la auditoría general conserva además las acciones
 realizadas sin una tarea previa.
+
+## Reembolsos — implementado
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/payments/{id}/refund` | **Solo titular.** `{ reason, refundReference? }`. Registra una devolución que el titular ya hizo por Yape/Plin (Nuvyra no mueve dinero). Solo pagos `VERIFIED` (`409 PAYMENT_NOT_REFUNDABLE`). El pago pasa a `REFUNDED` y el pedido a `REFUNDED` (filtro `REFUNDED`), deja de contar como ingreso. Compra: la suscripción se cancela; sin activar libera el cupo, activada deja el acceso por retirar (pendiente `RELEASE_ACCESS`). Renovación: vuelve la vigencia anterior; solo la más reciente (`409 NOT_LATEST_RENEWAL`) |
+
+## Confirmaciones por WhatsApp — implementado
+
+- `PUT /business/me/whatsapp` acepta `orderTemplate` y `paymentTemplate` (opcionales; cuerpo con 4 variables:
+  nombre del comprador, número de pedido, importe y negocio).
+- `GET /public/stores/{slug}` devuelve `orderUpdatesByWhatsapp`; el pedido público acepta `acceptOrderUpdates`
+  (consentimiento `ORDER_UPDATES`, opcional).
+- Al reportar o verificar el pago se encola la confirmación (misma transacción) solo si el comprador la
+  autorizó y la plantilla existe; un proceso la envía con reintentos y el webhook registra entrega y lectura.
+- `GET /orders/{id}` incluye `whatsappUpdates` con el estado de cada confirmación.
+
+## Imágenes reducidas — implementado
+
+`GET /public/media/{key}?size=sm` devuelve la versión de 640 px de ancho generada al subir la imagen
+(JPEG si es opaca, PNG si tiene transparencia) cuando pesa menos que el original; si no existe (WebP o
+imágenes anteriores) devuelve el original. Cualquier otro valor de `size` devuelve el original.
+
+## Acceso de soporte — implementado
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/business/me/support-access` | titular | Autorización vigente, historial y cada consulta de soporte (recurso, motivo, fecha) |
+| `POST` | `/business/me/support-access` | titular | `{ hours: 1–72, note? }`: autoriza consultas de solo lectura (reemplaza la vigente) |
+| `DELETE` | `/business/me/support-access` | titular | Retira la autorización de inmediato |
+| `GET` | `/admin/businesses/{id}/support/orders?reason=&query=&page=` | `SUPER_ADMIN` | Pedidos del negocio. Sin autorización vigente `403 SUPPORT_ACCESS_REQUIRED`; `reason` de 10–300 caracteres obligatorio; cada consulta se audita |
+| `GET` | `/admin/businesses/{id}/support/customers?reason=&query=&page=` | `SUPER_ADMIN` | Clientes del negocio, mismas reglas |
+
+`GET /admin/businesses/{id}` incluye `supportAccessUntil`.
+
+## Varios negocios por cuenta — implementado
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/auth/businesses` | `{ businessName }` → `201`. Crea otro negocio para la cuenta (titular, sin plan) y lo activa en la sesión. No disponible para `SUPER_ADMIN` |
+| `POST` | `/auth/business` | `{ businessId }`. Cambia el negocio activo; solo a uno del que sea miembro activo (`404` si no) |
+| `POST` | `/public/invitations/{token}/join` | Une la cuenta con sesión iniciada al negocio de la invitación (mismo correo; `401 LOGIN_REQUIRED`, `403 INVITATION_OTHER_ACCOUNT`) |
+
+`/auth/me` y las respuestas de sesión incluyen `memberships` (`businessId`, `businessName`, `role`).
+`GET /public/invitations/{token}` incluye `existingAccount`. Invitar un correo con cuenta ya no se rechaza,
+salvo que ya sea del equipo. Revocar a quien pertenece a otros negocios no desactiva su cuenta.

@@ -21,7 +21,7 @@
       >
         @if (p.imageUrl) {
           <img
-            [src]="p.imageUrl"
+            [src]="p.imageUrl | smallImage"
             alt=""
             class="h-16 w-16 shrink-0 rounded-[var(--radius-control)] object-cover"
           />
@@ -140,6 +140,12 @@
             </label>
             @if (err('acceptDataProcessing'); as e) {
               <p class="field-error pl-8">{{ e }}</p>
+            }
+            @if (s.orderUpdatesByWhatsapp) {
+              <label class="flex gap-3">
+                <input class="checkbox" type="checkbox" formControlName="acceptOrderUpdates" />
+                <span>Opcional: quiero recibir por WhatsApp la confirmación de mi pago y de su verificación.</span>
+              </label>
             }
             @if (p.productType === 'SUBSCRIPTION') {
               <label class="flex gap-3">

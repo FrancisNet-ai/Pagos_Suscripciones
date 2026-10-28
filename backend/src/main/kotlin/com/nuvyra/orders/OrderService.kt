@@ -32,6 +32,7 @@ class OrderService(
     private val capacity: CapacityService,
     private val subscriptions: SubscriptionService,
     private val audit: AuditService,
+    private val orderUpdates: com.nuvyra.whatsapp.OrderNotificationService,
 ) {
     /** Ventas del negocio. Las fechas se interpretan en la zona horaria del negocio. */
     @Transactional(readOnly = true)
@@ -110,6 +111,7 @@ class OrderService(
             subscriptionStatus = subscription?.let { SubscriptionLabels.of(it.status) },
             createdAt = order.createdAt,
             paidAt = order.paidAt,
+            whatsappUpdates = orderUpdates.forOrder(order.id).map { OrderUpdateItem(it.kind, it.status, it.sentAt, it.deliveredAt, it.readAt, it.failureReason) },
         )
     }
 
@@ -151,7 +153,7 @@ class OrderService(
     companion object {
         fun paymentDetail(p: CustomerPayment) = PaymentDetail(
             p.id, p.methodSnapshot, p.holderNameSnapshot, p.receiverPhoneSnapshot, p.amount, p.status, p.transactionReference,
-            p.receiptKey != null, p.reportedAt, p.verifiedAt, p.rejectedAt, p.rejectionReason,
+            p.receiptKey != null, p.reportedAt, p.verifiedAt, p.rejectedAt, p.rejectionReason, p.refundedAt, p.refundReason, p.refundReference,
         )
     }
 }

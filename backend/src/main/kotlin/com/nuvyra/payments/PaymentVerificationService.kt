@@ -77,6 +77,38 @@ class PaymentVerificationService(
         return order.id
     }
 
+    /**
+     * Registra un reembolso que el vendedor YA hizo por su cuenta (la plataforma no mueve dinero).
+     * El pago deja de contar como ingreso y el servicio se corrige: una compra cancela la suscripción
+     * (si no se entregó, libera el cupo; si se entregó, queda por retirar el acceso) y una renovación
+     * devuelve la vigencia anterior.
+     */
+    @Transactional
+    fun refund(businessId: UUID, actorId: UUID, paymentId: UUID, reason: String, reference: String?): UUID {
+        val payment = payments.lockByIdAndBusinessId(paymentId, businessId) ?: throw ApiException.notFound("El pago no existe.")
+        if (payment.status != PaymentStatus.VERIFIED) {
+            throw ApiException.conflict(
+                "PAYMENT_NOT_REFUNDABLE",
+                if (payment.status == PaymentStatus.REFUNDED) "Este pago ya fue reembolsado." else "Solo se reembolsan pagos verificados.",
+            )
+        }
+        val order = orders.findByIdAndBusinessId(payment.orderId, businessId)!!
+        val text = reason.trim()
+        if (order.kind == OrderKind.RENEWAL) renewals.revertRefundedRenewal(order) else subscriptions.closeForRefund(businessId, actorId, order.id, text)
+        val now = clock.instant()
+        payment.status = PaymentStatus.REFUNDED
+        payment.refundedAt = now
+        payment.refundedBy = actorId
+        payment.refundReason = text
+        payment.refundReference = reference?.trim()?.uppercase()?.ifBlank { null }
+        order.status = OrderStatus.REFUNDED
+        audit.record(
+            AuditActions.PAYMENT_REFUNDED, actorId = actorId, businessId = businessId, entityType = "PAYMENT", entityId = payment.id,
+            metadata = mapOf("orderNumber" to order.orderNumber, "amount" to payment.amount, "reason" to text, "reference" to payment.refundReference),
+        )
+        return order.id
+    }
+
     /** Ruta del comprobante; solo para el vendedor dueño del pago. Cada acceso queda auditado. */
     @Transactional
     fun receipt(businessId: UUID, actorId: UUID, paymentId: UUID): Path {

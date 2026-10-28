@@ -29,7 +29,8 @@ describe('DashboardShellComponent', () => {
   it('el colaborador solo ve sus secciones, sin configuración ni plan', () => {
     const links = render(session('STAFF', ['ORDERS']));
     expect(links).toContain('Pedidos');
-    expect(links).toContain('Por verificar');
+    // Aprobar pagos es otro permiso: sin él no aparece «Por verificar».
+    expect(links).not.toContain('Por verificar');
     expect(links).toContain('Pendientes');
     expect(links).not.toContain('Productos');
     expect(links).not.toContain('Reportes');
@@ -42,5 +43,20 @@ describe('DashboardShellComponent', () => {
     expect(links).toContain('Productos');
     expect(links).toContain('Equipo');
     expect(links).toContain('Mi plan');
+  });
+
+  it('con varios negocios muestra el selector para cambiar de negocio', () => {
+    const s = session('OWNER', ['PRODUCTS', 'ORDERS', 'PAYMENTS', 'CUSTOMERS', 'RENEWALS', 'REPORTS']);
+    s.memberships = [
+      { businessId: 'b', businessName: 'Norte Digital', role: 'OWNER' },
+      { businessId: 'c', businessName: 'Sur Digital', role: 'STAFF' },
+    ];
+    TestBed.configureTestingModule({ imports: [DashboardShellComponent], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.inject(AuthService).startSession(s);
+    const fixture = TestBed.createComponent(DashboardShellComponent);
+    fixture.detectChanges();
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('#business-switch')!;
+    expect(Array.from(select.options).map((o) => o.textContent?.trim())).toEqual(['Norte Digital', 'Sur Digital · colaborador']);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Crear otro negocio');
   });
 });

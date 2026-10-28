@@ -42,7 +42,7 @@ describe('TeamPage', () => {
   it('invita con las secciones elegidas y muestra el enlace una sola vez', () => {
     const { http, fixture, el } = render(team);
     expect(el.querySelector('[data-testid="seats"]')!.textContent).toContain('2 de 3 usuarios');
-    expect(el.textContent).toContain('Pedidos y verificación de pagos');
+    expect(el.textContent).toContain('Pedidos y atención de compradores');
 
     type(el, '#staffName', 'Ana Ventas');
     type(el, '#staffEmail', 'ana@ejemplo.pe');

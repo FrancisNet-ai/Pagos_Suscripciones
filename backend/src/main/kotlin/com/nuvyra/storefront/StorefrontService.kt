@@ -22,6 +22,7 @@ class StorefrontService(
     private val paymentMethods: PaymentMethodService,
     private val capacity: CapacityService,
     private val entitlements: EntitlementService,
+    private val orderUpdates: com.nuvyra.whatsapp.OrderNotificationService,
 ) {
     @Transactional(readOnly = true)
     fun store(slug: String): PublicStoreResponse {
@@ -46,6 +47,7 @@ class StorefrontService(
             acceptingOrders = methods.isNotEmpty(),
             notice = if (methods.isEmpty()) "Esta tienda aún no tiene métodos de pago habilitados." else null,
             paymentMethods = methods,
+            orderUpdatesByWhatsapp = orderUpdates.availableFor(business.id),
         )
     }
 

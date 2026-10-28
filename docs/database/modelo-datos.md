@@ -129,6 +129,34 @@ en su misma transacción. No se deduce el autor de `assigned_to`; los cierres an
 evidencia permanecen sin autor. Se indexa el historial por negocio/fecha y la búsqueda de evidencia
 por negocio/tipo de entidad/entidad/fecha. Una tarea abierta no puede contener datos de resolución.
 
+### Reembolsos (`V11__refunds.sql`)
+
+`customer_payments` añade `refunded_at`, `refunded_by`, `refund_reason`, `refund_reference` (con `CHECK`
+de fecha y motivo en estado `REFUNDED`); `orders.status` admite `REFUNDED`; `subscription_renewals`
+añade `refunded_at` para el ciclo anulado.
+
+### Confirmaciones por WhatsApp (`V12__whatsapp_order_updates.sql`)
+
+`whatsapp_integrations` añade `order_template` y `payment_template`; `customer_consents.purpose` admite
+`ORDER_UPDATES`. `order_notifications` (`order_id`, `kind` `PAYMENT_RECEIVED`/`PAYMENT_VERIFIED`, `status`
+`PENDING`/`SENT`/`DELIVERED`/`FAILED`, `attempts`, fechas de envío, entrega y lectura, `provider_message_id`)
+con un mensaje por tipo y pedido.
+
+### Acceso de soporte (`V14__support_access.sql`)
+
+`support_grants` (`business_id`, `granted_by`, `note`, `expires_at`, `revoked_at`, `revoked_by`): autorización
+temporal del titular. Cada consulta del superadministrador queda en `audit_logs` (`SUPPORT_DATA_VIEWED`, con
+recurso y motivo).
+
+### Varios negocios por cuenta (`V15__multiple_businesses.sql`)
+
+Se elimina la restricción de un negocio por cuenta (`uq_business_members_user`). `user_sessions` añade
+`active_business_id`: el negocio elegido en la sesión, validado contra las membresías activas en cada petición.
+
+### Permiso de pagos (`V13__payments_permission.sql`)
+
+Otorga `PAYMENTS` a los colaboradores e invitaciones pendientes que tenían `ORDERS`.
+
 ### WhatsApp e importaciones (Fase 7 — `V7__whatsapp_and_imports.sql`)
 
 | Tabla | Columnas clave | Notas |

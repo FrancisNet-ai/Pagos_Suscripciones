@@ -91,6 +91,16 @@ const TEMPLATE = /^[a-z0-9_]{1,512}$/;
                 @if (err('farewellTemplate'); as e) { <p class="field-error">{{ e }}</p> }
               </div>
               <div class="field">
+                <label class="field-label" for="orderTemplate">Pago recibido (opcional)</label>
+                <input id="orderTemplate" class="input" formControlName="orderTemplate" autocomplete="off" placeholder="pedido_pago_recibido" />
+                @if (err('orderTemplate'); as e) { <p class="field-error">{{ e }}</p> }
+              </div>
+              <div class="field">
+                <label class="field-label" for="paymentTemplate">Pago verificado (opcional)</label>
+                <input id="paymentTemplate" class="input" formControlName="paymentTemplate" autocomplete="off" placeholder="pedido_pago_verificado" />
+                @if (err('paymentTemplate'); as e) { <p class="field-error">{{ e }}</p> }
+              </div>
+              <div class="field">
                 <label class="field-label" for="templateLanguage">Idioma</label>
                 <input id="templateLanguage" class="input" formControlName="templateLanguage" autocomplete="off" />
                 @if (err('templateLanguage'); as e) { <p class="field-error">{{ e }}</p> }
@@ -107,6 +117,9 @@ Botón 3 · enlace: {{ renewUrlBase }}{{ v[0] }}</p>
                 <p>{{ v[0] }} nombre del cliente, {{ v[1] }} servicio, {{ v[2] }} tu negocio, {{ v[3] }} «hoy» o «el 29 de octubre».</p>
                 <p><strong>Despedida</strong>: cuerpo con 2 variables, {{ v[0] }} nombre del cliente y {{ v[1] }} tu negocio. Si no la configuras, la despedida queda para envío manual,
                   salvo cuando el cliente responde «No» por WhatsApp: entonces se le contesta en la misma conversación.</p>
+                <p><strong>Pago recibido</strong> y <strong>pago verificado</strong> (categoría «Utilidad»): cuerpo con 4 variables, {{ v[0] }} nombre del comprador,
+                  {{ v[1] }} número de pedido, {{ v[2] }} importe y {{ v[3] }} tu negocio. Solo se envían a quien lo autorizó al comprar;
+                  si no las configuras, tu tienda no ofrece esa opción.</p>
               </div>
             </details>
           </fieldset>
@@ -160,6 +173,8 @@ export class WhatsAppSettingsPage {
     accessToken: ['', [Validators.maxLength(1024)]],
     reminderTemplate: ['', [Validators.required, Validators.pattern(TEMPLATE)]],
     farewellTemplate: ['', [Validators.pattern(TEMPLATE)]],
+    orderTemplate: ['', [Validators.pattern(TEMPLATE)]],
+    paymentTemplate: ['', [Validators.pattern(TEMPLATE)]],
     templateLanguage: ['es', [Validators.required, Validators.pattern(/^[a-z]{2}(_[A-Z]{2})?$/)]],
     enabled: [true],
   });
@@ -194,7 +209,8 @@ export class WhatsAppSettingsPage {
     this.notice.set(null);
     this.api.save({
       phoneNumberId: v.phoneNumberId.trim(), wabaId: v.wabaId.trim() || null, accessToken: v.accessToken.trim() || null,
-      reminderTemplate: v.reminderTemplate.trim(), farewellTemplate: v.farewellTemplate.trim() || null, templateLanguage: v.templateLanguage.trim(), enabled: v.enabled,
+      reminderTemplate: v.reminderTemplate.trim(), farewellTemplate: v.farewellTemplate.trim() || null,
+      orderTemplate: v.orderTemplate.trim() || null, paymentTemplate: v.paymentTemplate.trim() || null, templateLanguage: v.templateLanguage.trim(), enabled: v.enabled,
     }).subscribe({
       next: (r) => {
         this.apply(r);
@@ -229,7 +245,7 @@ export class WhatsAppSettingsPage {
     this.data.set(d);
     this.form.reset({
       phoneNumberId: d.phoneNumberId ?? '', wabaId: d.wabaId ?? '', accessToken: '', reminderTemplate: d.reminderTemplate ?? '',
-      farewellTemplate: d.farewellTemplate ?? '', templateLanguage: d.templateLanguage, enabled: d.configured ? d.enabled : true,
+      farewellTemplate: d.farewellTemplate ?? '', orderTemplate: d.orderTemplate ?? '', paymentTemplate: d.paymentTemplate ?? '', templateLanguage: d.templateLanguage, enabled: d.configured ? d.enabled : true,
     });
   }
 }

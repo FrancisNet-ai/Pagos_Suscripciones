@@ -46,8 +46,11 @@ class StaffAccessInterceptor : HandlerInterceptor {
             // Elegir el producto al registrar una suscripción manual.
             Rule("/api/v1/products", "GET", StaffPermission.PRODUCTS, StaffPermission.CUSTOMERS),
             Rule("/api/v1/products/**", null, StaffPermission.PRODUCTS),
+            // Para aprobar un pago hay que ver el pedido y su comprobante; cancelar pedidos es de «Pedidos».
+            Rule("/api/v1/orders/**", "GET", StaffPermission.ORDERS, StaffPermission.PAYMENTS),
             Rule("/api/v1/orders/**", null, StaffPermission.ORDERS),
-            Rule("/api/v1/payments/**", null, StaffPermission.ORDERS),
+            Rule("/api/v1/payments/*/receipt", "GET", StaffPermission.ORDERS, StaffPermission.PAYMENTS),
+            Rule("/api/v1/payments/**", null, StaffPermission.PAYMENTS),
             // Renovaciones lista y libera los cupos de suscripciones vencidas.
             Rule("/api/v1/subscriptions", "GET", StaffPermission.CUSTOMERS, StaffPermission.RENEWALS),
             Rule("/api/v1/subscriptions/*/release-capacity", "POST", StaffPermission.CUSTOMERS, StaffPermission.RENEWALS),
@@ -59,8 +62,8 @@ class StaffAccessInterceptor : HandlerInterceptor {
             Rule("/api/v1/tasks/**", null),
         )
 
-        /** Cambios siempre del titular, aunque el colaborador tenga la sección: la política de avisos del negocio. */
-        private val OWNER_ONLY = listOf("/api/v1/renewals/settings/**")
+        /** Siempre del titular, aunque el colaborador tenga la sección: la política de avisos y los reembolsos. */
+        private val OWNER_ONLY = listOf("/api/v1/renewals/settings/**", "/api/v1/payments/*/refund")
 
         private const val OWNER_MESSAGE = "Esta sección es exclusiva del titular del negocio."
 

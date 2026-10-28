@@ -70,6 +70,17 @@ class AuthController(
         cookies.clear(response)
     }
 
+    @PostMapping("/business")
+    @Operation(summary = "Cambia el negocio activo de la sesión")
+    fun switchBusiness(user: AuthenticatedUser, @Valid @RequestBody body: SwitchBusinessRequest): SessionResponse =
+        authService.switchBusiness(user, body.businessId!!)
+
+    @PostMapping("/businesses")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Crea otro negocio para la cuenta actual y lo activa")
+    fun createBusiness(user: AuthenticatedUser, @Valid @RequestBody body: CreateBusinessRequest, request: HttpServletRequest): SessionResponse =
+        authService.createBusiness(user, body, request.client())
+
     @GetMapping("/me")
     @Operation(summary = "Usuario, roles y negocio de la sesión actual")
     fun me(user: AuthenticatedUser): SessionResponse = authService.describe(user)

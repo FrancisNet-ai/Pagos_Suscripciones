@@ -17,6 +17,7 @@ enum class OrderFilter(val statuses: Set<OrderStatus>) {
     AWAITING_PAYMENT(setOf(OrderStatus.AWAITING_PAYMENT)),
     PAID(setOf(OrderStatus.PAID)),
     CLOSED(setOf(OrderStatus.CANCELLED, OrderStatus.EXPIRED)),
+    REFUNDED(setOf(OrderStatus.REFUNDED)),
 }
 
 data class OrderSummary(
@@ -48,6 +49,9 @@ data class PaymentDetail(
     val verifiedAt: Instant?,
     val rejectedAt: Instant?,
     val rejectionReason: String?,
+    val refundedAt: Instant?,
+    val refundReason: String?,
+    val refundReference: String?,
 )
 
 data class OrderItemDetail(
@@ -82,6 +86,17 @@ data class OrderDetail(
     val subscriptionStatus: String?,
     val createdAt: Instant?,
     val paidAt: Instant?,
+    /** Confirmaciones enviadas al comprador por la integración oficial de WhatsApp. */
+    val whatsappUpdates: List<OrderUpdateItem> = emptyList(),
+)
+
+data class OrderUpdateItem(
+    val kind: com.nuvyra.whatsapp.OrderNotificationKind,
+    val status: com.nuvyra.whatsapp.OrderNotificationStatus,
+    val sentAt: Instant?,
+    val deliveredAt: Instant?,
+    val readAt: Instant?,
+    val failureReason: String?,
 )
 
 data class ReasonRequest(

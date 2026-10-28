@@ -53,6 +53,8 @@ export interface PublicInvitation {
   email: string;
   permissions: PermissionOption[];
   expiresAt: string;
+  /** El correo ya tiene cuenta: se une iniciando sesión, sin registrarse de nuevo. */
+  existingAccount?: boolean;
 }
 
 export interface AcceptInvitationPayload {
@@ -101,6 +103,10 @@ export class StaffApi {
     return this.http.get<PublicInvitation>(`/api/v1/public/invitations/${encodeURIComponent(token)}`);
   }
 
+  join(token: string): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`/api/v1/public/invitations/${encodeURIComponent(token)}/join`, {});
+  }
+
   accept(token: string, body: AcceptInvitationPayload): Observable<SessionResponse> {
     return this.http.post<SessionResponse>(`/api/v1/public/invitations/${encodeURIComponent(token)}/accept`, body);
   }
@@ -108,7 +114,8 @@ export class StaffApi {
 
 export const PERMISSION_LABEL: Record<StaffPermission, string> = {
   PRODUCTS: 'Catálogo de productos',
-  ORDERS: 'Pedidos y verificación de pagos',
+  ORDERS: 'Pedidos y atención de compradores',
+  PAYMENTS: 'Aprobación y rechazo de pagos',
   CUSTOMERS: 'Clientes y suscripciones',
   RENEWALS: 'Renovaciones y avisos',
   REPORTS: 'Ingresos y reportes',

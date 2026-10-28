@@ -85,6 +85,7 @@ class CheckoutService(
                 ConsentPurpose.PURCHASE_TERMS to true,
                 ConsentPurpose.DATA_PROCESSING to true,
                 ConsentPurpose.RENEWAL_REMINDERS to (request.acceptRenewalReminders == true),
+                ConsentPurpose.ORDER_UPDATES to (request.acceptOrderUpdates == true),
             ),
         )
         audit.record(

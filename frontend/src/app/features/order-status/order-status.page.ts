@@ -7,13 +7,14 @@ import { storeTheme } from '../../shared/components/store-theme';
 import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { applyServerErrors, controlError } from '../../shared/validators/form-errors';
 import { PublicOrder, StorefrontApi } from '../storefront/storefront.api';
+import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 
 const MAX_RECEIPT = 5 * 1024 * 1024;
 
 @Component({
   selector: 'app-order-status-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
+  imports: [SmallImagePipe, ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
   templateUrl: './order-status.page.html',
 })
 export class OrderStatusPage implements OnInit {
