@@ -21,7 +21,7 @@
       >
         @if (p.imageUrl) {
           <img
-            [src]="p.imageUrl"
+            [src]="p.imageUrl | smallImage"
             alt=""
             class="h-16 w-16 shrink-0 rounded-[var(--radius-control)] object-cover"
           />

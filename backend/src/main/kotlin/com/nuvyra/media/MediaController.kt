@@ -9,6 +9,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 
@@ -18,10 +19,11 @@ import java.time.Duration
 class MediaController(private val storage: MediaStorage) {
 
     @GetMapping("/api/v1/public/media/{key}")
-    @Operation(summary = "Descarga una imagen pública por su clave aleatoria")
-    fun get(@PathVariable key: String): ResponseEntity<Resource> {
-        val path = storage.resolve(key) ?: return ResponseEntity.notFound().build()
-        val type = ImageType.fromExtension(key.substringAfterLast('.')) ?: return ResponseEntity.notFound().build()
+    @Operation(summary = "Descarga una imagen pública por su clave aleatoria; `size=sm` pide la versión reducida si existe")
+    fun get(@PathVariable key: String, @RequestParam(required = false) size: String?): ResponseEntity<Resource> {
+        val original = storage.resolve(key) ?: return ResponseEntity.notFound().build()
+        val path = (if (size == "sm") storage.resolveSmall(key) else null) ?: original
+        val type = ImageType.fromExtension(path.fileName.toString().substringAfterLast('.')) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(type.contentType))
             // Las claves son únicas e inmutables: caché larga.

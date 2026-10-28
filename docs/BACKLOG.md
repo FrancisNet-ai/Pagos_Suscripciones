@@ -32,7 +32,8 @@
 - [x] Reembolsos manuales (`REFUNDED`): el titular registra la devolución que ya hizo por Yape/Plin; el pago deja de contar como ingreso, la compra cancela la suscripción y la renovación devuelve la vigencia anterior.
 - [x] Playwright versionado y ejecutado en CI, con PostgreSQL desechable, recorridos de escritorio/móvil e informe de diagnóstico.
 - [ ] Migrar imágenes a almacenamiento de objetos (S3 compatible) si se escala a varias instancias.
-- [ ] Generar miniaturas/WebP en el servidor para reducir peso en móviles.
+- [x] Versión reducida (640 px) de las imágenes públicas al subirlas: JPEG para fotos, PNG si hay transparencia; los listados la piden con `?size=sm`.
+- [ ] Codificar las versiones reducidas en WebP (Java no escribe WebP sin bibliotecas nativas; evaluar libwebp o un servicio de imágenes).
 - [x] Historial paginado de pendientes resueltos con autor y evidencia de auditoría, limitado al negocio y los permisos actuales.
 - [ ] Varios negocios por cuenta (hoy un usuario pertenece a un solo negocio, como titular o colaborador).
 - [ ] Permisos más finos para colaboradores (p. ej., verificar pagos sin ver ingresos del pedido).

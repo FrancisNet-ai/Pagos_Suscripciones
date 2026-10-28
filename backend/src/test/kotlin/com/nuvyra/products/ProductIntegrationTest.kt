@@ -107,6 +107,31 @@ class ProductIntegrationTest : IntegrationTest() {
     }
 
     @Test
+    fun `una foto grande guarda una version reducida para el catalogo`() {
+        val seller = registerSeller()
+        val id = create(seller)
+        // Degradado con algo de ruido: parecido a una foto y por debajo del límite de 2 MB.
+        val image = java.awt.image.BufferedImage(1200, 800, java.awt.image.BufferedImage.TYPE_INT_RGB)
+        val random = java.util.Random(3)
+        for (x in 0 until 1200) for (y in 0 until 800) {
+            image.setRGB(x, y, java.awt.Color((x * 255) / 1200, (y * 255) / 800, 120 + random.nextInt(16)).rgb)
+        }
+        val photo = java.io.ByteArrayOutputStream().also { javax.imageio.ImageIO.write(image, "png", it) }.toByteArray()
+        val body = mockMvc.perform(
+            multipart("/api/v1/products/$id/image").file(MockMultipartFile("file", "foto.png", "image/png", photo)).with(csrf()).cookie(seller),
+        ).andExpect(status().isOk).andReturn().response.contentAsString
+        val url = Regex("\"imageUrl\":\"([^\"]+)\"").find(body)!!.groupValues[1]
+
+        val original = mockMvc.perform(get(url)).andExpect(status().isOk).andReturn().response
+        val small = mockMvc.perform(get(url).param("size", "sm")).andExpect(status().isOk).andReturn().response
+        org.assertj.core.api.Assertions.assertThat(original.contentType).isEqualTo("image/png")
+        org.assertj.core.api.Assertions.assertThat(small.contentType).isEqualTo("image/jpeg")
+        org.assertj.core.api.Assertions.assertThat(small.contentAsByteArray.size).isLessThan(original.contentAsByteArray.size / 4)
+        // Un tamaño desconocido devuelve el original.
+        org.assertj.core.api.Assertions.assertThat(mockMvc.perform(get(url).param("size", "xl")).andReturn().response.contentType).isEqualTo("image/png")
+    }
+
+    @Test
     fun `un vendedor no puede ver ni modificar productos de otro`() {
         val sellerA = registerSeller()
         val sellerB = registerSeller()

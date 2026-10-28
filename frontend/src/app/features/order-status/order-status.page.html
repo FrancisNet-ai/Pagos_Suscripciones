@@ -19,7 +19,7 @@
       </ol>
       <a [routerLink]="['/tienda', o.store.slug]" class="flex items-center gap-3 no-underline">
         @if (o.store.logoUrl) {
-          <img [src]="o.store.logoUrl" alt="" class="h-9 w-9 rounded-full object-cover" />
+          <img [src]="o.store.logoUrl | smallImage" alt="" class="h-9 w-9 rounded-full object-cover" />
         }
         <span class="font-semibold text-night">{{ o.store.businessName }}</span>
       </a>

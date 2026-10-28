@@ -84,7 +84,7 @@
                 <div class="product-glyph !h-11 !w-11">
                   @if (p.imageUrl) {
                     <img
-                      [src]="p.imageUrl"
+                      [src]="p.imageUrl | smallImage"
                       alt=""
                       class="h-full w-full object-cover"
                       loading="lazy"
@@ -143,7 +143,7 @@
           <a [routerLink]="['/panel/productos', p.id]" class="flex gap-3 py-4 no-underline">
             <div class="product-glyph !h-14 !w-14">
               @if (p.imageUrl) {
-                <img [src]="p.imageUrl" alt="" class="h-full w-full object-cover" loading="lazy" />
+                <img [src]="p.imageUrl | smallImage" alt="" class="h-full w-full object-cover" loading="lazy" />
               } @else {
                 <app-icon name="box" />
               }

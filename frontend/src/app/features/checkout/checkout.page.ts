@@ -8,11 +8,12 @@ import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { applyServerErrors, controlError } from '../../shared/validators/form-errors';
 import { peruMobileValidator } from '../../shared/validators/peru-phone';
 import { PaymentMethodType, PublicProduct, PublicStore, StorefrontApi } from '../storefront/storefront.api';
+import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 
 @Component({
   selector: 'app-checkout-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
+  imports: [SmallImagePipe, ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
   templateUrl: './checkout.page.html',
 })
 export class CheckoutPage implements OnInit {

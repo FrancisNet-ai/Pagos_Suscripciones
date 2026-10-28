@@ -382,3 +382,9 @@ realizadas sin una tarea previa.
 - Al reportar o verificar el pago se encola la confirmación (misma transacción) solo si el comprador la
   autorizó y la plantilla existe; un proceso la envía con reintentos y el webhook registra entrega y lectura.
 - `GET /orders/{id}` incluye `whatsappUpdates` con el estado de cada confirmación.
+
+## Imágenes reducidas — implementado
+
+`GET /public/media/{key}?size=sm` devuelve la versión de 640 px de ancho generada al subir la imagen
+(JPEG si es opaca, PNG si tiene transparencia) cuando pesa menos que el original; si no existe (WebP o
+imágenes anteriores) devuelve el original. Cualquier otro valor de `size` devuelve el original.

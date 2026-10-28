@@ -14,7 +14,7 @@
       <nav class="store-nav" aria-label="Tienda">
         <a href="#catalogo" class="store-identity">
           @if (s.logoUrl) {
-            <img [src]="s.logoUrl" [alt]="'Logotipo de ' + s.businessName" />
+            <img [src]="s.logoUrl | smallImage" [alt]="'Logotipo de ' + s.businessName" />
           } @else {
             <span class="profile-avatar" aria-hidden="true">{{ initials() }}</span>
           }
@@ -100,7 +100,7 @@
             <li class="store-product">
               <div class="store-product-image">
                 @if (p.imageUrl) {
-                  <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" decoding="async" />
+                  <img [src]="p.imageUrl | smallImage" [alt]="p.name" loading="lazy" decoding="async" />
                 } @else {
                   <app-icon [name]="p.productType === 'SUBSCRIPTION' ? 'renew' : 'box'" />
                 }

@@ -23,9 +23,20 @@ class MediaStorage(private val properties: AppProperties) {
     private val publicRoot: Path = createRoot(properties.storage.localDir)
     private val privateRoot: Path = createRoot(properties.storage.privateDir)
 
-    /** Valida y guarda una imagen pública. Devuelve la URL pública relativa. */
-    fun storeImage(file: MultipartFile): String =
-        PUBLIC_PREFIX + store(publicRoot, file.bytes, properties.storage.maxImageBytes)
+    /**
+     * Valida y guarda una imagen pública con una versión reducida para listados y móviles
+     * (ver [Thumbnails]). Devuelve la URL pública relativa del original.
+     */
+    fun storeImage(file: MultipartFile): String {
+        val bytes = file.bytes
+        val key = store(publicRoot, bytes, properties.storage.maxImageBytes)
+        Thumbnails.create(bytes, THUMB_WIDTH)?.let { small ->
+            val variant = variantKey(key, small.type)
+            Files.write(publicRoot.resolve(variant), small.bytes, StandardOpenOption.CREATE_NEW)
+            registerRollbackCleanup(publicRoot, variant)
+        }
+        return PUBLIC_PREFIX + key
+    }
 
     /** Valida y guarda un comprobante privado. Devuelve su clave interna. */
     fun storeReceipt(bytes: ByteArray): String = store(privateRoot, bytes, properties.storage.maxReceiptBytes)
@@ -44,13 +55,26 @@ class MediaStorage(private val properties: AppProperties) {
 
     fun resolve(key: String): Path? = resolveIn(publicRoot, key)
 
+    /** Versión reducida de una imagen pública, si existe (las WebP y las antiguas no la tienen). */
+    fun resolveSmall(key: String): Path? {
+        if (!KEY_PATTERN.matches(key)) return null
+        return ImageType.entries.firstNotNullOfOrNull { type ->
+            publicRoot.resolve(variantKey(key, type)).normalize().takeIf { it.startsWith(publicRoot) && Files.isRegularFile(it) }
+        }
+    }
+
     fun resolveReceipt(key: String): Path? = resolveIn(privateRoot, key)
 
     private fun store(root: Path, bytes: ByteArray, maxBytes: Long): String {
         val type = ImageValidator.validate(bytes, maxBytes, properties.storage.maxImageDimension)
         val key = "${UuidV7.generate()}.${type.extension}"
         Files.write(root.resolve(key), bytes, StandardOpenOption.CREATE_NEW)
-        // Si la transacción que usa el archivo falla, no queda huérfano.
+        registerRollbackCleanup(root, key)
+        return key
+    }
+
+    /** Si la transacción que usa el archivo falla, no queda huérfano. */
+    private fun registerRollbackCleanup(root: Path, key: String) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
                 override fun afterCompletion(status: Int) {
@@ -58,7 +82,6 @@ class MediaStorage(private val properties: AppProperties) {
                 }
             })
         }
-        return key
     }
 
     private fun resolveIn(root: Path, key: String): Path? {
@@ -70,6 +93,7 @@ class MediaStorage(private val properties: AppProperties) {
     private fun delete(root: Path, key: String) {
         try {
             resolveIn(root, key)?.let(Files::deleteIfExists)
+            if (root == publicRoot) ImageType.entries.forEach { Files.deleteIfExists(root.resolve(variantKey(key, it))) }
         } catch (ex: Exception) {
             log.warn("No se pudo eliminar el archivo {}", key, ex)
         }
@@ -80,6 +104,10 @@ class MediaStorage(private val properties: AppProperties) {
 
     companion object {
         const val PUBLIC_PREFIX = "/api/v1/public/media/"
+        const val THUMB_WIDTH = 640
+
+        /** `0192…-ab.png` → `0192…-ab-sm.jpg`: nombre derivado, nunca recibido del cliente. */
+        fun variantKey(key: String, type: ImageType) = key.substringBeforeLast('.') + "-sm." + type.extension
         val KEY_PATTERN = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.(png|jpg|webp)$")
 
         fun keyFromUrl(url: String?): String? = url?.removePrefix(PUBLIC_PREFIX)?.takeIf { KEY_PATTERN.matches(it) }
