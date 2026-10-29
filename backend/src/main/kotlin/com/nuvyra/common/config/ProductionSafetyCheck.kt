@@ -43,13 +43,14 @@ class ProductionSafetyCheck(private val properties: AppProperties, private val e
                 }
             }
             secret("APP_RENEWAL_TOKEN_SECRET", p.renewals.tokenSecret, required = true)
-            // Opcional: sin clave no se guardan tokens de WhatsApp, pero si existe no puede ser la pública.
-            secret("APP_SECRETS_ENCRYPTION_KEY", p.secrets.encryptionKey, required = false)
+            // Cifra los tokens de WhatsApp y los secretos de la verificación en dos pasos.
+            secret("APP_SECRETS_ENCRYPTION_KEY", p.secrets.encryptionKey, required = true)
             secret("APP_WHATSAPP_APP_SECRET", p.whatsapp.appSecret, required = false)
             secret("APP_WHATSAPP_VERIFY_TOKEN", p.whatsapp.verifyToken, required = false)
             p.bootstrap.superAdminPassword?.takeIf { it.isNotBlank() }?.let { pass ->
                 if (pass.length < 12 || PLACEHOLDER.containsMatchIn(pass)) add("APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD es débil o de ejemplo (mínimo 12 caracteres)")
             }
+            if (!p.security.requireSuperAdminTwoFactor) add("APP_SECURITY_REQUIRE_SUPER_ADMIN_TWO_FACTOR debe ser true en producción")
             databasePassword?.let { if (it == "nuvyra" || PLACEHOLDER.containsMatchIn(it)) add("DB_PASSWORD usa un valor por defecto o de ejemplo") }
             if (!isLocal(p.publicBaseUrl)) {
                 if (!p.session.cookieSecure) add("APP_SESSION_COOKIE_SECURE debe ser true (las cookies de sesión solo viajan por HTTPS)")

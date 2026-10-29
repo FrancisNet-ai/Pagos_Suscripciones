@@ -76,6 +76,21 @@ class SessionService(
     @Transactional
     fun revokeOthers(userId: UUID, keepSessionId: UUID): Int = sessions.revokeOthersForUser(userId, keepSessionId, clock.instant())
 
+    /** Sesiones vigentes de la persona, la más reciente primero. */
+    @Transactional(readOnly = true)
+    fun active(userId: UUID): List<UserSession> {
+        val now = clock.instant()
+        return sessions.findByUserIdAndRevokedAtIsNullOrderByLastUsedAtDesc(userId).filter { it.isActive(now) }
+    }
+
+    /** Cierra una sesión propia. Devuelve `false` si no existe, es de otra persona o ya estaba cerrada. */
+    @Transactional
+    fun revokeOwn(userId: UUID, sessionId: UUID): Boolean {
+        val session = sessions.findById(sessionId).orElse(null)?.takeIf { it.userId == userId && it.revokedAt == null } ?: return false
+        session.revokedAt = clock.instant()
+        return true
+    }
+
     @Transactional
     fun revokeAll(userId: UUID) {
         sessions.revokeAllForUser(userId, clock.instant())
@@ -118,6 +133,7 @@ class SessionService(
             businessId = membership?.businessId,
             businessRole = membership?.role,
             permissions = membership?.permissions.orEmpty(),
+            twoFactorEnabled = user.twoFactorEnabled,
         )
     }
 
