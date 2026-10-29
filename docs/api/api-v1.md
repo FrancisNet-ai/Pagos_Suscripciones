@@ -52,6 +52,9 @@ y `/api/docs/openapi.json` (deshabilitada en producción salvo que se active `AP
 | `DELETE` | `/auth/sessions/{id}` | sesión | Cierra una sesión propia de otro dispositivo (`400` si es la actual, `404` si no es propia) |
 | `POST` | `/auth/sessions/revoke-others` | sesión | Cierra todas salvo la actual → `{ closed }` |
 
+Las contraseñas nuevas (registro, `/auth/password`, `/auth/password-reset/confirm` y aceptar una invitación) se
+rechazan con `400` y el error en su campo si aparecen en filtraciones conocidas (Pwned Passwords por prefijo de hash).
+
 `POST /auth/register`
 
 ```json

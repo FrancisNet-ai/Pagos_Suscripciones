@@ -163,6 +163,12 @@ infrastructure/scripts/restore-db.sh AAAAmmdd-HHMMSS.dump AAAAmmdd-HHMMSS-files.
 En UptimeRobot, crea un monitor *HTTP(s)* hacia `https://<subdominio>.duckdns.org/actuator/health` cada
 5 minutos, con aviso a tu correo.
 
+## Salida a internet del servidor
+
+El backend consulta `https://api.pwnedpasswords.com` para rechazar contraseñas filtradas: solo envía los 5 primeros
+caracteres del hash y nunca la contraseña. Oracle permite la salida por defecto; si algún día se restringe, abre ese
+destino por HTTPS. Si no responde, las contraseñas se aceptan igual.
+
 ## Operación diaria
 
 - **Ver el estado:** `cd /opt/nuvyra/current && docker compose ps`.
