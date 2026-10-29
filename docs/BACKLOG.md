@@ -50,8 +50,9 @@
 - [x] Cambiar la contraseña desde el panel («Mi cuenta»), cerrando las demás sesiones.
 - [x] El backend no arranca en producción con secretos de ejemplo o de desarrollo.
 - [x] Revisión automática de dependencias (Dependabot y `npm audit` en CI). Falta activar las alertas en *Settings → Code security* del repositorio.
-- [ ] Verificación en dos pasos (TOTP) opcional para titulares y obligatoria para el superadministrador.
-- [ ] Lista de sesiones abiertas con dispositivo y opción de cerrar cada una.
+- [x] Verificación en dos pasos (TOTP) opcional para titulares y colaboradores, y obligatoria para el superadministrador en producción, con 10 códigos de recuperación.
+- [x] Lista de sesiones abiertas con dispositivo y opción de cerrar cada una.
+- [ ] Restablecer la verificación en dos pasos de una cuenta que perdió celular y códigos (hoy no hay forma desde la plataforma: requiere un proceso de soporte con verificación de identidad).
 - [ ] Verificar el correo al registrarse (requiere SMTP real).
 - [ ] Aviso por correo de inicio de sesión desde un dispositivo nuevo (requiere SMTP real).
 - [ ] Rechazar contraseñas filtradas (consulta por prefijo de hash, sin enviar la contraseña).

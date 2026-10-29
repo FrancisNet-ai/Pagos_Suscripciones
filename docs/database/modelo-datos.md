@@ -153,6 +153,14 @@ recurso y motivo).
 Se elimina la restricción de un negocio por cuenta (`uq_business_members_user`). `user_sessions` añade
 `active_business_id`: el negocio elegido en la sesión, validado contra las membresías activas en cada petición.
 
+### Verificación en dos pasos (`V16__two_factor_auth.sql`)
+
+`users` añade `totp_secret_encrypted` y `totp_pending_secret_encrypted` (AES-256-GCM con
+`APP_SECRETS_ENCRYPTION_KEY`, contexto `totp:<user_id>`), `totp_enabled_at` y `totp_last_step` (último intervalo
+de 30 s aceptado, impide reutilizar un código). `user_recovery_codes` guarda el SHA-256 de cada código de
+recuperación y cuándo se usó. `login_challenges` guarda el hash del desafío entre la contraseña y el segundo
+factor (vence a los 5 minutos, máximo 5 intentos).
+
 ### Permiso de pagos (`V13__payments_permission.sql`)
 
 Otorga `PAYMENTS` a los colaboradores e invitaciones pendientes que tenían `ORDERS`.

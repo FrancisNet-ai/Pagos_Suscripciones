@@ -111,7 +111,9 @@ En GitHub, *Settings → Secrets and variables → Actions*:
 1. En GitHub, *Actions → Despliegue → Run workflow*.
 2. La primera vez compila el backend y la web en el servidor, lo que tarda varios minutos.
 3. Al terminar, abre `https://<subdominio>.duckdns.org/actuator/health`. Debe responder `{"status":"UP"}`.
-4. Inicia sesión en `/ingresar` con el superadministrador y cambia su contraseña en **Mi cuenta**.
+4. Inicia sesión en `/ingresar` con el superadministrador. En **Mi cuenta**, cambia su contraseña y activa la
+   verificación en dos pasos con una app de autenticación (es obligatoria para entrar a `/admin`). Guarda los
+   códigos de recuperación en tu gestor de contraseñas.
 5. En `/admin`, configura las cuentas Yape/Plin de la plataforma, el soporte y los planes.
 6. Vacía en `/opt/nuvyra/.env` las líneas `APP_BOOTSTRAP_SUPER_ADMIN_EMAIL` y
    `APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD`: ya no se necesitan.
