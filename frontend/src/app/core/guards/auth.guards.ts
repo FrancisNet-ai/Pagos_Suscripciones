@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
+import { CanActivateChildFn, CanActivateFn, CanMatchFn, Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { Role, StaffPermission } from '../auth/auth.models';
 
@@ -38,3 +38,10 @@ export function permissionGuard(...permissions: StaffPermission[]): CanActivateF
 
 /** Elige entre dos rutas con la misma URL según sea titular o colaborador. */
 export const ownerMatch: CanMatchFn = () => inject(AuthService).isOwner();
+
+/** Sin verificación en dos pasos, el superadministrador solo puede entrar a «Mi cuenta» (el backend también lo exige). */
+export const twoFactorSetupGuard: CanActivateChildFn = (_route, state) => {
+  const auth = inject(AuthService);
+  if (!auth.mustSetUpTwoFactor() || state.url.startsWith('/admin/cuenta')) return true;
+  return inject(Router).parseUrl('/admin/cuenta');
+};

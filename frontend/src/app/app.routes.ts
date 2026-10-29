@@ -6,6 +6,7 @@ import {
   ownerMatch,
   permissionGuard,
   roleGuard,
+  twoFactorSetupGuard,
 } from './core/guards/auth.guards';
 
 export const routes: Routes = [
@@ -232,6 +233,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [authGuard, roleGuard('SUPER_ADMIN')],
+    canActivateChild: [twoFactorSetupGuard],
     loadComponent: () => import('./features/admin/admin-shell.component').then((m) => m.AdminShellComponent),
     children: [
       {

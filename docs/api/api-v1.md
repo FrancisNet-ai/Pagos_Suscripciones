@@ -35,13 +35,22 @@ y `/api/docs/openapi.json` (deshabilitada en producción salvo que se active `AP
 |---|---|---|---|
 | `GET` | `/auth/csrf` | público | Emite la cookie `XSRF-TOKEN` (204) |
 | `POST` | `/auth/register` | público | Crea usuario + negocio + membresía OWNER; inicia sesión |
-| `POST` | `/auth/login` | público | Inicia sesión |
+| `POST` | `/auth/login` | público | Inicia sesión. Con verificación en dos pasos responde `202 { twoFactorRequired, challengeToken, expiresAt }` y no abre sesión |
+| `POST` | `/auth/login/2fa` | público | `{ challengeToken, code }`: código de la app o de recuperación → `200` misma forma que `/auth/me`. El desafío dura 5 min y admite 5 intentos |
 | `POST` | `/auth/refresh` | sesión | Rota el token de sesión |
 | `POST` | `/auth/logout` | sesión | Revoca la sesión (204) |
 | `GET` | `/auth/me` | sesión | Usuario, roles y negocio actual |
 | `POST` | `/auth/password-reset` | público | Solicita enlace de recuperación (siempre 202) |
 | `POST` | `/auth/password-reset/confirm` | público | Establece nueva contraseña con token |
 | `POST` | `/auth/password` | sesión | `{ currentPassword, newPassword }` (10–72) → `{ otherSessionsClosed }`. Exige la contraseña actual y una distinta; cierra las demás sesiones del usuario y conserva la actual. Límite: 5 intentos cada 15 min |
+| `GET` | `/auth/2fa` | sesión | `{ enabled, enabledAt, recoveryCodesLeft, required }` |
+| `POST` | `/auth/2fa/setup` | sesión | `{ password }` → `{ secret, otpauthUri, qrDataUrl }`. Aún no la activa |
+| `POST` | `/auth/2fa/enable` | sesión | `{ code }` → `{ recoveryCodes[10], otherSessionsClosed }`. Los códigos se muestran una sola vez; cierra las demás sesiones |
+| `POST` | `/auth/2fa/disable` | sesión | `{ password, code }` (código de la app o de recuperación) → `204`. `403` para el superadministrador cuando es obligatoria |
+| `POST` | `/auth/2fa/recovery-codes` | sesión | `{ code }` (solo de la app) → `{ recoveryCodes }`; invalida los anteriores |
+| `GET` | `/auth/sessions` | sesión | Sesiones vigentes: `{ id, device, ipAddress, createdAt, lastUsedAt, current }` |
+| `DELETE` | `/auth/sessions/{id}` | sesión | Cierra una sesión propia de otro dispositivo (`400` si es la actual, `404` si no es propia) |
+| `POST` | `/auth/sessions/revoke-others` | sesión | Cierra todas salvo la actual → `{ closed }` |
 
 `POST /auth/register`
 

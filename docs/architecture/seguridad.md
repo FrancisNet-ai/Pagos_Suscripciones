@@ -26,6 +26,8 @@
 | 22 | Contraseña comprometida o sesiones olvidadas | Cambio de contraseña desde «Mi cuenta» exigiendo la actual, con límite de intentos; cierra las demás sesiones del usuario y queda en la auditoría (`PASSWORD_CHANGED`) | Seguridad ✅ |
 | 23 | Despliegue con secretos de ejemplo | Con el perfil `prod` el backend no arranca si detecta claves de desarrollo, valores de ejemplo, contraseña de administrador corta, la contraseña de base de datos de desarrollo o, fuera de localhost, HTTP o cookies sin `Secure` (`ProductionSafetyCheck`) | Seguridad ✅ |
 | 24 | Dependencias vulnerables | Dependabot semanal (Gradle, npm, Actions, Docker), `npm audit` en CI y grafo de Gradle enviado a GitHub; inventario en `docs/development/dependencias.md` | Seguridad ✅ |
+| 25 | Contraseña robada | Verificación en dos pasos con app de autenticación (TOTP, RFC 6238): secreto cifrado con AES-256-GCM, cada código sirve una vez, ±30 s de tolerancia, 10 códigos de recuperación de un solo uso (solo su hash), desafío de inicio de sesión de 5 min y 5 intentos; obligatoria para el superadministrador en producción (`/api/v1/admin` responde `TWO_FACTOR_REQUIRED`) | Seguridad ✅ |
+| 26 | Sesiones en dispositivos ajenos | «Mi cuenta» lista las sesiones vigentes (dispositivo, IP, último uso) y permite cerrar cada una o todas las demás; activar la verificación en dos pasos cierra las anteriores | Seguridad ✅ |
 
 ## Datos personales (Perú, Ley N.º 29733)
 

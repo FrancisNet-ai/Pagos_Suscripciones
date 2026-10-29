@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/services/api-error';
 import { PasswordInputComponent } from '../../shared/components/password-input.component';
 import { applyServerErrors, controlError } from '../../shared/validators/form-errors';
+import { SessionsListComponent } from './sessions-list.component';
+import { TwoFactorSettingsComponent } from './two-factor-settings.component';
 
 function matchesNew(control: AbstractControl): ValidationErrors | null {
   const parent = control.parent;
@@ -13,11 +15,11 @@ function matchesNew(control: AbstractControl): ValidationErrors | null {
 
 type Field = 'currentPassword' | 'newPassword' | 'confirm';
 
-/** Datos de la cuenta y cambio de contraseña (también para el superadministrador). */
+/** Datos de la cuenta, contraseña, verificación en dos pasos y sesiones abiertas (también para el superadministrador). */
 @Component({
   selector: 'app-account-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, PasswordInputComponent],
+  imports: [ReactiveFormsModule, PasswordInputComponent, TwoFactorSettingsComponent, SessionsListComponent],
   template: `
     <section class="mx-auto max-w-2xl">
       <p class="type-eyebrow">Tu cuenta</p>
@@ -60,6 +62,12 @@ type Field = 'currentPassword' | 'newPassword' | 'confirm';
           </button>
         </div>
       </form>
+
+      <hr class="rule my-10" />
+      <app-two-factor-settings />
+
+      <hr class="rule my-10" />
+      <app-sessions-list />
     </section>
   `,
 })
@@ -69,6 +77,7 @@ export class AccountPage {
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly notice = signal<string | null>(null);
+  private readonly sessionsList = viewChild(SessionsListComponent);
 
   protected readonly form = inject(NonNullableFormBuilder).group({
     currentPassword: ['', [Validators.required]],
@@ -99,6 +108,7 @@ export class AccountPage {
         next: ({ otherSessionsClosed }) => {
           this.form.reset();
           this.busy.set(false);
+          this.sessionsList()?.reload();
           this.notice.set(
             otherSessionsClosed > 0
               ? `Contraseña actualizada. Cerramos ${otherSessionsClosed} ${otherSessionsClosed === 1 ? 'sesión' : 'sesiones'} en otros dispositivos.`

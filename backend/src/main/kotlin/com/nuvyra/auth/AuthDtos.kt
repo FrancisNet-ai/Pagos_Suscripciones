@@ -69,6 +69,16 @@ data class LoginRequest(
     val password: String?,
 )
 
+data class LoginSecondFactorRequest(
+    @field:NotBlank(message = "La verificación expiró. Vuelve a ingresar tu contraseña.")
+    @field:Size(max = 128)
+    val challengeToken: String?,
+
+    @field:NotBlank(message = "Ingresa el código de tu app o un código de recuperación")
+    @field:Size(max = 20)
+    val code: String?,
+)
+
 data class PasswordResetRequest(
     @field:NotBlank(message = "Ingresa tu correo electrónico")
     @field:Email(message = "Ingresa un correo electrónico válido")
@@ -92,6 +102,9 @@ data class UserDto(
     val email: String,
     val phone: String,
     val roles: Set<String>,
+    val twoFactorEnabled: Boolean = false,
+    /** Debe activarla para usar su panel (hoy, solo el superadministrador). */
+    val twoFactorRequired: Boolean = false,
 )
 
 data class BusinessSummaryDto(

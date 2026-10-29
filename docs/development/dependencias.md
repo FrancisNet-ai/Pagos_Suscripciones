@@ -27,6 +27,7 @@ compatibles entre sí y se actualizan juntas al subir Spring Boot.
 | Kotlin y JSON | `kotlin-reflect`, `jackson-module-kotlin` (Jackson 3, `tools.jackson`) | Serialización de las clases de datos |
 | Documentación de la API | `springdoc-openapi-starter-webmvc-ui` | Swagger en desarrollo; desactivado en producción |
 | Importación | `poi-ooxml` (Apache POI) | Leer clientes desde Excel `.xlsx` |
+| Verificación en dos pasos | `zxing-core` (ZXing) | Generar el código QR (SVG) para la app de autenticación |
 | Pruebas | `starter-webmvc-test`, `starter-security-test`, Testcontainers (PostgreSQL), `kotlin-test-junit5`, MockK, SpringMockK | Pruebas de integración contra una base real y dobles de prueba |
 
 ## Frontend

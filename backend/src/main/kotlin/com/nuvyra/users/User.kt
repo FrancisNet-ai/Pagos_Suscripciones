@@ -25,7 +25,15 @@ class User(
     @Enumerated(EnumType.STRING) @Column(nullable = false) var status: UserStatus = UserStatus.ACTIVE,
     var termsAcceptedAt: Instant? = null,
     var privacyAcceptedAt: Instant? = null,
-) : VersionedEntity()
+    /** Secreto TOTP cifrado (AES-GCM); solo existe con la verificación en dos pasos activa. */
+    var totpSecretEncrypted: String? = null,
+    /** Secreto generado en la configuración, a la espera de confirmar el primer código. */
+    var totpPendingSecretEncrypted: String? = null,
+    var totpEnabledAt: Instant? = null,
+    var totpLastStep: Long? = null,
+) : VersionedEntity() {
+    val twoFactorEnabled: Boolean get() = totpEnabledAt != null && totpSecretEncrypted != null
+}
 
 interface UserRepository : JpaRepository<User, UUID> {
     fun findByEmail(email: String): User?

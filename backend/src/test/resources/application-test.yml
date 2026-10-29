@@ -4,6 +4,8 @@ app:
     cookie-secure: false
   mail:
     log-links: false
+  security:
+    require-super-admin-two-factor: false
   renewals:
     token-secret: test-renewal-secret-0123456789-abcdefghij
   secrets:

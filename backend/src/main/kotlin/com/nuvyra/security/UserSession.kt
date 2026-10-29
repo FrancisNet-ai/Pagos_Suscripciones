@@ -31,6 +31,7 @@ class UserSession(
 
 interface UserSessionRepository : JpaRepository<UserSession, UUID> {
     fun findByTokenHash(tokenHash: String): UserSession?
+    fun findByUserIdAndRevokedAtIsNullOrderByLastUsedAtDesc(userId: UUID): List<UserSession>
 
     @Transactional
     @Modifying

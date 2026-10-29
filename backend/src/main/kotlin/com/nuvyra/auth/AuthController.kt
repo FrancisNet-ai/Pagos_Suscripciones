@@ -47,9 +47,20 @@ class AuthController(
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Inicia sesión con correo y contraseña")
-    fun login(@Valid @RequestBody body: LoginRequest, request: HttpServletRequest, response: HttpServletResponse): SessionResponse {
-        val result = authService.login(body, request.client())
+    @Operation(summary = "Inicia sesión; con verificación en dos pasos responde 202 y un desafío")
+    fun login(@Valid @RequestBody body: LoginRequest, request: HttpServletRequest, response: HttpServletResponse): ResponseEntity<Any> =
+        when (val outcome = authService.login(body, request.client())) {
+            is LoginOutcome.SignedIn -> {
+                cookies.write(response, outcome.result.session.token, outcome.result.session.session.absoluteExpiresAt)
+                ResponseEntity.ok(outcome.result.response)
+            }
+            is LoginOutcome.SecondFactorRequired -> ResponseEntity.status(HttpStatus.ACCEPTED).body(outcome.challenge)
+        }
+
+    @PostMapping("/login/2fa")
+    @Operation(summary = "Completa el inicio de sesión con el código de la app o de recuperación")
+    fun loginSecondFactor(@Valid @RequestBody body: LoginSecondFactorRequest, request: HttpServletRequest, response: HttpServletResponse): SessionResponse {
+        val result = authService.completeSecondFactor(body, request.client())
         cookies.write(response, result.session.token, result.session.session.absoluteExpiresAt)
         return result.response
     }

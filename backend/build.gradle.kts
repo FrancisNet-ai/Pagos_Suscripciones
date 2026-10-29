@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.springdoc.openapi)
     implementation(libs.poi.ooxml)
 
+    // Código QR de la verificación en dos pasos
+    implementation(libs.zxing.core)
+
     // Pruebas
     testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.boot.starter.security.test)

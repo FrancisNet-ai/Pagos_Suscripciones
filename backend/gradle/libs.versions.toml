@@ -8,6 +8,7 @@ spring-boot = "4.1.2"
 spring-dependency-management = "1.1.7"
 springdoc = "3.2.0"
 poi = "5.4.1"
+zxing = "3.5.3"
 mockk = "1.14.11"
 springmockk = "5.0.1"
 
@@ -34,6 +35,9 @@ springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-u
 
 # --- Importación de clientes desde Excel (.xlsx); no genera archivos de Office ---
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
+
+# --- Código QR para activar la verificación en dos pasos (genera SVG, sin AWT) ---
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 
 # --- Pruebas ---
 spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }

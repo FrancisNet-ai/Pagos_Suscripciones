@@ -17,6 +17,8 @@ import com.nuvyra.security.AuthenticatedUser
 import com.nuvyra.security.IssuedSession
 import com.nuvyra.security.Roles
 import com.nuvyra.security.SessionService
+import com.nuvyra.twofactor.TwoFactorChallengeResponse
+import com.nuvyra.twofactor.TwoFactorService
 import com.nuvyra.users.User
 import com.nuvyra.users.UserRepository
 import com.nuvyra.users.UserStatus
@@ -32,6 +34,12 @@ data class ClientInfo(val ip: String, val userAgent: String?)
 
 data class AuthResult(val response: SessionResponse, val session: IssuedSession)
 
+/** El inicio de sesión abre la sesión o, con verificación en dos pasos, pide el segundo factor. */
+sealed interface LoginOutcome {
+    data class SignedIn(val result: AuthResult) : LoginOutcome
+    data class SecondFactorRequired(val challenge: TwoFactorChallengeResponse) : LoginOutcome
+}
+
 @Service
 class AuthService(
     private val users: UserRepository,
@@ -43,6 +51,7 @@ class AuthService(
     private val plans: SaasPlanRepository,
     private val billing: BillingService,
     private val entitlements: EntitlementService,
+    private val twoFactor: TwoFactorService,
     private val clock: Clock,
 ) {
     // Hash válido de una contraseña aleatoria: iguala el tiempo de respuesta cuando el correo no existe.
@@ -86,7 +95,7 @@ class AuthService(
     }
 
     /** Sin @Transactional: el registro de intentos fallidos debe persistir aunque se lance el error. */
-    fun login(request: LoginRequest, client: ClientInfo): AuthResult {
+    fun login(request: LoginRequest, client: ClientInfo): LoginOutcome {
         val email = normalizeEmail(request.email!!)
         rateLimiter.check("login:ip:${client.ip}", limit = 30, window = Duration.ofMinutes(15))
         rateLimiter.check("login:email:$email", limit = 10, window = Duration.ofMinutes(15))
@@ -98,9 +107,24 @@ class AuthService(
             throw ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Correo o contraseña incorrectos.")
         }
         rateLimiter.reset("login:email:$email")
-        val session = sessionService.create(user.id, client.ip, client.userAgent)
-        val principal = sessionService.authenticate(session.token)!!
-        audit.record(AuditActions.LOGIN_SUCCEEDED, actorId = user.id, businessId = principal.businessId, ipAddress = client.ip)
+        if (user.twoFactorEnabled) return LoginOutcome.SecondFactorRequired(twoFactor.createChallenge(user.id))
+        return LoginOutcome.SignedIn(openSession(user.id, client, secondFactor = null))
+    }
+
+    /** Segundo paso del inicio de sesión: código de la app o de recuperación. */
+    fun completeSecondFactor(request: LoginSecondFactorRequest, client: ClientInfo): AuthResult {
+        rateLimiter.check("login-2fa:ip:${client.ip}", limit = 30, window = Duration.ofMinutes(15))
+        val userId = twoFactor.completeChallenge(request.challengeToken!!, request.code!!, client)
+        return openSession(userId, client, secondFactor = "TOTP_OR_RECOVERY")
+    }
+
+    private fun openSession(userId: UUID, client: ClientInfo, secondFactor: String?): AuthResult {
+        val session = sessionService.create(userId, client.ip, client.userAgent)
+        val principal = sessionService.authenticate(session.token) ?: throw ApiException.unauthorized()
+        audit.record(
+            AuditActions.LOGIN_SUCCEEDED, actorId = userId, businessId = principal.businessId, ipAddress = client.ip,
+            metadata = if (secondFactor != null) mapOf("twoFactor" to true) else emptyMap(),
+        )
         return AuthResult(describe(principal), session)
     }
 
@@ -165,7 +189,7 @@ class AuthService(
     }
 
     private fun toResponse(user: User, roles: Set<String>, business: Business?, role: BusinessRole?, permissions: Set<StaffPermission>) = SessionResponse(
-        user = UserDto(user.id, user.fullName, user.email, user.phone, roles),
+        user = UserDto(user.id, user.fullName, user.email, user.phone, roles, user.twoFactorEnabled, twoFactor.required(roles)),
         business = business?.let {
             BusinessSummaryDto(
                 it.id, it.uniqueCode, it.slug, it.businessName, it.status, AccessSummary.of(entitlements.access(it)),

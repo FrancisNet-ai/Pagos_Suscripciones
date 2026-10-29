@@ -28,6 +28,7 @@ data class AuthenticatedUser(
     val businessRole: BusinessRole?,
     /** Secciones habilitadas en el negocio (todas para el titular). */
     val permissions: Set<StaffPermission> = emptySet(),
+    val twoFactorEnabled: Boolean = false,
 )
 
 class SessionAuthentication(val user: AuthenticatedUser) :

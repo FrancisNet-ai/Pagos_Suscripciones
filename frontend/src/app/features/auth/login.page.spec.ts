@@ -69,4 +69,51 @@ describe('LoginPage', () => {
     });
     expect(navigate).toHaveBeenCalledWith('/panel');
   });
+
+  it('pide el código de la app cuando la cuenta tiene verificación en dos pasos', async () => {
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const { fixture, el } = render();
+    fill(el, '#email', 'ana@ejemplo.pe');
+    fill(el, '#password', 'clave-segura-123');
+    el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+    http.expectOne('/api/v1/auth/login').flush(
+      { twoFactorRequired: true, challengeToken: 'tok', expiresAt: '2026-10-29T10:05:00Z' },
+      { status: 202, statusText: 'Accepted' },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Verificación en dos pasos');
+    expect(navigate).not.toHaveBeenCalled();
+
+    fill(el, '#code', '123456');
+    el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+    const req = http.expectOne('/api/v1/auth/login/2fa');
+    expect(req.request.body).toEqual({ challengeToken: 'tok', code: '123456' });
+    req.flush({
+      user: { id: '1', fullName: 'Ana', email: 'ana@ejemplo.pe', phone: '+51987654321', roles: ['BUSINESS_OWNER'], twoFactorEnabled: true },
+      business: null,
+    });
+    expect(navigate).toHaveBeenCalled();
+  });
+
+  it('vuelve a pedir la contraseña si la verificación expiró', async () => {
+    const { fixture, el } = render();
+    fill(el, '#email', 'ana@ejemplo.pe');
+    fill(el, '#password', 'clave-segura-123');
+    el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+    http.expectOne('/api/v1/auth/login').flush({ twoFactorRequired: true, challengeToken: 'tok', expiresAt: 'x' }, { status: 202, statusText: 'Accepted' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    fill(el, '#code', '123456');
+    el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+    http.expectOne('/api/v1/auth/login/2fa').flush(
+      { code: 'TWO_FACTOR_CHALLENGE_EXPIRED', detail: 'La verificación expiró. Vuelve a ingresar tu contraseña.' },
+      { status: 401, statusText: 'Unauthorized' },
+    );
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('#password')).not.toBeNull();
+    expect(el.querySelector('.notice-error')?.textContent).toContain('La verificación expiró');
+  });
 });
