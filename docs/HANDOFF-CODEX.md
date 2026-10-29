@@ -38,7 +38,7 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Seguridad y orden | Cambio de contraseña en «Mi cuenta» (`/panel/cuenta`, `/admin/cuenta`) que cierra las demás sesiones; el perfil `prod` no arranca con secretos de ejemplo; Dependabot y `npm audit` en CI; versiones del backend en `backend/gradle/libs.versions.toml` e inventario en `docs/development/dependencias.md`; sin capturas de diseño en el repositorio | #13 |
 | Verificación en dos pasos y sesiones | App de autenticación (TOTP) con códigos de recuperación, obligatoria para el superadministrador en producción; lista de sesiones abiertas para cerrar cada una. V16 | siguiente |
 
-**Pruebas en el último estado:** 205 del backend, 98 del frontend y los recorridos de Playwright
+**Pruebas en el último estado:** 204 del backend, 98 del frontend y los recorridos de Playwright
 (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
