@@ -8,6 +8,7 @@ import {
   Role,
   SessionResponse,
   StaffPermission,
+  TwoFactorChallenge,
 } from './auth.models';
 
 const API = '/api/v1/auth';
@@ -45,9 +46,31 @@ export class AuthService {
     return this.http.post<SessionResponse>(`${API}/register`, payload).pipe(tap((s) => this.sessionState.set(s)));
   }
 
-  login(payload: LoginPayload): Observable<SessionResponse> {
-    return this.http.post<SessionResponse>(`${API}/login`, payload).pipe(tap((s) => this.sessionState.set(s)));
+  /** Abre la sesión o, si la cuenta tiene verificación en dos pasos, devuelve el desafío (HTTP 202). */
+  login(payload: LoginPayload): Observable<SessionResponse | TwoFactorChallenge> {
+    return this.http.post<SessionResponse | TwoFactorChallenge>(`${API}/login`, payload, { observe: 'response' }).pipe(
+      map((response) => response.body!),
+      tap((body) => {
+        if (!isChallenge(body)) this.sessionState.set(body);
+      }),
+    );
   }
+
+  /** Segundo paso del inicio de sesión: código de la app o código de recuperación. */
+  completeSecondFactor(challengeToken: string, code: string): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`${API}/login/2fa`, { challengeToken, code }).pipe(tap((s) => this.sessionState.set(s)));
+  }
+
+  /** Refleja en la sesión que se activó o desactivó la verificación en dos pasos. */
+  setTwoFactorEnabled(enabled: boolean): void {
+    this.sessionState.update((s) => (s ? { ...s, user: { ...s.user, twoFactorEnabled: enabled } } : s));
+  }
+
+  /** Superadministrador que aún debe activar la verificación en dos pasos. */
+  readonly mustSetUpTwoFactor = computed(() => {
+    const user = this.user();
+    return !!user?.twoFactorRequired && !user.twoFactorEnabled;
+  });
 
   logout(): Observable<void> {
     return this.http.post<void>(`${API}/logout`, {}).pipe(
@@ -105,4 +128,8 @@ export class AuthService {
     if (this.hasRole('SUPER_ADMIN')) return '/admin';
     return '/';
   }
+}
+
+export function isChallenge(body: SessionResponse | TwoFactorChallenge): body is TwoFactorChallenge {
+  return (body as TwoFactorChallenge).twoFactorRequired === true;
 }

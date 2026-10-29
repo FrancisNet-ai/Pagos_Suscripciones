@@ -6,6 +6,9 @@ export interface SessionUser {
   email: string;
   phone: string;
   roles: Role[];
+  twoFactorEnabled?: boolean;
+  /** Debe activar la verificación en dos pasos para usar su panel (hoy, el superadministrador). */
+  twoFactorRequired?: boolean;
 }
 
 export type BusinessRole = 'OWNER' | 'STAFF';
@@ -62,6 +65,13 @@ export interface RegisterPayload {
   acceptTerms: boolean;
   acceptPrivacy: boolean;
   planId?: string | null;
+}
+
+/** Respuesta 202 de /auth/login: la contraseña es correcta y falta el código del segundo factor. */
+export interface TwoFactorChallenge {
+  twoFactorRequired: true;
+  challengeToken: string;
+  expiresAt: string;
 }
 
 export interface LoginPayload {
