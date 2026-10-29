@@ -95,6 +95,7 @@ import { IconComponent } from '../../shared/components/icon.component';
               <p>SUPER_ADMIN</p>
             </div>
           </div>
+          <a routerLink="/admin/cuenta" class="sidebar-new-business">Mi cuenta y contraseña</a>
           <button class="btn" type="button" (click)="logout()" [disabled]="loggingOut()">
             <app-icon name="logout" />Cerrar sesión
           </button>

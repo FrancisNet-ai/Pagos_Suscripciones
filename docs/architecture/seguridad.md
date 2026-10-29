@@ -23,6 +23,9 @@
 | 19 | Credenciales de terceros en la base | Tokens de WhatsApp cifrados con AES-256-GCM (clave `APP_SECRETS_ENCRYPTION_KEY`, id del negocio como dato autenticado); nunca se devuelven ni se registran | Fase 7 ✅ |
 | 21 | Colaborador fuera de su alcance | Permisos por sección validados en el servidor en cada petición (`StaffAccessInterceptor`), lo no listado es solo del titular; invitación de un solo uso (SHA-256, 7 días, renovar invalida la anterior); revocar desactiva la cuenta y cierra sesiones; límite de usuarios del plan con bloqueo consultivo | Colaboradores ✅ |
 | 20 | Archivos de importación maliciosos | Tamaño ≤ 2 MB, ≤ 2000 filas, detección por firma (no por extensión), protección de POI ante *zip bombs*, sin fórmulas evaluadas | Fase 7 ✅ |
+| 22 | Contraseña comprometida o sesiones olvidadas | Cambio de contraseña desde «Mi cuenta» exigiendo la actual, con límite de intentos; cierra las demás sesiones del usuario y queda en la auditoría (`PASSWORD_CHANGED`) | Seguridad ✅ |
+| 23 | Despliegue con secretos de ejemplo | Con el perfil `prod` el backend no arranca si detecta claves de desarrollo, valores de ejemplo, contraseña de administrador corta, la contraseña de base de datos de desarrollo o, fuera de localhost, HTTP o cookies sin `Secure` (`ProductionSafetyCheck`) | Seguridad ✅ |
+| 24 | Dependencias vulnerables | Dependabot semanal (Gradle, npm, Actions, Docker), `npm audit` en CI y grafo de Gradle enviado a GitHub; inventario en `docs/development/dependencias.md` | Seguridad ✅ |
 
 ## Datos personales (Perú, Ley N.º 29733)
 

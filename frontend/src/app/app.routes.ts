@@ -92,6 +92,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tasks/task-history.page').then((m) => m.TaskHistoryPage),
       },
       {
+        path: 'cuenta',
+        title: 'Mi cuenta',
+        loadComponent: () => import('./features/account/account.page').then((m) => m.AccountPage),
+      },
+      {
         path: 'negocios/nuevo',
         title: 'Crear otro negocio',
         loadComponent: () => import('./features/businesses/new-business.page').then((m) => m.NewBusinessPage),
@@ -258,6 +263,11 @@ export const routes: Routes = [
         path: 'configuracion',
         title: 'Configuración',
         loadComponent: () => import('./features/admin/admin-settings.page').then((m) => m.AdminSettingsPage),
+      },
+      {
+        path: 'cuenta',
+        title: 'Mi cuenta',
+        loadComponent: () => import('./features/account/account.page').then((m) => m.AccountPage),
       },
       {
         path: 'auditoria',

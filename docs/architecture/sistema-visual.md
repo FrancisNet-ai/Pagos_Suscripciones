@@ -71,5 +71,6 @@ configurados por el vendedor. No se añaden botones de autenticación social ni 
 
 ## Verificación
 
-Ver [capturas comparativas y ejecución de pruebas](../design-review/README.md). El rediseño no cambia
+Los recorridos de Playwright ([pruebas E2E](../testing/e2e.md)) comprueban accesibilidad y ausencia de
+desbordamiento en escritorio y móvil. El rediseño no cambia
 contratos REST, migraciones ni reglas de cobro, cupos, autorización o mensajería.

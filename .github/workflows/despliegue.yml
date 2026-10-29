@@ -1,0 +1,62 @@
+name: Despliegue
+
+# Publica en el servidor de producción cada vez que el CI termina en verde sobre main.
+# No hace nada hasta que exista la variable de repositorio DEPLOY_ENABLED=true
+# (guía: docs/deployment/oracle-servidor.md).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: despliegue-produccion
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Desplegar en producción
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: produccion
+      url: https://${{ vars.APP_DOMAIN }}
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # La versión exacta que pasó el CI, no lo que haya llegado a main después.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Configurar SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Huella fija del servidor: evita conectarse a un equipo suplantado.
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Enviar la versión y desplegar
+        run: |
+          archive="nuvyra-$(git rev-parse --short HEAD).tar.gz"
+          git archive --format=tar.gz -o "$archive" HEAD
+          scp -q "$archive" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/$archive"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "/tmp/$archive" <<'REMOTE'
+          set -euo pipefail
+          work="$(mktemp -d)"
+          tar -xzf "$1" -C "$work" infrastructure/scripts/deploy.sh
+          bash "$work/infrastructure/scripts/deploy.sh" "$1"
+          rm -rf "$work"
+          REMOTE
+      - name: Comprobar desde internet
+        run: curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "https://${{ vars.APP_DOMAIN }}/actuator/health"

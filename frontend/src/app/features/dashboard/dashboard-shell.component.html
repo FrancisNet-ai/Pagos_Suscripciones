@@ -133,6 +133,7 @@
           <p>{{ auth.user()?.email }}</p>
         </div>
       </div>
+      <a routerLink="/panel/cuenta" class="sidebar-new-business">Mi cuenta y contraseña</a>
       <button type="button" class="btn" (click)="logout()" [disabled]="loggingOut()">
         <app-icon name="logout" />Cerrar sesión
       </button>

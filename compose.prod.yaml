@@ -1,0 +1,29 @@
+# Producción en un solo servidor: añade Caddy (HTTPS automático) delante de la web.
+# Se activa desde el .env del servidor con COMPOSE_FILE=compose.yaml:compose.prod.yaml,
+# así `docker compose` y los scripts de infrastructure/scripts lo usan sin opciones extra.
+services:
+  web:
+    # Solo Caddy publica puertos; la web queda accesible únicamente dentro de la red de Compose.
+    ports: !reset []
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Define APP_DOMAIN en .env (por ejemplo nuvyra.duckdns.org)}
+      ACME_EMAIL: ${ACME_EMAIL:?Define ACME_EMAIL en .env (avisos de Let's Encrypt)}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificados: si se pierden, Caddy los vuelve a pedir (con límite semanal de Let's Encrypt).
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

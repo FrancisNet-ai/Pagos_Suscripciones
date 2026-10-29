@@ -63,8 +63,8 @@ Ver [plan de implementación](docs/plan-implementacion.md) y [pendientes](docs/B
 ## Rediseño editorial
 
 La interfaz sigue una dirección editorial azul con portada clara, arte fluido, paneles compactos y
-flujos de compra móviles. Ver [capturas antes/después y pruebas](docs/design-review/README.md) y
-el [sistema visual](docs/architecture/sistema-visual.md). Se conservan las funciones de las fases 1–7.
+flujos de compra móviles. Ver el [sistema visual](docs/architecture/sistema-visual.md) y las
+[pruebas de extremo a extremo](docs/testing/e2e.md). Se conservan las funciones de las fases 1–7.
 
 ## Tecnologías
 
@@ -141,4 +141,5 @@ en [docs/deployment](docs/deployment/README.md).
 * [Rutas del frontend](docs/architecture/rutas-frontend.md)
 * [Sistema visual](docs/architecture/sistema-visual.md)
 * [Seguridad y riesgos](docs/architecture/seguridad.md)
+* [Dependencias y su revisión automática](docs/development/dependencias.md)
 * [Decisiones técnicas (ADR)](docs/decisions)

@@ -4,9 +4,9 @@ Fecha: 28 de octubre de 2026. Repositorio: `FrancisNet-ai/Pagos_Suscripciones`.
 
 ## Estado
 
-`main` incluye hasta el PR #9 (Java 26 y Node 24 en Windows sin Docker). El PR #12 agrega, en un commit
-cada una, todas las funciones del BACKLOG que solo dependían de código (ver la tabla). Si ya se fusionó,
-crea una rama nueva desde `main` para seguir.
+`main` incluye el PR #12 (todas las funciones del BACKLOG que solo dependían de código). El PR siguiente
+agrega seguridad de cuentas, revisión automática de dependencias y orden del repositorio (última fila de
+la tabla). Si ya se fusionó, crea una rama nueva desde `main` para seguir.
 
 SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la marca **Nuvyra**
 («Tu negocio, bajo control.»).
@@ -35,8 +35,9 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Acceso de soporte | Solo con autorización temporal del titular, motivo en cada consulta y registro visible. V14 | #12 |
 | Varios negocios por cuenta | Crear otro negocio, cambiar de negocio en la sesión, unirse a otro con una cuenta existente. V15 | #12 |
 | Evaluación de RLS | Plan de adopción por etapas en `docs/decisions/ADR-007-row-level-security.md` | #12 |
+| Seguridad y orden | Cambio de contraseña en «Mi cuenta» (`/panel/cuenta`, `/admin/cuenta`) que cierra las demás sesiones; el perfil `prod` no arranca con secretos de ejemplo; Dependabot y `npm audit` en CI; versiones del backend en `backend/gradle/libs.versions.toml` e inventario en `docs/development/dependencias.md`; sin capturas de diseño en el repositorio | siguiente |
 
-**Pruebas en el último estado (PR #12):** 189 del backend, 88 del frontend y los recorridos de Playwright
+**Pruebas en el último estado:** 194 del backend, 91 del frontend y los recorridos de Playwright
 (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
@@ -44,11 +45,16 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 **Se puede hacer solo con código:**
 1. Adoptar Row Level Security por etapas (plan en ADR-007).
 2. Codificar las imágenes reducidas en WebP (requiere bibliotecas nativas).
+3. Seguridad de cuentas: verificación en dos pasos, lista de sesiones abiertas y rechazo de contraseñas
+   filtradas (detalle en el BACKLOG).
+
+**Configuración única en GitHub:** activar *Dependency graph*, *Dependabot alerts* y *Dependabot security
+updates* en *Settings → Code security*.
 
 **Depende de algo externo:**
 - Embedded Signup de Meta.
 - Pagos automáticos: Yape/Plin no tienen API oficial.
-- CD y copias de seguridad en producción: plan gratuito con Oracle Cloud Always Free y DuckDNS, con avance en `docs/deployment/produccion-gratuita.md`.
+- Poner en marcha producción: el repositorio ya trae Caddy, despliegue automático y copias cifradas; falta que el titular cree el servidor en Oracle y configure los secretos (`docs/deployment/oracle-servidor.md`, avance en `docs/deployment/produccion-gratuita.md`).
 - SMTP real.
 - Textos legales (Ley 29733).
 - Comprobantes SUNAT.
@@ -82,6 +88,10 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
   transacción y guardan `resolved_by`, `resolution_action` y `resolution_audit_id`. Los cierres sin
   evidencia quedan como `STATE_CHANGED` y sin autor; nunca se atribuyen al responsable ni a quien
   consulta.
+- **Dependencias:** las versiones del backend se cambian solo en `backend/gradle/libs.versions.toml`;
+  toda dependencia nueva se anota en `docs/development/dependencias.md`.
+- **Producción:** si agregas un secreto nuevo, súmalo a `common/config/ProductionSafetyCheck.kt` para que
+  el perfil `prod` rechace valores de ejemplo.
 - **Comentarios en KDoc:** no escribas `/**` dentro de un KDoc (por ejemplo, `/api/v1/x/**`),
   porque abre un comentario anidado y rompe la compilación.
 
@@ -101,5 +111,6 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 - Rutas del frontend: `docs/architecture/rutas-frontend.md`.
 - Seguridad: `docs/architecture/seguridad.md`.
 - Pruebas E2E y CI: `docs/testing/e2e.md`.
+- Dependencias: `docs/development/dependencias.md`.
 - Decisiones y pendientes: `docs/BACKLOG.md`.
 - Visión general: `README.md`.

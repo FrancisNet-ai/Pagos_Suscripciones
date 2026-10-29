@@ -10,8 +10,7 @@ producción correcta y **10 recorridos E2E aprobados**. Las pruebas de historial
 empresas, permisos por sección, autor distinto del asignado, repetición tras rechazo, cancelación,
 avisos enviados/omitidos, exclusión y rollback. No sustituyen una revisión previa al despliegue.
 
-[Historial en escritorio](images/task-history-desktop.webp) · [Historial en móvil](images/task-history-mobile.webp).
-Las capturas usan datos locales E2E identificados, sin ventas ni clientes reales.
+Al fallar, el CI conserva capturas y trazas como artefactos de la ejecución (no se versionan en el repositorio).
 
 ## En GitHub Actions
 

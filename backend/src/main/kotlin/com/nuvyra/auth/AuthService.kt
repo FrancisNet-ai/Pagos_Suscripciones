@@ -116,6 +116,31 @@ class AuthService(
         return toResponse(user, principal.roles, business, principal.businessRole, principal.permissions)
     }
 
+    /**
+     * Cambia la contraseña con la sesión iniciada: exige la actual y cierra las demás sesiones,
+     * por si alguien más tenía acceso. La sesión desde la que se cambia sigue abierta.
+     */
+    @Transactional
+    fun changePassword(principal: AuthenticatedUser, request: ChangePasswordRequest, client: ClientInfo): ChangePasswordResponse {
+        rateLimiter.check("password-change:${principal.userId}", limit = 5, window = Duration.ofMinutes(15))
+        val user = users.findById(principal.userId).orElseThrow { ApiException.unauthorized() }
+        if (!passwordEncoder.matches(request.currentPassword!!, user.passwordHash)) {
+            throw ApiException.invalidField("currentPassword", "La contraseña actual no es correcta")
+        }
+        val newPassword = request.newPassword!!
+        ensurePasswordFitsBcrypt(newPassword, "newPassword")
+        if (passwordEncoder.matches(newPassword, user.passwordHash)) {
+            throw ApiException.invalidField("newPassword", "La nueva contraseña debe ser distinta de la actual")
+        }
+        user.passwordHash = passwordEncoder.encode(newPassword)!!
+        val closed = sessionService.revokeOthers(user.id, principal.sessionId)
+        audit.record(
+            AuditActions.PASSWORD_CHANGED, actorId = user.id, businessId = principal.businessId, ipAddress = client.ip,
+            metadata = mapOf("otherSessionsClosed" to closed),
+        )
+        return ChangePasswordResponse(closed)
+    }
+
     /** Cambia el negocio activo de la sesión (solo a uno del que sea miembro activo). */
     @Transactional
     fun switchBusiness(principal: AuthenticatedUser, businessId: UUID): SessionResponse {
