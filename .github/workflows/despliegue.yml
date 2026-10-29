@@ -32,7 +32,7 @@ jobs:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # La versión exacta que pasó el CI, no lo que haya llegado a main después.
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
