@@ -1,6 +1,6 @@
 # Compila Angular y lo sirve con Nginx, que además actúa como proxy de mismo origen hacia /api.
 # Contexto de build: raíz del repositorio.
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 RUN npm install -g npm@11.19.0
 COPY frontend/package.json frontend/package-lock.json ./
