@@ -3,6 +3,7 @@ package com.nuvyra.auth
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.config.AppProperties
 import com.nuvyra.common.ratelimit.RateLimiter
+import com.nuvyra.security.BreachedPasswordChecker
 import com.nuvyra.security.SessionService
 import com.nuvyra.users.User
 import com.nuvyra.users.UserRepository
@@ -26,6 +27,7 @@ class PasswordResetServiceTest {
         sessionService = mockk<SessionService>(relaxed = true),
         notifier = notifier,
         passwordEncoder = mockk<PasswordEncoder>(),
+        breachedPasswords = mockk<BreachedPasswordChecker>(relaxed = true),
         rateLimiter = RateLimiter(Clock.systemUTC()),
         audit = mockk<AuditService>(relaxed = true),
         properties = AppProperties(publicBaseUrl = "https://tudominio.com/"),

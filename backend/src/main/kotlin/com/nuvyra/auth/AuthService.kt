@@ -14,6 +14,7 @@ import com.nuvyra.saas.BillingService
 import com.nuvyra.saas.EntitlementService
 import com.nuvyra.saas.SaasPlanRepository
 import com.nuvyra.security.AuthenticatedUser
+import com.nuvyra.security.BreachedPasswordChecker
 import com.nuvyra.security.IssuedSession
 import com.nuvyra.security.Roles
 import com.nuvyra.security.SessionService
@@ -52,6 +53,7 @@ class AuthService(
     private val billing: BillingService,
     private val entitlements: EntitlementService,
     private val twoFactor: TwoFactorService,
+    private val breachedPasswords: BreachedPasswordChecker,
     private val clock: Clock,
 ) {
     // Hash válido de una contraseña aleatoria: iguala el tiempo de respuesta cuando el correo no existe.
@@ -63,6 +65,7 @@ class AuthService(
         val email = normalizeEmail(request.email!!)
         val password = request.password!!
         ensurePasswordFitsBcrypt(password, "password")
+        breachedPasswords.ensureNotBreached(password, "password")
         val phone = PeruPhone.normalize(request.phone) ?: throw ApiException.invalidField("phone", "Ingresa un celular peruano válido de 9 dígitos")
 
         if (users.existsByEmail(email)) {
@@ -156,6 +159,7 @@ class AuthService(
         if (passwordEncoder.matches(newPassword, user.passwordHash)) {
             throw ApiException.invalidField("newPassword", "La nueva contraseña debe ser distinta de la actual")
         }
+        breachedPasswords.ensureNotBreached(newPassword, "newPassword")
         user.passwordHash = passwordEncoder.encode(newPassword)!!
         val closed = sessionService.revokeOthers(user.id, principal.sessionId)
         audit.record(

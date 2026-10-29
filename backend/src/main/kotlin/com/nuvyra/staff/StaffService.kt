@@ -16,6 +16,7 @@ import com.nuvyra.common.ratelimit.RateLimiter
 import com.nuvyra.common.text.SecureTokens
 import com.nuvyra.common.validation.PeruPhone
 import com.nuvyra.saas.EntitlementService
+import com.nuvyra.security.BreachedPasswordChecker
 import com.nuvyra.security.IssuedSession
 import com.nuvyra.security.SessionService
 import com.nuvyra.users.User
@@ -45,6 +46,7 @@ class StaffService(
     private val sessions: SessionService,
     private val notifier: StaffInvitationNotifier,
     private val passwordEncoder: PasswordEncoder,
+    private val breachedPasswords: BreachedPasswordChecker,
     private val rateLimiter: RateLimiter,
     private val audit: AuditService,
     private val properties: AppProperties,
@@ -223,6 +225,7 @@ class StaffService(
             throw ApiException.conflict("EMAIL_ALREADY_REGISTERED", "Este correo ya tiene una cuenta en Nuvyra. Inicia sesión con ella para unirte al negocio.")
         }
         AuthService.ensurePasswordFitsBcrypt(request.password!!, "password")
+        breachedPasswords.ensureNotBreached(request.password, "password")
         val phone = PeruPhone.normalize(request.phone) ?: throw ApiException.invalidField("phone", "Ingresa un celular peruano válido de 9 dígitos")
         lockSeats(invitation.businessId)
         // La invitación ya ocupa un lugar: se comprueba que el plan siga vigente y admita a todo el equipo.

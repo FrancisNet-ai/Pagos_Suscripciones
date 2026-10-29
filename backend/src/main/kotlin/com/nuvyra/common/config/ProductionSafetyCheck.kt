@@ -50,6 +50,7 @@ class ProductionSafetyCheck(private val properties: AppProperties, private val e
             p.bootstrap.superAdminPassword?.takeIf { it.isNotBlank() }?.let { pass ->
                 if (pass.length < 12 || PLACEHOLDER.containsMatchIn(pass)) add("APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD es débil o de ejemplo (mínimo 12 caracteres)")
             }
+            if (!p.security.breachedPasswordCheck) add("APP_SECURITY_BREACHED_PASSWORD_CHECK debe ser true en producción")
             if (!p.security.requireSuperAdminTwoFactor) add("APP_SECURITY_REQUIRE_SUPER_ADMIN_TWO_FACTOR debe ser true en producción")
             databasePassword?.let { if (it == "nuvyra" || PLACEHOLDER.containsMatchIn(it)) add("DB_PASSWORD usa un valor por defecto o de ejemplo") }
             if (!isLocal(p.publicBaseUrl)) {

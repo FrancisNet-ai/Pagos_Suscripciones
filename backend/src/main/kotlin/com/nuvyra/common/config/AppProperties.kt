@@ -34,6 +34,10 @@ data class AppProperties(
     data class Security(
         /** El superadministrador debe activar la verificación en dos pasos para usar `/api/v1/admin`. */
         val requireSuperAdminTwoFactor: Boolean = true,
+        /** Rechaza contraseñas que aparecen en filtraciones conocidas (Pwned Passwords, por prefijo de hash). */
+        val breachedPasswordCheck: Boolean = true,
+        val pwnedPasswordsUrl: String = "https://api.pwnedpasswords.com",
+        val breachedPasswordTimeout: Duration = Duration.ofSeconds(3),
     )
 
     data class WhatsApp(

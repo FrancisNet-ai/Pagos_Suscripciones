@@ -6,6 +6,8 @@ app:
     log-links: false
   security:
     require-super-admin-two-factor: false
+    # Las pruebas no salen a internet; BreachedPasswordIntegrationTest usa un servicio simulado.
+    breached-password-check: false
   renewals:
     token-secret: test-renewal-secret-0123456789-abcdefghij
   secrets:
