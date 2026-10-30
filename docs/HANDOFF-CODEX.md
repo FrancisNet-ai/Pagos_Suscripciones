@@ -37,15 +37,16 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Evaluación de RLS | Plan de adopción por etapas en `docs/decisions/ADR-007-row-level-security.md` | #12 |
 | Seguridad y orden | Cambio de contraseña en «Mi cuenta» (`/panel/cuenta`, `/admin/cuenta`) que cierra las demás sesiones; el perfil `prod` no arranca con secretos de ejemplo; Dependabot y `npm audit` en CI; versiones del backend en `backend/gradle/libs.versions.toml` e inventario en `docs/development/dependencias.md`; sin capturas de diseño en el repositorio | #13 |
 | Verificación en dos pasos y sesiones | App de autenticación (TOTP) con códigos de recuperación, obligatoria para el superadministrador en producción; lista de sesiones abiertas para cerrar cada una. V16 | #27 |
-| Contraseñas filtradas | Se rechazan al registrarse, cambiarla, recuperarla o aceptar una invitación (Pwned Passwords por prefijo de hash) | siguiente |
+| Contraseñas filtradas | Se rechazan al registrarse, cambiarla, recuperarla o aceptar una invitación (Pwned Passwords por prefijo de hash) | #28 |
+| Row Level Security (etapa 1) | En el panel, PostgreSQL solo deja ver y escribir filas del negocio de la sesión en las tablas de compradores (rol `nuvyra_app`, `app.business_id`). V17 | siguiente |
 
-**Pruebas en el último estado:** 208 del backend, 98 del frontend y los recorridos de Playwright
+**Pruebas en el último estado:** 211 del backend, 98 del frontend y los recorridos de Playwright
 (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
 
 **Se puede hacer solo con código:**
-1. Adoptar Row Level Security por etapas (plan en ADR-007).
+1. Row Level Security, etapas 4 y 5 (plan en ADR-007).
 2. Codificar las imágenes reducidas en WebP (requiere bibliotecas nativas).
 
 **Configuración única en GitHub:** activar *Dependency graph*, *Dependabot alerts* y *Dependabot security
@@ -79,7 +80,7 @@ updates* en *Settings → Code security*.
 - **Rutas nuevas del panel:** se agregan en tres lugares: `security/SecurityConfig.kt`,
   `StaffAccessInterceptor.PATHS` y `saas/EntitlementInterceptor.PATHS`. Sin plan vigente, el
   panel queda en modo de solo lectura.
-- **Migraciones:** las nuevas empiezan en `V17__…`
+- **Migraciones:** las nuevas empiezan en `V18__…`
   (`backend/src/main/resources/db/migration`).
 - **Varios negocios:** el negocio activo vive en la sesión (`user_sessions.active_business_id`) y se valida
   contra `business_members` en cada petición; nunca se toma del cliente.
@@ -92,6 +93,10 @@ updates* en *Settings → Code security*.
   toda dependencia nueva se anota en `docs/development/dependencias.md`.
 - **Producción:** si agregas un secreto nuevo, súmalo a `common/config/ProductionSafetyCheck.kt` para que
   el perfil `prod` rechace valores de ejemplo.
+- **Row Level Security:** las peticiones del panel corren con el rol `nuvyra_app` y `app.business_id`
+  (`common/tenancy`). Una tabla nueva con datos de compradores debe llevar `business_id` y su política
+  `tenant_isolation` en la misma migración. Una ruta nueva que cruce negocios por diseño no va bajo el panel:
+  va en `/public`, `/auth` o `/admin`.
 - **Comentarios en KDoc:** no escribas `/**` dentro de un KDoc (por ejemplo, `/api/v1/x/**`),
   porque abre un comentario anidado y rompe la compilación.
 

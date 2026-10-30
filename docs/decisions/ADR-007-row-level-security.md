@@ -1,6 +1,6 @@
 # ADR-007 — Evaluación de Row Level Security (RLS) de PostgreSQL
 
-**Estado:** evaluado; adopción por etapas antes de producción · **Fecha:** 2026-10-28
+**Estado:** primera etapa adoptada (V17, 2026-10-30); faltan las etapas 4 y 5 · **Fecha:** 2026-10-28
 
 ## Contexto
 El aislamiento entre negocios se aplica en la aplicación ([ADR-002](ADR-002-multiempresa-business-id.md)):
@@ -55,3 +55,34 @@ contradiga. Antes del primer despliegue con datos reales se adoptará por etapas
 - El BACKLOG conserva la adopción como tarea, ahora con este plan concreto.
 - Hasta entonces, el aislamiento sigue dependiendo de la aplicación y de sus pruebas.
 - Toda consulta nueva debe acotarse por negocio, aunque sea SQL nativo.
+
+## Implementación de la primera etapa (V17)
+- **Rol sin privilegios en la misma conexión:** la aplicación sigue conectándose con el usuario dueño del
+  esquema, que ejecuta Flyway y en Docker y en Windows es administrador de PostgreSQL. Como los
+  administradores ignoran RLS, V17 crea el rol `nuvyra_app` (sin `BYPASSRLS` ni privilegios de
+  administración) y la aplicación cambia a él solo cuando hace falta. No se necesitan credenciales nuevas.
+- **Cuándo se aplica:** `TenantContextFilter` fija el negocio de la sesión en las rutas del panel; quedan fuera
+  `/api/v1/public/**`, `/api/v1/auth/**` y `/api/v1/admin/**`.
+- **Cómo se aplica:** `TenantAwareDataSource` envuelve el pool. Al entregar cada conexión ejecuta
+  `set_config('role', …)` y `set_config('app.business_id', …)`:
+  - con negocio, pasa a `nuvyra_app` con ese negocio;
+  - sin negocio, vuelve al dueño.
+  Como se fija cada vez, una conexión reutilizada no arrastra el negocio de otra petición.
+- **Tablas y política:** `customers`, `customer_consents`, `orders`, `customer_payments`,
+  `customer_subscriptions`, `renewal_requests`, `renewal_notifications` y `subscription_renewals`, con la
+  política `tenant_isolation` (`USING` y `WITH CHECK`) para `nuvyra_app`. Sin `app.business_id`, ese rol no ve
+  ninguna fila.
+- **Sin negocio fijado:** las tareas programadas, los webhooks, la tienda y los enlaces públicos, la
+  superadministración y Flyway siguen con el usuario dueño y el aislamiento de la aplicación. Cubrirlos es la
+  etapa 4: un modo «plataforma» explícito y que falte el contexto sea un error.
+- **Interruptor de emergencia:** `APP_SECURITY_ROW_LEVEL_SECURITY=false` deja de cambiar de rol sin desplegar
+  otra versión.
+- **Pruebas:** toda la suite corre con las políticas activas. `RowLevelSecurityIntegrationTest` comprueba que,
+  con un negocio fijado, la base no devuelve, modifica ni inserta filas de otro negocio.
+
+## Etapas pendientes
+- Etapa 4: modo «plataforma» explícito y auditado para jobs, webhooks, enlaces públicos y superadministración,
+  y que la ausencia de contexto falle.
+- Etapa 5: extender la política al resto de tablas de negocio (productos, cupos, pendientes, importaciones,
+  WhatsApp) y a tablas hijas vía su padre (`order_items`).
+

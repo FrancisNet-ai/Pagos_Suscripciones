@@ -153,6 +153,15 @@ recurso y motivo).
 Se elimina la restricción de un negocio por cuenta (`uq_business_members_user`). `user_sessions` añade
 `active_business_id`: el negocio elegido en la sesión, validado contra las membresías activas en cada petición.
 
+### Row Level Security (`V17__row_level_security.sql`)
+
+Crea el rol `nuvyra_app` (sin privilegios de administración ni `BYPASSRLS`) con permisos de lectura y
+escritura sobre todas las tablas. Los permisos por defecto alcanzan también a las tablas de migraciones
+futuras. Activa RLS con la política `tenant_isolation` en `customers`, `customer_consents`, `orders`,
+`customer_payments`, `customer_subscriptions`, `renewal_requests`, `renewal_notifications` y
+`subscription_renewals`. La política exige `business_id = app.business_id`, que fija la aplicación en las
+peticiones del panel (ver ADR-007).
+
 ### Verificación en dos pasos (`V16__two_factor_auth.sql`)
 
 `users` añade `totp_secret_encrypted` y `totp_pending_secret_encrypted` (AES-256-GCM con
