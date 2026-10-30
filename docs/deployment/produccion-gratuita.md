@@ -41,7 +41,7 @@ Docker solo se usa en el servidor de Oracle y en GitHub Actions, nunca en la lap
 ## Paso 1 — Cuentas que crea el titular
 
 ### 0. Correo del proyecto (recomendado)
-- [ ] Crear un Gmail solo para Nuvyra, por ejemplo `nuvyra.soporte@gmail.com`, y usarlo en todas las
+- [x] Crear un Gmail solo para Nuvyra, por ejemplo `nuvyra.soporte@gmail.com`, y usarlo en todas las
   cuentas. Servirá también para enviar los correos de recuperación de contraseña.
 
 ### 1. Oracle Cloud (el servidor) — la más importante
@@ -59,7 +59,7 @@ Docker solo se usa en el servidor de Oracle y en GitHub Actions, nunca en la lap
   `minuvyra`. La IP se configura después, cuando exista el servidor.
 
 ### 3. UptimeRobot (alerta si se cae)
-- [ ] Crear la cuenta Free en https://uptimerobot.com. El monitor se configura al final, cuando la app
+- [x] Crear la cuenta Free en https://uptimerobot.com. El monitor se configura al final, cuando la app
   esté publicada.
 
 ### Ya disponible
