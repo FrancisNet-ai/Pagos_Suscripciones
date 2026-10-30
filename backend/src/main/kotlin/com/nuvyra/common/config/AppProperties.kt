@@ -38,6 +38,8 @@ data class AppProperties(
         val breachedPasswordCheck: Boolean = true,
         val pwnedPasswordsUrl: String = "https://api.pwnedpasswords.com",
         val breachedPasswordTimeout: Duration = Duration.ofSeconds(3),
+        /** Segunda barrera entre negocios en PostgreSQL (V17). Solo se apaga ante una emergencia. */
+        val rowLevelSecurity: Boolean = true,
     )
 
     data class WhatsApp(
