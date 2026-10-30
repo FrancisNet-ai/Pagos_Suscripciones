@@ -58,7 +58,7 @@ updates* en *Settings → Code security*.
 - Pagos automáticos: Yape/Plin no tienen API oficial.
 - Poner en marcha producción: el repositorio ya trae Caddy, despliegue automático y copias cifradas; falta que el titular cree el servidor en Oracle y configure los secretos (`docs/deployment/oracle-servidor.md`, avance en `docs/deployment/produccion-gratuita.md`).
 - SMTP real.
-- Textos legales (Ley 29733).
+- Textos legales (Ley 29733): borradores en `docs/legal/`, pendientes de revisión por un abogado.
 - Comprobantes SUNAT.
 - Licencias de las tipografías.
 - Verificar la marca y el dominio.

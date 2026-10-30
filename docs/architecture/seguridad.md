@@ -36,4 +36,4 @@
 * Consentimientos registrados con finalidad, origen, versión de política y fecha (`customer_consents`).
 * Comunicaciones comerciales solo con autorización y con opción de exclusión (desde el enlace de
   renovación o por el vendedor); los avisos a clientes sin autorización se marcan y no se envían solos.
-* Política de retención y eliminación documentada antes de producción (pendiente en el backlog).
+* Política de conservación y eliminación: borrador en `docs/legal/politica-de-conservacion.md`, pendiente de revisión legal y de programar los plazos.

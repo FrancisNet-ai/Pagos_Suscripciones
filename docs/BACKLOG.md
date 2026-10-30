@@ -40,7 +40,10 @@
 - [x] Acceso de soporte a pedidos y clientes: solo con autorización temporal del titular (1–72 h, revocable), motivo obligatorio en cada consulta y registro visible para el titular.
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
 - [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).
-- [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.
+- [x] Borradores de términos y condiciones, política de privacidad y política de conservación en `docs/legal/`, con las preguntas para el abogado.
+- [ ] Revisión legal de los borradores (Ley 29733 y su reglamento), completar los datos del titular y publicarlos en `/legal/condiciones` y `/legal/privacidad`.
+- [ ] Inscribir los bancos de datos personales que indique el abogado ante la Autoridad Nacional de Protección de Datos Personales.
+- [ ] Programar los plazos de conservación aprobados (pedidos no pagados, comprobantes, auditoría, cuentas sin plan) y la exportación y eliminación de los datos de un negocio.
 - [x] Row Level Security, primera etapa (V17): en las peticiones del panel, la base de datos solo deja ver y escribir filas del negocio de la sesión en las tablas con datos de compradores ([ADR-007](decisions/ADR-007-row-level-security.md)).
 - [x] Row Level Security, etapa 5 (V18): políticas en el resto de tablas de cada negocio; las que el panel debe cruzar quedan documentadas en ADR-007.
 - [ ] Row Level Security, etapa 4: modo «plataforma» explícito para jobs, webhooks y enlaces públicos, y que la falta de contexto sea un error.
