@@ -2,6 +2,7 @@ package com.nuvyra.security
 
 import com.nuvyra.common.config.AppProperties
 import com.nuvyra.common.error.ProblemDetails
+import com.nuvyra.common.tenancy.TenantContextFilter
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -78,6 +79,7 @@ class SecurityConfig(
                 headers.httpStrictTransportSecurity { it.includeSubDomains(true).maxAgeInSeconds(31_536_000) }
             }
             .addFilterBefore(SessionAuthenticationFilter(sessionService, cookies), AnonymousAuthenticationFilter::class.java)
+            .addFilterAfter(TenantContextFilter(), SessionAuthenticationFilter::class.java)
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()

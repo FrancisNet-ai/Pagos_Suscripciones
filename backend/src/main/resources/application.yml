@@ -94,6 +94,8 @@ app:
     require-super-admin-two-factor: ${APP_SECURITY_REQUIRE_SUPER_ADMIN_TWO_FACTOR:true}
     # Rechaza contraseñas filtradas consultando Pwned Passwords por prefijo de hash (la contraseña no sale del servidor).
     breached-password-check: ${APP_SECURITY_BREACHED_PASSWORD_CHECK:true}
+    # Segunda barrera entre negocios en PostgreSQL (V17). Solo se apaga ante una emergencia.
+    row-level-security: ${APP_SECURITY_ROW_LEVEL_SECURITY:true}
   bootstrap:
     super-admin-email: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:}
     super-admin-password: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:}

@@ -41,7 +41,8 @@
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
 - [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).
 - [ ] Redactar términos comerciales, política de privacidad y política de retención (Ley 29733) — requiere revisión legal.
-- [ ] Adoptar Row Level Security por etapas antes de producción (evaluado en [ADR-007](decisions/ADR-007-row-level-security.md)).
+- [x] Row Level Security, primera etapa (V17): en las peticiones del panel, la base de datos solo deja ver y escribir filas del negocio de la sesión en las tablas con datos de compradores ([ADR-007](decisions/ADR-007-row-level-security.md)).
+- [ ] Row Level Security, etapas 4 y 5: modo «plataforma» explícito para jobs, webhooks y enlaces públicos (sin contexto = error) y políticas en el resto de tablas de negocio.
 - [ ] Bloqueo distribuido de tareas programadas y rate limiting compartido si se usan varias instancias.
 - [x] Copias de seguridad diarias, cifradas y enviadas a Oracle Object Storage (`backup-offsite.sh`). Falta crear el bucket y probar una restauración en el servidor real.
 - [ ] Adquirir licencias de Voga y Bodoni FLF si se desea la identidad tipográfica original.

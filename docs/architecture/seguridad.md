@@ -2,7 +2,7 @@
 
 | # | Riesgo | Control | Estado |
 |---|---|---|---|
-| 1 | IDOR / fuga entre negocios | `business_id` resuelto en servidor; consultas `…AndBusinessId`; 404 para recursos ajenos; pruebas A/B | Fase 1 (base) y cada módulo |
+| 1 | IDOR / fuga entre negocios | `business_id` resuelto en servidor; consultas `…AndBusinessId`; 404 para recursos ajenos; pruebas A/B | Fase 1 (base) y cada módulo; RLS de PostgreSQL en las tablas de compradores (V17) |
 | 2 | Robo de sesión por XSS | Cookie `HttpOnly; Secure; SameSite=Lax`; nada en `localStorage`; Angular escapa por defecto; CSP en el proxy | Fase 1 |
 | 3 | CSRF | Double submit cookie (`XSRF-TOKEN` / `X-XSRF-TOKEN`) en toda petición mutante, incluidos endpoints públicos | Fase 1 |
 | 4 | Fuerza bruta en login | Rate limiting por IP y por correo; mensaje de error genérico; BCrypt | Fase 1 |
