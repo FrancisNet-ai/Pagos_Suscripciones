@@ -13,13 +13,14 @@ class ProductionSafetyCheckTest {
         url: String = "https://tienda.nuvyra.pe",
         adminPassword: String? = null,
         requireTwoFactor: Boolean = true,
+        breachedCheck: Boolean = true,
     ) = AppProperties(
         publicBaseUrl = url,
         session = AppProperties.Session(cookieSecure = cookieSecure),
         renewals = AppProperties.Renewals(tokenSecret = renewal),
         secrets = AppProperties.Secrets(encryptionKey = key),
         bootstrap = AppProperties.Bootstrap(superAdminPassword = adminPassword),
-        security = AppProperties.Security(requireSuperAdminTwoFactor = requireTwoFactor),
+        security = AppProperties.Security(requireSuperAdminTwoFactor = requireTwoFactor, breachedPasswordCheck = breachedCheck),
     )
 
     @Test
@@ -49,5 +50,11 @@ class ProductionSafetyCheckTest {
         assertThat(ProductionSafetyCheck.problems(props(key = ""))).containsExactly("APP_SECRETS_ENCRYPTION_KEY no está definido")
         assertThat(ProductionSafetyCheck.problems(props(requireTwoFactor = false)))
             .containsExactly("APP_SECURITY_REQUIRE_SUPER_ADMIN_TWO_FACTOR debe ser true en producción")
+    }
+
+    @Test
+    fun `exige comprobar contrasenas filtradas`() {
+        assertThat(ProductionSafetyCheck.problems(props(breachedCheck = false)))
+            .containsExactly("APP_SECURITY_BREACHED_PASSWORD_CHECK debe ser true en producción")
     }
 }

@@ -36,9 +36,10 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Varios negocios por cuenta | Crear otro negocio, cambiar de negocio en la sesión, unirse a otro con una cuenta existente. V15 | #12 |
 | Evaluación de RLS | Plan de adopción por etapas en `docs/decisions/ADR-007-row-level-security.md` | #12 |
 | Seguridad y orden | Cambio de contraseña en «Mi cuenta» (`/panel/cuenta`, `/admin/cuenta`) que cierra las demás sesiones; el perfil `prod` no arranca con secretos de ejemplo; Dependabot y `npm audit` en CI; versiones del backend en `backend/gradle/libs.versions.toml` e inventario en `docs/development/dependencias.md`; sin capturas de diseño en el repositorio | #13 |
-| Verificación en dos pasos y sesiones | App de autenticación (TOTP) con códigos de recuperación, obligatoria para el superadministrador en producción; lista de sesiones abiertas para cerrar cada una. V16 | siguiente |
+| Verificación en dos pasos y sesiones | App de autenticación (TOTP) con códigos de recuperación, obligatoria para el superadministrador en producción; lista de sesiones abiertas para cerrar cada una. V16 | #27 |
+| Contraseñas filtradas | Se rechazan al registrarse, cambiarla, recuperarla o aceptar una invitación (Pwned Passwords por prefijo de hash) | siguiente |
 
-**Pruebas en el último estado:** 204 del backend, 98 del frontend y los recorridos de Playwright
+**Pruebas en el último estado:** 208 del backend, 98 del frontend y los recorridos de Playwright
 (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
@@ -46,7 +47,6 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 **Se puede hacer solo con código:**
 1. Adoptar Row Level Security por etapas (plan en ADR-007).
 2. Codificar las imágenes reducidas en WebP (requiere bibliotecas nativas).
-3. Rechazar contraseñas filtradas (detalle en el BACKLOG).
 
 **Configuración única en GitHub:** activar *Dependency graph*, *Dependabot alerts* y *Dependabot security
 updates* en *Settings → Code security*.

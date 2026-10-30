@@ -6,6 +6,7 @@ import com.nuvyra.common.config.AppProperties
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.common.ratelimit.RateLimiter
 import com.nuvyra.common.text.SecureTokens
+import com.nuvyra.security.BreachedPasswordChecker
 import com.nuvyra.security.SessionService
 import com.nuvyra.users.UserRepository
 import com.nuvyra.users.UserStatus
@@ -23,6 +24,7 @@ class PasswordResetService(
     private val sessionService: SessionService,
     private val notifier: PasswordResetNotifier,
     private val passwordEncoder: PasswordEncoder,
+    private val breachedPasswords: BreachedPasswordChecker,
     private val rateLimiter: RateLimiter,
     private val audit: AuditService,
     private val properties: AppProperties,
@@ -68,6 +70,8 @@ class PasswordResetService(
             ?.takeIf { it.usedAt == null && now.isBefore(it.expiresAt) }
             ?: throw ApiException.badRequest("INVALID_RESET_TOKEN", "El enlace de recuperación no es válido o ya expiró. Solicita uno nuevo.")
         val user = users.findById(token.userId).orElseThrow { ApiException.badRequest("INVALID_RESET_TOKEN", "El enlace de recuperación no es válido.") }
+        // Después de validar el enlace: un token inválido no llega a consultar el servicio externo.
+        breachedPasswords.ensureNotBreached(newPassword, "newPassword")
 
         token.usedAt = now
         user.passwordHash = passwordEncoder.encode(newPassword)!!

@@ -92,6 +92,8 @@ app:
   security:
     # El superadministrador debe activar la verificación en dos pasos para usar /admin.
     require-super-admin-two-factor: ${APP_SECURITY_REQUIRE_SUPER_ADMIN_TWO_FACTOR:true}
+    # Rechaza contraseñas filtradas consultando Pwned Passwords por prefijo de hash (la contraseña no sale del servidor).
+    breached-password-check: ${APP_SECURITY_BREACHED_PASSWORD_CHECK:true}
   bootstrap:
     super-admin-email: ${APP_BOOTSTRAP_SUPER_ADMIN_EMAIL:}
     super-admin-password: ${APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD:}

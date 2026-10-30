@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/services/api-error';
 import { PasswordInputComponent } from '../../shared/components/password-input.component';
-import { controlError } from '../../shared/validators/form-errors';
+import { applyServerErrors, controlError } from '../../shared/validators/form-errors';
 import { AuthLayoutComponent } from './auth-layout.component';
 
 function matchesPassword(control: AbstractControl): ValidationErrors | null {
@@ -84,7 +84,10 @@ export class ResetPasswordPage {
     this.auth.confirmPasswordReset(token, this.form.controls.newPassword.value).subscribe({
       next: () => this.done.set(true),
       error: (e: unknown) => {
-        this.error.set(ApiError.from(e).message);
+        const apiError = ApiError.from(e);
+        // p. ej. una contraseña filtrada: el motivo aparece bajo el campo.
+        applyServerErrors(this.form, apiError);
+        this.error.set(apiError.fieldErrors.length ? null : apiError.message);
         this.loading.set(false);
       },
     });

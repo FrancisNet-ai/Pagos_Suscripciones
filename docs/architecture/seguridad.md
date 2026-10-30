@@ -28,6 +28,7 @@
 | 24 | Dependencias vulnerables | Dependabot semanal (Gradle, npm, Actions, Docker), `npm audit` en CI y grafo de Gradle enviado a GitHub; inventario en `docs/development/dependencias.md` | Seguridad ✅ |
 | 25 | Contraseña robada | Verificación en dos pasos con app de autenticación (TOTP, RFC 6238): secreto cifrado con AES-256-GCM, cada código sirve una vez, ±30 s de tolerancia, 10 códigos de recuperación de un solo uso (solo su hash), desafío de inicio de sesión de 5 min y 5 intentos; obligatoria para el superadministrador en producción (`/api/v1/admin` responde `TWO_FACTOR_REQUIRED`) | Seguridad ✅ |
 | 26 | Sesiones en dispositivos ajenos | «Mi cuenta» lista las sesiones vigentes (dispositivo, IP, último uso) y permite cerrar cada una o todas las demás; activar la verificación en dos pasos cierra las anteriores | Seguridad ✅ |
+| 27 | Contraseñas ya filtradas en otros sitios | Al registrarse, cambiarla, recuperarla o aceptar una invitación se consulta Pwned Passwords con k-anonimato: solo viajan los 5 primeros caracteres del SHA-1 (con relleno) y la comparación se hace en el servidor. Si el servicio no responde en 3 s se acepta la contraseña; producción exige tener la comprobación activa | Seguridad ✅ |
 
 ## Datos personales (Perú, Ley N.º 29733)
 
