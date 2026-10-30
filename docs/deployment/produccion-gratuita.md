@@ -54,8 +54,8 @@ Docker solo se usa en el servidor de Oracle y en GitHub Actions, nunca en la lap
   - La verificación puede tardar desde minutos hasta un día.
 
 ### 2. DuckDNS (dirección web gratis)
-- [ ] Entrar en https://www.duckdns.org con GitHub o Google.
-- [ ] Reservar un subdominio, por ejemplo `nuvyra.duckdns.org`. Si está ocupado, probar `nuvyra-pe` o
+- [x] Entrar en https://www.duckdns.org con GitHub o Google.
+- [x] Reservar un subdominio, por ejemplo `nuvyra.duckdns.org`. Si está ocupado, probar `nuvyra-pe` o
   `minuvyra`. La IP se configura después, cuando exista el servidor.
 
 ### 3. UptimeRobot (alerta si se cae)
@@ -77,8 +77,8 @@ Docker solo se usa en el servidor de Oracle y en GitHub Actions, nunca en la lap
   - Más adelante, la **IP pública** del servidor.
 
 Avance del paso 1, para completar al terminar:
-- Región de Oracle: _pendiente_
-- Subdominio de DuckDNS: _pendiente_
+- Región de Oracle: _pendiente_ (el registro de la cuenta está en revisión por soporte de Oracle)
+- Subdominio de DuckDNS: `nuvyra.duckdns.org` (el token está en el gestor de contraseñas del titular)
 
 ## Paso 2 — Archivos del repositorio (los prepara el asistente; no requieren cuentas)
 
