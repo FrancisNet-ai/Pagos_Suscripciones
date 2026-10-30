@@ -1,6 +1,6 @@
 # ADR-007 — Evaluación de Row Level Security (RLS) de PostgreSQL
 
-**Estado:** primera etapa adoptada (V17, 2026-10-30); faltan las etapas 4 y 5 · **Fecha:** 2026-10-28
+**Estado:** etapas 1–3 adoptadas (V17) y etapa 5 (V18), 2026-10-30; falta la etapa 4 · **Fecha:** 2026-10-28
 
 ## Contexto
 El aislamiento entre negocios se aplica en la aplicación ([ADR-002](ADR-002-multiempresa-business-id.md)):
@@ -83,6 +83,17 @@ contradiga. Antes del primer despliegue con datos reales se adoptará por etapas
 ## Etapas pendientes
 - Etapa 4: modo «plataforma» explícito y auditado para jobs, webhooks, enlaces públicos y superadministración,
   y que la ausencia de contexto falle.
-- Etapa 5: extender la política al resto de tablas de negocio (productos, cupos, pendientes, importaciones,
-  WhatsApp) y a tablas hijas vía su padre (`order_items`).
+- ~~Etapa 5~~ (V18): la política se extiende a:
+  - `products`, `capacity_allocations`, `business_payment_methods`, `seller_tasks` y `customer_imports`;
+  - `order_notifications`, `notification_preferences`, `staff_invitations`, `support_grants` y
+    `order_number_sequences`;
+  - `saas_subscriptions` y `saas_invoices`;
+  - `order_items`, vía su pedido.
+
+  Quedan fuera a propósito, porque el panel debe ver otros negocios o las escribe la plataforma:
+  - `audit_logs`: hay registros sin negocio.
+  - `business_members`: la lista de negocios de una persona.
+  - `whatsapp_webhook_events`: solo la escribe el webhook.
+  - `whatsapp_integrations`: un número no puede conectarse en dos negocios.
+  - `saas_payments`: el número de operación no puede repetirse entre negocios, por antifraude.
 

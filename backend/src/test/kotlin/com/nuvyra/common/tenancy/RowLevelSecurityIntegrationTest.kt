@@ -46,6 +46,25 @@ class RowLevelSecurityIntegrationTest : IntegrationTest() {
     }
 
     @Test
+    fun `la proteccion alcanza al catalogo y a los items de pedido`() {
+        val emailA = uniqueEmail()
+        val emailB = uniqueEmail()
+        registerSeller(email = emailA)
+        registerSeller(email = emailB)
+        val a = businessIdOf(emailA)
+        val b = businessIdOf(emailB)
+        jdbc.update("insert into products (business_id, name, product_type, price) values (?, 'Producto A', 'ONE_TIME', 10)", a)
+        jdbc.update("insert into products (business_id, name, product_type, price) values (?, 'Producto B', 'ONE_TIME', 10)", b)
+
+        TenantContext.runAs(a) {
+            assertThat(jdbc.queryForList("select name from products where business_id in (?, ?)", String::class.java, a, b))
+                .containsExactly("Producto A")
+            // Sin pedidos visibles de otro negocio, tampoco se ven sus ítems.
+            assertThat(count("select count(*) from order_items oi join orders o on o.id = oi.order_id where o.business_id = ?", b)).isZero()
+        }
+    }
+
+    @Test
     fun `el panel funciona bajo las politicas y no expone clientes de otro negocio`() {
         val emailA = uniqueEmail()
         val emailB = uniqueEmail()

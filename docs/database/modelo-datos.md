@@ -153,6 +153,12 @@ recurso y motivo).
 Se elimina la restricción de un negocio por cuenta (`uq_business_members_user`). `user_sessions` añade
 `active_business_id`: el negocio elegido en la sesión, validado contra las membresías activas en cada petición.
 
+### Row Level Security en el resto de tablas (`V18__row_level_security_business_tables.sql`)
+
+Extiende `tenant_isolation` a catálogo, cupos, cuentas de cobro, pendientes, importaciones, avisos,
+invitaciones, accesos de soporte, numeración de pedidos y contratos y facturas del plan. `order_items` hereda
+el aislamiento de su pedido. Las excepciones y su motivo están en ADR-007.
+
 ### Row Level Security (`V17__row_level_security.sql`)
 
 Crea el rol `nuvyra_app` (sin privilegios de administración ni `BYPASSRLS`) con permisos de lectura y
