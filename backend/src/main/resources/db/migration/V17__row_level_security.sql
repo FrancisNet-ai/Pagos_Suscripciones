@@ -7,16 +7,24 @@
 -- ese negocio, aunque una consulta olvide filtrar por business_id; sin negocio fijado no devuelven nada.
 -- El resto de rutas (tareas programadas, webhooks, tienda pública, enlaces por token, superadministración
 -- y Flyway) sigue con el usuario dueño y el aislamiento que ya aplica la aplicación.
+-- PostgreSQL 16+: si el usuario no es administrador (Supabase), el rol que crea solo le queda asignado para poder
+-- cambiar a él (SET ROLE) si lo pide al crearlo; después no puede asignárselo con GRANT.
+SET createrole_self_grant = 'set, inherit';
+
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'nuvyra_app') THEN
         CREATE ROLE nuvyra_app NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
     END IF;
+    -- El usuario de la aplicación debe poder cambiar a ese rol. Un administrador ya puede; si el rol existía de
+    -- antes y no hay acceso, se asigna aquí.
+    IF NOT pg_has_role(current_user, 'nuvyra_app', 'SET') THEN
+        EXECUTE format('GRANT nuvyra_app TO %I', current_user);
+    END IF;
 END
 $$;
 
--- El usuario de la aplicación debe poder cambiar a ese rol (si es administrador ya puede).
-GRANT nuvyra_app TO CURRENT_USER;
+RESET createrole_self_grant;
 
 GRANT USAGE ON SCHEMA public TO nuvyra_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO nuvyra_app;
