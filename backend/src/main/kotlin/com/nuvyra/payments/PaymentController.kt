@@ -1,6 +1,5 @@
 package com.nuvyra.payments
 
-import com.nuvyra.media.ImageType
 import com.nuvyra.orders.OrderDetail
 import com.nuvyra.orders.OrderService
 import com.nuvyra.orders.ReasonRequest
@@ -8,7 +7,7 @@ import com.nuvyra.security.CurrentBusiness
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.http.CacheControl
 import org.springframework.http.MediaType
@@ -52,13 +51,12 @@ class PaymentController(
     @GetMapping("/{id}/receipt")
     @Operation(summary = "Descarga el comprobante (solo el vendedor dueño del pago)")
     fun receipt(current: CurrentBusiness, @PathVariable id: UUID): ResponseEntity<Resource> {
-        val path = verification.receipt(current.businessId, current.userId, id)
-        val type = ImageType.fromExtension(path.fileName.toString().substringAfterLast('.'))!!
+        val file = verification.receipt(current.businessId, current.userId, id)
         return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(type.contentType))
+            .contentType(MediaType.parseMediaType(file.type.contentType))
             .cacheControl(CacheControl.noStore())
             .header("Content-Disposition", "inline")
-            .body(FileSystemResource(path))
+            .body(ByteArrayResource(file.bytes))
     }
 }
 

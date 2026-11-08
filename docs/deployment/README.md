@@ -8,7 +8,10 @@ docker compose up --build
 * Aplicación: http://localhost:8080 (Nginx sirve Angular y reenvía `/api` al backend).
 * PostgreSQL persiste en el volumen `pgdata`; las imágenes subidas (logos, portadas, productos, QR) en `media`.
 
-## Producción gratuita
+## Producción gratuita (vigente: Render + Supabase)
+Guía paso a paso: [render-supabase.md](render-supabase.md). El plan anterior con Oracle Cloud sigue documentado abajo.
+
+## Producción gratuita con Oracle Cloud (alternativa)
 Plan elegido (Oracle Cloud Always Free + DuckDNS) y lista de avance:
 [produccion-gratuita.md](produccion-gratuita.md). Puesta en marcha del servidor, despliegue automático y
 copias en Object Storage: [oracle-servidor.md](oracle-servidor.md).

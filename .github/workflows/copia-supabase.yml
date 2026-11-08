@@ -1,0 +1,45 @@
+name: Copia de seguridad (Supabase)
+
+# Copia diaria de la base de producción en Supabase (plan gratuito, que no incluye copias descargables).
+# Se cifra con AES-256 antes de guardarse como artefacto del workflow (30 días). No hace nada hasta definir la
+# variable de repositorio SUPABASE_BACKUP_ENABLED=true. Guía: docs/deployment/render-supabase.md
+on:
+  schedule:
+    - cron: '23 8 * * *'   # 03:23 en Lima
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Copiar y cifrar la base de datos
+    if: vars.SUPABASE_BACKUP_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Instalar pg_dump 17 (la versión de Supabase)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+      - name: Copia cifrada
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +%Y%m%d-%H%M%S)"
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" --schema=public --format=custom --no-owner --no-privileges -f nuvyra.dump
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:BACKUP_ENCRYPTION_PASSPHRASE -in nuvyra.dump -out "nuvyra-$stamp.dump.enc"
+          rm -f nuvyra.dump
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuvyra-${{ env.STAMP }}
+          path: nuvyra-*.dump.enc
+          retention-days: 30
+          if-no-files-found: error

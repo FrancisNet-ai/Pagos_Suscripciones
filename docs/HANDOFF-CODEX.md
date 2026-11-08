@@ -41,7 +41,7 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Row Level Security (etapa 1) | En el panel, PostgreSQL solo deja ver y escribir filas del negocio de la sesión en las tablas de compradores (rol `nuvyra_app`, `app.business_id`). V17 | #29 |
 | Row Level Security (etapa 5) | La misma barrera en el resto de tablas de cada negocio, con excepciones documentadas en ADR-007. V18 | siguiente |
 
-**Pruebas en el último estado:** 212 del backend, 98 del frontend y los recorridos de Playwright
+**Pruebas en el último estado:** 217 del backend, 98 del frontend y los recorridos de Playwright
 (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
@@ -56,9 +56,9 @@ updates* en *Settings → Code security*.
 **Depende de algo externo:**
 - Embedded Signup de Meta.
 - Pagos automáticos: Yape/Plin no tienen API oficial.
-- Poner en marcha producción: el repositorio ya trae Caddy, despliegue automático y copias cifradas; falta que el titular cree el servidor en Oracle y configure los secretos (`docs/deployment/oracle-servidor.md`, avance en `docs/deployment/produccion-gratuita.md`).
+- Poner en marcha producción en **Render + Supabase** (Oracle rechazó la cuenta): guía en `docs/deployment/render-supabase.md` y decisión en ADR-008.
 - SMTP real.
-- Textos legales (Ley 29733).
+- Textos legales (Ley 29733): borradores en `docs/legal/`, pendientes de revisión por un abogado.
 - Comprobantes SUNAT.
 - Licencias de las tipografías.
 - Verificar la marca y el dominio.
@@ -81,7 +81,7 @@ updates* en *Settings → Code security*.
 - **Rutas nuevas del panel:** se agregan en tres lugares: `security/SecurityConfig.kt`,
   `StaffAccessInterceptor.PATHS` y `saas/EntitlementInterceptor.PATHS`. Sin plan vigente, el
   panel queda en modo de solo lectura.
-- **Migraciones:** las nuevas empiezan en `V19__…`
+- **Migraciones:** las nuevas empiezan en `V20__…`
   (`backend/src/main/resources/db/migration`).
 - **Varios negocios:** el negocio activo vive en la sesión (`user_sessions.active_business_id`) y se valida
   contra `business_members` en cada petición; nunca se toma del cliente.
@@ -98,6 +98,10 @@ updates* en *Settings → Code security*.
   (`common/tenancy`). Toda tabla nueva de un negocio debe llevar `business_id` y su política
   `tenant_isolation` en la misma migración, salvo que el panel deba cruzar negocios (documentarlo en ADR-007). Una ruta nueva que cruce negocios por diseño no va bajo el panel:
   va en `/public`, `/auth` o `/admin`.
+- **Archivos:** se leen y guardan solo con `MediaStorage`, que usa `ObjectStore`: disco local o Supabase Storage
+  según `app.storage.type`. No leas archivos con `java.nio` directamente.
+- **Producción en Render:** el backend también sirve Angular (`app.web.static-dir`). Toda ruta nueva de la API va
+  bajo `/api/`. El contenedor tiene 512 MB: vigila dependencias pesadas.
 - **Comentarios en KDoc:** no escribas `/**` dentro de un KDoc (por ejemplo, `/api/v1/x/**`),
   porque abre un comentario anidado y rompe la compilación.
 

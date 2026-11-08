@@ -1,5 +1,9 @@
 # Producción gratuita — plan y avance
 
+> **Actualización (8 de noviembre de 2026):** Oracle Cloud rechazó el registro de la cuenta. El plan vigente es
+> **Render + Supabase**: guía en [render-supabase.md](render-supabase.md) y decisión en
+> [ADR-008](../decisions/ADR-008-render-supabase.md). Lo de Oracle queda como alternativa para un servidor propio.
+
 Guía para publicar Nuvyra sin costo y que no dependa de la laptop del titular. Se puede seguir desde
 cualquier dispositivo: marca cada casilla (`[x]`) al completarla.
 

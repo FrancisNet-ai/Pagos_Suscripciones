@@ -7,13 +7,13 @@ import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.common.ratelimit.RateLimiter
 import com.nuvyra.media.MediaStorage
+import com.nuvyra.media.StoredFile
 import com.nuvyra.payments.PaymentMethodType
 import com.nuvyra.whatsapp.ManualWhatsAppLinkProvider
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.nio.file.Path
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -208,11 +208,11 @@ class BillingService(
 
     /** Comprobante de un pago SaaS: solo el SUPER_ADMIN; cada acceso queda auditado. */
     @Transactional
-    fun receipt(actorId: UUID, paymentId: UUID): Path {
+    fun receipt(actorId: UUID, paymentId: UUID): StoredFile {
         val payment = payments.findById(paymentId).orElseThrow { ApiException.notFound() }
-        val path = payment.receiptKey?.let { media.resolveReceipt(it) } ?: throw ApiException.notFound("Este pago no tiene comprobante.")
+        val file = payment.receiptKey?.let { media.resolveReceipt(it) } ?: throw ApiException.notFound("Este pago no tiene comprobante.")
         audit.record(AuditActions.SAAS_RECEIPT_VIEWED, actorId = actorId, businessId = payment.businessId, entityType = "SAAS_PAYMENT", entityId = payment.id)
-        return path
+        return file
     }
 
     /**

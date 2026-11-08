@@ -21,6 +21,7 @@ data class AppProperties(
     val secrets: Secrets = Secrets(),
     val whatsapp: WhatsApp = WhatsApp(),
     val security: Security = Security(),
+    val web: Web = Web(),
 ) {
     data class Secrets(
         /** Clave AES-256 en Base64 (32 bytes) para cifrar credenciales de terceros guardadas en la base. */
@@ -59,6 +60,14 @@ data class AppProperties(
     )
 
     data class Storage(
+        /** `local` (disco) o `supabase` (Supabase Storage, para el despliegue gratuito en Render). */
+        val type: String = "local",
+        val supabaseUrl: String = "",
+        /** Clave secreta del proyecto de Supabase: solo en el servidor, nunca en el navegador. */
+        val supabaseSecretKey: String = "",
+        val publicBucket: String = "nuvyra-media",
+        val privateBucket: String = "nuvyra-private",
+        val requestTimeout: Duration = Duration.ofSeconds(15),
         /** Carpeta donde se guardan imágenes públicas (logos, portadas, productos, QR). */
         val localDir: String = "./data/media",
         /** Comprobantes de pago: nunca se sirven públicamente. */
@@ -86,6 +95,14 @@ data class AppProperties(
 
     data class PasswordReset(
         val tokenTtl: Duration = Duration.ofMinutes(30),
+    )
+
+    data class Web(
+        /**
+         * Carpeta con la compilación de Angular. Si se define, el backend también sirve la página (despliegue en
+         * un solo servicio, como en Render). Vacía: la sirve Nginx (Docker Compose) o `ng serve` (desarrollo).
+         */
+        val staticDir: String = "",
     )
 
     data class Cors(

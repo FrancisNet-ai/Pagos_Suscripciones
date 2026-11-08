@@ -1,0 +1,44 @@
+# Despliegue gratuito en Render: un solo servicio con el backend y la página (Angular), conectado a Supabase
+# (PostgreSQL y Storage). Guía paso a paso: docs/deployment/render-supabase.md
+# Los valores marcados con «sync: false» los pide Render al crear el servicio: se pegan desde el gestor de
+# contraseñas y nunca se guardan en el repositorio.
+services:
+  - type: web
+    name: nuvyra
+    runtime: docker
+    plan: free
+    region: oregon            # la misma zona que el proyecto de Supabase (us-west-2)
+    branch: main
+    dockerfilePath: ./infrastructure/docker/render.Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: checksPass   # solo publica versiones cuyo CI terminó en verde
+    envVars:
+      # Base de datos: «Session pooler» de Supabase (modo sesión, necesario para Row Level Security).
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_POOL_SIZE
+        value: "4"
+      - key: APP_PUBLIC_BASE_URL
+        sync: false
+      # Archivos (imágenes y comprobantes) en Supabase Storage.
+      - key: APP_STORAGE_SUPABASE_URL
+        sync: false
+      - key: APP_STORAGE_SUPABASE_SECRET_KEY
+        sync: false
+      # Secretos de la aplicación: Render genera valores aleatorios.
+      - key: APP_RENEWAL_TOKEN_SECRET
+        generateValue: true
+      - key: APP_SECRETS_ENCRYPTION_KEY
+        generateValue: true
+      # Superadministrador inicial (se crea una sola vez; luego se pueden vaciar).
+      - key: APP_BOOTSTRAP_SUPER_ADMIN_EMAIL
+        sync: false
+      - key: APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: APP_MAIL_FROM
+        sync: false
