@@ -4,5 +4,9 @@ backups/
 **/node_modules
 frontend/dist
 frontend/.angular
-backend/
+# El código del backend sí entra: lo compila la imagen de Render (render.Dockerfile). Solo se excluye lo generado.
+backend/build
+backend/.gradle
+backend/.kotlin
+backend/data
 docs/
