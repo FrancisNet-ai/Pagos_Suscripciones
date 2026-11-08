@@ -39,7 +39,7 @@
 - [x] Permiso propio para aprobar o rechazar pagos (`PAYMENTS`), separado de atender pedidos (`ORDERS`); los ingresos siguen en `REPORTS` y los reembolsos son del titular.
 - [x] Acceso de soporte a pedidos y clientes: solo con autorización temporal del titular (1–72 h, revocable), motivo obligatorio en cada consulta y registro visible para el titular.
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
-- [ ] Configurar SMTP real para correos de recuperación en producción (`SPRING_MAIL_*`).
+- [ ] Correos de recuperación en producción: Render Free bloquea el SMTP, así que hay que enviarlos por una API HTTPS (por ejemplo Brevo, con plan gratuito).
 - [x] Borradores de términos y condiciones, política de privacidad y política de conservación en `docs/legal/`, con las preguntas para el abogado.
 - [ ] Revisión legal de los borradores (Ley 29733 y su reglamento), completar los datos del titular y publicarlos en `/legal/condiciones` y `/legal/privacidad`.
 - [ ] Inscribir los bancos de datos personales que indique el abogado ante la Autoridad Nacional de Protección de Datos Personales.

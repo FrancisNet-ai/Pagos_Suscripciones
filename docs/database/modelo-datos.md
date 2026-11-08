@@ -153,6 +153,12 @@ recurso y motivo).
 Se elimina la restricción de un negocio por cuenta (`uq_business_members_user`). `user_sessions` añade
 `active_business_id`: el negocio elegido en la sesión, validado contra las membresías activas en cada petición.
 
+### Roles públicos de Supabase (`V19__supabase_public_roles.sql`)
+
+En Supabase quita todo permiso a `anon` y `authenticated` (los roles de su Data API) sobre las tablas, secuencias y
+funciones del esquema, también para las futuras. Fuera de Supabase esos roles no existen y no hace nada. Además,
+V17 pide `createrole_self_grant` al crear `nuvyra_app`, para que funcione con un dueño que no es superusuario.
+
 ### Row Level Security en el resto de tablas (`V18__row_level_security_business_tables.sql`)
 
 Extiende `tenant_isolation` a catálogo, cupos, cuentas de cobro, pendientes, importaciones, avisos,
