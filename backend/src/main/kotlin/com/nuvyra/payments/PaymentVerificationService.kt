@@ -5,6 +5,7 @@ import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.media.MediaStorage
+import com.nuvyra.media.StoredFile
 import com.nuvyra.subscriptions.SubscriptionService
 import com.nuvyra.orders.OrderItemRepository
 import com.nuvyra.orders.OrderKind
@@ -13,7 +14,6 @@ import com.nuvyra.orders.OrderRepository
 import com.nuvyra.orders.OrderStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.nio.file.Path
 import java.time.Clock
 import java.util.UUID
 
@@ -111,11 +111,11 @@ class PaymentVerificationService(
 
     /** Ruta del comprobante; solo para el vendedor dueño del pago. Cada acceso queda auditado. */
     @Transactional
-    fun receipt(businessId: UUID, actorId: UUID, paymentId: UUID): Path {
+    fun receipt(businessId: UUID, actorId: UUID, paymentId: UUID): StoredFile {
         val payment = payments.findByIdAndBusinessId(paymentId, businessId) ?: throw ApiException.notFound()
-        val path = payment.receiptKey?.let { media.resolveReceipt(it) } ?: throw ApiException.notFound("Este pago no tiene comprobante.")
+        val file = payment.receiptKey?.let { media.resolveReceipt(it) } ?: throw ApiException.notFound("Este pago no tiene comprobante.")
         audit.record(AuditActions.RECEIPT_VIEWED, actorId = actorId, businessId = businessId, entityType = "PAYMENT", entityId = payment.id)
-        return path
+        return file
     }
 
     private fun lockPending(businessId: UUID, paymentId: UUID): CustomerPayment {

@@ -1,7 +1,6 @@
 package com.nuvyra.admin
 
 import com.nuvyra.common.error.ApiException
-import com.nuvyra.media.ImageType
 import com.nuvyra.orders.ReasonRequest
 import com.nuvyra.payments.PaymentMethodType
 import com.nuvyra.saas.BillingService
@@ -14,7 +13,7 @@ import com.nuvyra.security.AuthenticatedUser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.http.CacheControl
 import org.springframework.http.HttpStatus
@@ -103,13 +102,12 @@ class AdminController(
     @GetMapping("/saas-payments/{id}/receipt")
     @Operation(summary = "Comprobante del pago SaaS (acceso auditado)")
     fun receipt(user: AuthenticatedUser, @PathVariable id: UUID): ResponseEntity<Resource> {
-        val path = billing.receipt(user.userId, id)
-        val type = ImageType.fromExtension(path.fileName.toString().substringAfterLast('.'))!!
+        val file = billing.receipt(user.userId, id)
         return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(type.contentType))
+            .contentType(MediaType.parseMediaType(file.type.contentType))
             .cacheControl(CacheControl.noStore())
             .header("Content-Disposition", "inline")
-            .body(FileSystemResource(path))
+            .body(ByteArrayResource(file.bytes))
     }
 
     @GetMapping("/audit-logs")

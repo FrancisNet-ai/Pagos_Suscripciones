@@ -7,21 +7,19 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.web.multipart.MultipartFile
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardOpenOption
+
+/** Archivo leído del almacén, con su tipo deducido de la clave. */
+class StoredFile(val bytes: ByteArray, val type: ImageType)
 
 /**
- * Almacenamiento local de archivos con nombres aleatorios no adivinables, en dos zonas:
+ * Archivos con nombres aleatorios no adivinables, en dos zonas:
  * - pública: logos, portadas, imágenes de productos y QR (servidas por [MediaController]);
  * - privada: comprobantes de pago, solo descargables por el vendedor autenticado.
- * Se puede sustituir por almacenamiento de objetos (S3 compatible) manteniendo esta API.
+ * Dónde se guardan lo decide [ObjectStore]: disco local o Supabase Storage.
  */
 @Service
-class MediaStorage(private val properties: AppProperties) {
+class MediaStorage(private val properties: AppProperties, private val store: ObjectStore) {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val publicRoot: Path = createRoot(properties.storage.localDir)
-    private val privateRoot: Path = createRoot(properties.storage.privateDir)
 
     /**
      * Valida y guarda una imagen pública con una versión reducida para listados y móviles
@@ -29,82 +27,84 @@ class MediaStorage(private val properties: AppProperties) {
      */
     fun storeImage(file: MultipartFile): String {
         val bytes = file.bytes
-        val key = store(publicRoot, bytes, properties.storage.maxImageBytes)
+        val key = store(StoreZone.PUBLIC, bytes, properties.storage.maxImageBytes)
         Thumbnails.create(bytes, THUMB_WIDTH)?.let { small ->
             val variant = variantKey(key, small.type)
-            Files.write(publicRoot.resolve(variant), small.bytes, StandardOpenOption.CREATE_NEW)
-            registerRollbackCleanup(publicRoot, variant)
+            store.put(StoreZone.PUBLIC, variant, small.bytes, small.type.contentType)
+            registerRollbackCleanup(StoreZone.PUBLIC, variant)
         }
         return PUBLIC_PREFIX + key
     }
 
     /** Valida y guarda un comprobante privado. Devuelve su clave interna. */
-    fun storeReceipt(bytes: ByteArray): String = store(privateRoot, bytes, properties.storage.maxReceiptBytes)
+    fun storeReceipt(bytes: ByteArray): String = store(StoreZone.PRIVATE, bytes, properties.storage.maxReceiptBytes)
 
     /** Elimina el archivo anterior solo cuando la transacción que lo reemplaza se confirma. */
     fun deleteAfterCommit(url: String?) {
         val key = keyFromUrl(url) ?: return
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
-                override fun afterCommit() = delete(publicRoot, key)
+                override fun afterCommit() = deleteImage(key)
             })
         } else {
-            delete(publicRoot, key)
+            deleteImage(key)
         }
     }
 
-    fun resolve(key: String): Path? = resolveIn(publicRoot, key)
+    fun resolve(key: String): StoredFile? = read(StoreZone.PUBLIC, key)
 
     /** Versión reducida de una imagen pública, si existe (las WebP y las antiguas no la tienen). */
-    fun resolveSmall(key: String): Path? {
-        if (!KEY_PATTERN.matches(key)) return null
-        return ImageType.entries.firstNotNullOfOrNull { type ->
-            publicRoot.resolve(variantKey(key, type)).normalize().takeIf { it.startsWith(publicRoot) && Files.isRegularFile(it) }
-        }
+    fun resolveSmall(key: String): StoredFile? {
+        if (!KEY_PATTERN.matches(key) || key.endsWith(".webp")) return null
+        return SMALL_TYPES.firstNotNullOfOrNull { type -> read(StoreZone.PUBLIC, variantKey(key, type), checkKey = false) }
     }
 
-    fun resolveReceipt(key: String): Path? = resolveIn(privateRoot, key)
+    fun resolveReceipt(key: String): StoredFile? = read(StoreZone.PRIVATE, key)
 
-    private fun store(root: Path, bytes: ByteArray, maxBytes: Long): String {
+    private fun store(zone: StoreZone, bytes: ByteArray, maxBytes: Long): String {
         val type = ImageValidator.validate(bytes, maxBytes, properties.storage.maxImageDimension)
         val key = "${UuidV7.generate()}.${type.extension}"
-        Files.write(root.resolve(key), bytes, StandardOpenOption.CREATE_NEW)
-        registerRollbackCleanup(root, key)
+        store.put(zone, key, bytes, type.contentType)
+        registerRollbackCleanup(zone, key)
         return key
     }
 
+    private fun read(zone: StoreZone, key: String, checkKey: Boolean = true): StoredFile? {
+        if (checkKey && !KEY_PATTERN.matches(key)) return null
+        val type = ImageType.fromExtension(key.substringAfterLast('.')) ?: return null
+        return store.get(zone, key)?.let { StoredFile(it, type) }
+    }
+
     /** Si la transacción que usa el archivo falla, no queda huérfano. */
-    private fun registerRollbackCleanup(root: Path, key: String) {
+    private fun registerRollbackCleanup(zone: StoreZone, key: String) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
                 override fun afterCompletion(status: Int) {
-                    if (status == TransactionSynchronization.STATUS_ROLLED_BACK) delete(root, key)
+                    if (status == TransactionSynchronization.STATUS_ROLLED_BACK) delete(zone, key)
                 }
             })
         }
     }
 
-    private fun resolveIn(root: Path, key: String): Path? {
-        if (!KEY_PATTERN.matches(key)) return null
-        val path = root.resolve(key).normalize()
-        return path.takeIf { it.startsWith(root) && Files.isRegularFile(it) }
+    private fun deleteImage(key: String) {
+        delete(StoreZone.PUBLIC, key)
+        SMALL_TYPES.forEach { delete(StoreZone.PUBLIC, variantKey(key, it)) }
     }
 
-    private fun delete(root: Path, key: String) {
+    private fun delete(zone: StoreZone, key: String) {
         try {
-            resolveIn(root, key)?.let(Files::deleteIfExists)
-            if (root == publicRoot) ImageType.entries.forEach { Files.deleteIfExists(root.resolve(variantKey(key, it))) }
+            store.delete(zone, key)
         } catch (ex: Exception) {
             log.warn("No se pudo eliminar el archivo {}", key, ex)
         }
     }
 
-    private fun createRoot(dir: String): Path =
-        Path.of(dir).toAbsolutePath().normalize().also { Files.createDirectories(it) }
-
     companion object {
         const val PUBLIC_PREFIX = "/api/v1/public/media/"
         const val THUMB_WIDTH = 640
+
+        /** Las versiones reducidas se guardan en JPEG (fotos) o PNG (con transparencia). */
+        private val SMALL_TYPES = listOf(ImageType.JPEG, ImageType.PNG)
 
         /** `0192…-ab.png` → `0192…-ab-sm.jpg`: nombre derivado, nunca recibido del cliente. */
         fun variantKey(key: String, type: ImageType) = key.substringBeforeLast('.') + "-sm." + type.extension
