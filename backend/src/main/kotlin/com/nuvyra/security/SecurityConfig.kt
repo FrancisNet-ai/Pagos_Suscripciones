@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.security.web.csrf.CsrfException
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter
+import org.springframework.security.web.util.matcher.RegexRequestMatcher
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import tools.jackson.databind.ObjectMapper
@@ -96,6 +97,8 @@ class SecurityConfig(
                     )
                     .hasAnyRole(Roles.BUSINESS_OWNER, Roles.BUSINESS_STAFF)
                     .requestMatchers("/error").permitAll()
+                    // Página Angular servida por el backend (app.web.static-dir): todo lo que no es API ni actuator.
+                    .requestMatchers(RegexRequestMatcher("^/(?!api/|actuator).*", "GET"), RegexRequestMatcher("^/(?!api/|actuator).*", "HEAD")).permitAll()
                     .anyRequest().authenticated()
             }
             .exceptionHandling { ex ->
