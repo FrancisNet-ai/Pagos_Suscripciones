@@ -10,6 +10,7 @@ Cloud, que rechazó el registro (ver [ADR-008](../decisions/ADR-008-render-supab
 | Imágenes y comprobantes | **Supabase Storage** | Dos buckets privados que el backend crea solo (`nuvyra-media` y `nuvyra-private`) |
 | Mantenerlo despierto | **UptimeRobot** | Visita `/actuator/health` cada 5 minutos: Render duerme el servicio tras 15 minutos sin tráfico |
 | Copias de seguridad | **GitHub Actions** | Copia diaria de la base, cifrada con AES-256 (`copia-supabase.yml`) |
+| Correos del sistema | **Brevo**, plan gratuito (300 correos al día) | Recuperación de contraseña e invitaciones al equipo, por su API HTTPS |
 
 **Nunca pegues en el chat, en issues ni en el repositorio** contraseñas, claves de Supabase ni la frase de
 cifrado. Van solo en Bitwarden, en Render y en los secretos de GitHub.
@@ -19,8 +20,8 @@ cifrado. Van solo en Bitwarden, en Render y en los secretos de GitHub.
   bajo carga). La primera visita tras un reinicio puede tardar alrededor de un minuto.
 - **Horas:** Render da 750 horas al mes. Un mes tiene unas 730, así que alcanza para tener **un** servicio
   encendido siempre. No crees otros servicios Free en la misma cuenta.
-- **Correo:** Render Free **bloquea el correo saliente por SMTP** (puertos 25, 465 y 587). Los correos de
-  recuperación de contraseña no saldrán hasta que se envíen por una API HTTPS (pendiente en el BACKLOG).
+- **Correo:** Render Free **bloquea el correo saliente por SMTP** (puertos 25, 465 y 587). Por eso los correos
+  salen por la API HTTPS de Brevo (sección 7).
 - **Supabase Free:** 500 MB de base de datos y 1 GB de archivos. Pausa el proyecto si pasa una semana sin
   actividad; con el backend conectándose cada pocos minutos no debería ocurrir.
 - **Disponibilidad:** sin garantía (SLA). Cuando haya ingresos, se pasa a planes de pago sin cambiar el código.
@@ -53,7 +54,8 @@ transacción la reutilizaría entre peticiones.
 | `APP_STORAGE_SUPABASE_SECRET_KEY` | La clave `sb_secret_…` (Bitwarden) |
 | `APP_BOOTSTRAP_SUPER_ADMIN_EMAIL` | El correo del proyecto Nuvyra |
 | `APP_BOOTSTRAP_SUPER_ADMIN_PASSWORD` | Una contraseña nueva de 12 caracteres o más, generada en Bitwarden |
-| `APP_MAIL_FROM` | El correo del proyecto Nuvyra |
+| `APP_MAIL_FROM` | El correo del proyecto Nuvyra (debe ser el remitente verificado en Brevo) |
+| `APP_MAIL_BREVO_API_KEY` | La clave de API de Brevo (sección 7). Si la dejas vacía, no sale ningún correo |
 
    `APP_RENEWAL_TOKEN_SECRET` y `APP_SECRETS_ENCRYPTION_KEY` los genera Render solo. No los cambies después:
    invalidarían los enlaces de renovación y los secretos cifrados.
@@ -104,3 +106,22 @@ pg_restore --no-owner --no-privileges -d "<cadena de conexión>" nuvyra.dump
 `nuvyra.duckdns.org` no puede apuntar a Render, porque DuckDNS solo admite direcciones IP y Render pide un
 registro CNAME. Hasta tener un dominio propio, la dirección es la de Render. Un dominio propio (por ejemplo
 `.pe` o `.com`) se agrega en Render → Settings → Custom Domains, sin tocar el código.
+
+## 7. Correos del sistema (Brevo)
+Sin esto no salen los correos de recuperación de contraseña ni las invitaciones al equipo (el titular puede
+seguir copiando el enlace de invitación que muestra el panel).
+
+1. Crea una cuenta gratuita en https://www.brevo.com con el correo del proyecto Nuvyra. Ese correo queda como
+   remitente verificado. Si usas otro remitente, agrégalo y verifícalo en **Senders, Domains & Dedicated IPs → Senders**.
+2. En **SMTP & API → API Keys**, pulsa **Generate a new API key**, ponle de nombre `nuvyra-render` y guárdala en
+   Bitwarden. Empieza por `xkeysib-` y solo se muestra una vez.
+3. En Render → **Environment**: pega la clave en `APP_MAIL_BREVO_API_KEY` y revisa que `APP_MAIL_FROM` sea el
+   remitente verificado. **Save and deploy**.
+4. Prueba: en `/recuperar` pide un enlace para tu propio correo. Debe llegar en un minuto (revisa también Spam).
+
+Si no llega:
+- En el registro de Render busca «No se pudo enviar el correo de recuperación». El mensaje dice qué respondió Brevo.
+- `401` con «unrecognised IP address»: en Brevo, **Security → Authorized IPs**, desactiva el bloqueo por IP
+  (Render no tiene una IP fija en el plan gratuito).
+- Un remitente de correo gratuito (Hotmail, Gmail) llega peor que uno de dominio propio. Con un dominio propio,
+  verifícalo en Brevo (registros DKIM y DMARC) y cambia `APP_MAIL_FROM`.

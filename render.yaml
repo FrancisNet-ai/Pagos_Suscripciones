@@ -42,3 +42,6 @@ services:
         sync: false
       - key: APP_MAIL_FROM
         sync: false
+      # Correo por la API de Brevo: Render Free bloquea SMTP. El remitente (APP_MAIL_FROM) debe estar verificado en Brevo.
+      - key: APP_MAIL_BREVO_API_KEY
+        sync: false

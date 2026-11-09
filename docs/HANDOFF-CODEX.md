@@ -41,7 +41,7 @@ SaaS multiempresa para vendedores de suscripciones digitales en Perú, con la ma
 | Row Level Security (etapa 1) | En el panel, PostgreSQL solo deja ver y escribir filas del negocio de la sesión en las tablas de compradores (rol `nuvyra_app`, `app.business_id`). V17 | #29 |
 | Row Level Security (etapa 5) | La misma barrera en el resto de tablas de cada negocio, con excepciones documentadas en ADR-007. V18 | siguiente |
 
-**Pruebas en el último estado:** 217 del backend, 98 del frontend y los recorridos de Playwright
+**Pruebas en el último estado:** 222 del backend, 98 del frontend y los recorridos de Playwright
 (`frontend/e2e/`) en escritorio y móvil. El CI de GitHub los ejecuta en tres trabajos: backend, frontend y E2E.
 
 ## Lo que sigue (de `docs/BACKLOG.md`)
@@ -57,7 +57,7 @@ updates* en *Settings → Code security*.
 - Embedded Signup de Meta.
 - Pagos automáticos: Yape/Plin no tienen API oficial.
 - Poner en marcha producción en **Render + Supabase** (Oracle rechazó la cuenta): guía en `docs/deployment/render-supabase.md` y decisión en ADR-008.
-- SMTP real.
+- Cuenta de Brevo y su clave en Render (`APP_MAIL_BREVO_API_KEY`) para que salgan los correos.
 - Textos legales (Ley 29733): borradores en `docs/legal/`, pendientes de revisión por un abogado.
 - Comprobantes SUNAT.
 - Licencias de las tipografías.

@@ -320,7 +320,7 @@ Columnas reconocidas (sin importar tildes ni mayúsculas): `nombre`*, `celular`*
 | Método | Ruta | Descripción |
 |---|---|---|
 | `GET` | `/business/me/staff` | `members` (titular y colaboradores, con `permissions`, `status`, `revokedAt`), `invitations` pendientes, `seatsUsed`, `seatLimit` (`null` sin plan vigente) y `permissionOptions` |
-| `POST` | `/business/me/staff/invitations` | `{ fullName, email, permissions[] }` → `201 { invitation, link, emailSent, team }`. El enlace se devuelve **solo aquí**; se envía por correo si hay SMTP. Errores: correo con cuenta existente o invitación pendiente (`VALIDATION_ERROR`), `SEAT_LIMIT_REACHED` (409) |
+| `POST` | `/business/me/staff/invitations` | `{ fullName, email, permissions[] }` → `201 { invitation, link, emailSent, team }`. El enlace se devuelve **solo aquí**; se envía por correo si hay proveedor configurado (Brevo o SMTP). Errores: correo con cuenta existente o invitación pendiente (`VALIDATION_ERROR`), `SEAT_LIMIT_REACHED` (409) |
 | `POST` | `/business/me/staff/invitations/{id}/renew` | Enlace nuevo y 7 días más; el anterior deja de funcionar |
 | `DELETE` | `/business/me/staff/invitations/{id}` | Cancela la invitación y libera el lugar |
 | `PUT` | `/business/me/staff/{memberId}/permissions` | `{ permissions[] }` (al menos una). Efecto inmediato en la siguiente petición del colaborador |

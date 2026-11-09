@@ -109,7 +109,7 @@ cd backend && ./gradlew bootRun
 cd frontend && npm ci && npm start
 ```
 
-En desarrollo, el enlace de recuperación de contraseña se escribe en el log del backend porque no hay SMTP.
+En desarrollo, el enlace de recuperación de contraseña se escribe en el log del backend porque no hay proveedor de correo (Brevo o SMTP).
 
 ### Pruebas
 
