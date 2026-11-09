@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { IconComponent } from '../../shared/components/icon.component';
 import {
   ChangeDetectionStrategy,
@@ -18,7 +19,7 @@ import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 @Component({
   selector: 'app-renewal-public-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent],
+  imports: [LoadingIndicatorComponent, SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent],
   template: `
     <div [style]="theme()" class="buyer-stage">
       <main class="buyer-card renewal-card" [class.is-completed]="r()?.status === 'COMPLETED'">
@@ -178,9 +179,7 @@ import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
             }
           </div>
         } @else {
-          <div class="mt-10 h-48 animate-pulse rounded bg-mist/30" aria-busy="true">
-            <span class="sr-only">Cargando…</span>
-          </div>
+          <app-loading-indicator class="mt-10" label="Cargando renovación…" />
         }
       </main>
     </div>

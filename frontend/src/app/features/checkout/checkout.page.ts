@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,7 +14,7 @@ import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 @Component({
   selector: 'app-checkout-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SmallImagePipe, ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
+  imports: [LoadingIndicatorComponent, SmallImagePipe, ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
   templateUrl: './checkout.page.html',
 })
 export class CheckoutPage implements OnInit {
@@ -61,6 +62,7 @@ export class CheckoutPage implements OnInit {
   }
 
   protected submit(): void {
+    if (this.submitting()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

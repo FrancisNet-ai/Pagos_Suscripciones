@@ -5,12 +5,36 @@ Incluye compra sin registro, verificación manual, renovación sin duplicar cupo
 importación, invitación/revocación de colaboradores y resolución de pendientes con su historial.
 Se ejecuta en Chromium de escritorio y móvil, con comprobaciones de accesibilidad y de ancho.
 
+Las pruebas de cortes en `connectivity.spec.ts` y las mediciones del build para conexiones lentas están
+descritas en [rendimiento](rendimiento.md). Esos casos controlan la red y no realizan compras reales.
+
+`loading.spec.ts` comprueba por separado la presentación de la carga, con respuestas HTTP controladas
+para mantener la espera y provocar un error sin modificar datos: monograma centrado y accesible antes
+de recuperar la sesión, retirada del indicador al fallar la tienda y arco detenido con movimiento
+reducido. Son tres casos en escritorio y móvil (seis comprobaciones); no simulan una compra ni una
+verificación de pago. También hay pruebas unitarias de navegación rápida, finalización, cancelación,
+error y carga de catálogo. Validación del bloque de carga: 109 pruebas frontend y build de producción
+aprobados, además de las seis comprobaciones de navegador.
+
 Validación local de este bloque: **173 pruebas backend**, **83 pruebas frontend**, compilación de
 producción correcta y **10 recorridos E2E aprobados**. Las pruebas de historial cubren separación entre
 empresas, permisos por sección, autor distinto del asignado, repetición tras rechazo, cancelación,
 avisos enviados/omitidos, exclusión y rollback. No sustituyen una revisión previa al despliegue.
 
 Al fallar, el CI conserva capturas y trazas como artefactos de la ejecución (no se versionan en el repositorio).
+
+## Panel de ingresos del vendedor
+
+`dashboard.spec.ts` usa API y PostgreSQL reales en los dos formatos de navegador: parte de un negocio
+sin cobros, crea tres pedidos de S/ 15 con referencias E2E y verifica dos administrativamente. Comprueba
+S/ 30 confirmados frente a S/ 15 pendientes, los periodos de 7/30 días sin peticiones adicionales,
+consulta por teclado y toque, tabla de datos, accesibilidad y ausencia de desbordamiento a
+360/390/768/1440 píxeles. En móvil comprueba que los cobros precedan al gráfico. Guarda una captura de
+cada formato. No realiza transferencias bancarias.
+
+Las pruebas unitarias adicionales comprueban sumas en céntimos, selección y reducción de periodos,
+estados vacíos, separación entre pendientes y confirmados, enlaces de actividad y cambio de mes en la
+zona horaria del negocio. El bloque mantiene los límites de tamaño de Angular y no añade dependencias.
 
 ## En GitHub Actions
 

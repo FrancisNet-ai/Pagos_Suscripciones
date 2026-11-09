@@ -29,9 +29,19 @@ class SpaWebConfig(private val properties: AppProperties) : WebMvcConfigurer {
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         val root = location ?: return
-        registry.addResourceHandler("/*.js", "/*.css", "/media/**")
+        registry.addResourceHandler("/*.js", "/*.css")
             .addResourceLocations(root)
             .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable())
+        registry.addResourceHandler("/media/**")
+            .addResourceLocations(root + "media/")
+            .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable())
+        registry.addResourceHandler("/art/**")
+            .addResourceLocations(root + "art/")
+            .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic().staleWhileRevalidate(Duration.ofDays(1)))
+        registry.addResourceHandler("/loading-mark.svg", "/icon.svg", "/favicon.ico")
+            .addResourceLocations(root)
+            // Sin hash: renovar periódicamente para que una nueva identidad pueda publicarse.
+            .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic().staleWhileRevalidate(Duration.ofDays(1)))
         registry.addResourceHandler("/**")
             .addResourceLocations(root)
             .setCacheControl(CacheControl.noCache())

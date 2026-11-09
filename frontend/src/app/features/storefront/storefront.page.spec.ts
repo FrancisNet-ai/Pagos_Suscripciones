@@ -81,6 +81,35 @@ describe('StorefrontPage: catálogo visual', () => {
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
 
+  it('mantiene el monograma hasta recibir la tienda y el catálogo', () => {
+    const fixture = TestBed.createComponent(StorefrontPage);
+    fixture.componentRef.setInput('slug', 'tienda');
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-loading-indicator')?.getAttribute('aria-label')).toBe('Cargando tienda…');
+    expect(el.querySelector('app-loading-indicator')?.textContent?.trim()).toBe('');
+    http.expectOne('/api/v1/public/stores/tienda/products').flush(products);
+    fixture.detectChanges();
+    expect(el.querySelector('app-loading-indicator')).not.toBeNull();
+    http.expectOne('/api/v1/public/stores/tienda').flush({ businessName: 'Negocio real', paymentMethods: [] });
+    fixture.detectChanges();
+    expect(el.querySelector('app-loading-indicator')).toBeNull();
+    expect(el.querySelector('.store-nav')?.textContent).toContain('Negocio real');
+  });
+
+  it('sustituye el monograma por el error si no puede cargar la tienda', () => {
+    const fixture = TestBed.createComponent(StorefrontPage);
+    fixture.componentRef.setInput('slug', 'tienda');
+    fixture.detectChanges();
+    const catalog = http.expectOne('/api/v1/public/stores/tienda/products');
+    http.expectOne('/api/v1/public/stores/tienda').flush({}, { status: 503, statusText: 'Service Unavailable' });
+    fixture.detectChanges();
+    expect(catalog.cancelled).toBe(true);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-loading-indicator')).toBeNull();
+    expect(el.textContent).toContain('No pudimos cargar la tienda');
+  });
+
   it('filtra categorías y búsqueda a partir de productos reales', () => {
     const { fixture, el } = render();
     const category = Array.from(el.querySelectorAll('button')).find(

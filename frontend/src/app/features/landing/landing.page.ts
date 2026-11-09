@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -13,7 +14,7 @@ import { PlanCardComponent } from '../billing/plan-card.component';
 @Component({
   selector: 'app-landing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent, IconComponent],
+  imports: [LoadingIndicatorComponent, RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent, IconComponent],
   templateUrl: './landing.page.html',
 })
 export class LandingPage {
