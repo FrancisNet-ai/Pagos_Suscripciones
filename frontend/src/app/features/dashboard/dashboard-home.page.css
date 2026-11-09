@@ -1,0 +1,372 @@
+.income-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-areas: 'metrics' 'balances' 'revenue' 'week' 'subscriptions' 'activity' 'store' 'availability';
+}
+.dashboard-kpis {
+  grid-area: metrics;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+.metric-tile dt {
+  font-size: 0.8rem;
+}
+.metric-tile p {
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.sales-week {
+  grid-area: week;
+}
+.week-total {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 18px;
+}
+.week-total strong {
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-night);
+  font-variant-numeric: tabular-nums;
+}
+.week-total > span,
+.week-range {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.week-bars {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+.week-bars li {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.week-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-corporate);
+}
+.week-track {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  height: 76px;
+  width: 100%;
+  border-bottom: 1px solid var(--line-subtle);
+}
+.week-track > span {
+  display: block;
+  width: min(25px, 75%);
+  border-radius: 4px 4px 0 0;
+  background: var(--color-steel);
+}
+.is-today .week-track > span {
+  background: var(--color-night);
+}
+.income-main {
+  grid-area: revenue;
+}
+.income-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.income-chart-heading p {
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.income-period {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: var(--color-snow);
+}
+.income-period button {
+  min-height: 44px;
+  min-width: 63px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.income-period button[aria-pressed='true'] {
+  color: white;
+  background: var(--color-corporate);
+}
+.income-chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-subtle);
+}
+.income-chart-footer p {
+  max-width: 32rem;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+.income-chart-footer a {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.income-balances {
+  align-self: start;
+  grid-area: balances;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+.income-balances > section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 16px;
+  min-width: 0;
+}
+.balance-today {
+  background: var(--color-night);
+  color: var(--color-mist);
+}
+.balance-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.balance-heading h2 {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.balance-today .balance-heading h2 {
+  color: var(--color-snow);
+}
+.balance-amount {
+  margin: 22px 0 10px;
+  font-size: clamp(1.45rem, 2.3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.balance-today .balance-amount {
+  color: white;
+}
+.income-balances section > p:not(.balance-amount) {
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.income-balances a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: auto;
+  padding-top: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.balance-today a {
+  color: var(--color-snow);
+}
+.balance-pending {
+  background: white;
+}
+.balance-pending .balance-amount,
+.balance-pending a {
+  color: var(--color-night);
+}
+.balance-note {
+  margin-top: 15px;
+}
+.balance-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 20px;
+  color: var(--color-success);
+}
+.income-subscriptions {
+  align-self: start;
+  grid-area: subscriptions;
+}
+.subscription-stats {
+  gap: 18px;
+}
+.subscription-stats a {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 44px;
+  min-height: 36px;
+  text-decoration: none;
+  border-radius: 8px;
+  background: var(--color-snow);
+}
+.capacity-pending {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 18px;
+  margin-top: 22px;
+  border-top: 1px solid var(--line-subtle);
+  min-height: 44px;
+  font-size: 0.75rem;
+  text-decoration: none;
+  color: var(--color-corporate);
+}
+.income-activity {
+  grid-area: activity;
+}
+.activity-empty {
+  padding: 35px 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.activity-columns,
+.activity-rows li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 44px;
+  gap: 12px;
+  align-items: center;
+}
+.activity-columns {
+  margin-top: 22px;
+  padding-bottom: 12px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--line-subtle);
+}
+.activity-rows li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-subtle);
+}
+.activity-rows li > span {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--color-night);
+  overflow-wrap: anywhere;
+}
+.activity-rows time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.activity-rows a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 9px;
+  color: var(--color-corporate);
+}
+.dashboard-store {
+  grid-area: store;
+}
+.dashboard-availability {
+  grid-area: availability;
+}
+@media (min-width: 1200px) {
+  .income-grid {
+    grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+    grid-template-areas: 'metrics week' 'revenue balances' 'activity subscriptions' 'store availability';
+  }
+  .income-balances {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+@media (max-width: 767px) {
+  .dashboard-kpis {
+    gap: 12px;
+  }
+  .metric-tile {
+    padding: 18px 15px;
+  }
+  .metric-tile dd {
+    font-size: clamp(1.05rem, 5vw, 1.5rem);
+  }
+  .income-balances {
+    gap: 12px;
+  }
+  .income-balances > section {
+    padding: 20px 15px;
+  }
+  .balance-heading {
+    gap: 7px;
+  }
+  .balance-heading h2 {
+    font-size: 0.8rem;
+  }
+  .balance-amount {
+    font-size: clamp(1.05rem, 4vw, 1.7rem);
+    margin-top: 18px;
+  }
+  .income-balances section > p:not(.balance-amount) {
+    font-size: 0.72rem;
+  }
+  .income-balances a {
+    font-size: 0.72rem;
+  }
+  .balance-note {
+    margin-top: 10px;
+  }
+  .income-chart-footer {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .activity-columns {
+    display: none;
+  }
+  .activity-rows {
+    margin-top: 16px;
+  }
+  .activity-rows li {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 4px 12px;
+  }
+  .activity-rows time {
+    grid-column: 1;
+  }
+  .activity-rows a {
+    grid-column: 2;
+    grid-row: span 2;
+  }
+}
+@media (max-width: 359px) {
+  .dashboard-kpis,
+  .income-balances {
+    grid-template-columns: 1fr;
+  }
+}

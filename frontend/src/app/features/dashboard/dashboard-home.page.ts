@@ -8,10 +8,10 @@ import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, map, of, startWith } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../../core/services/api-error';
-import { BarChartComponent, BarPoint } from '../../shared/components/bar-chart.component';
 import { SolesPipe } from '../../shared/pipes/soles.pipe';
-import { Dashboard, ReportsApi } from '../reports/reports.api';
+import { Dashboard, DayAmount, ReportsApi } from '../reports/reports.api';
 import { Business, SettingsApi } from '../settings/settings.api';
+import { RevenueChartComponent } from './revenue-chart.component';
 
 interface Setup {
   paymentConfigured: boolean;
@@ -26,14 +26,16 @@ type LoadState =
 @Component({
   selector: 'app-dashboard-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, RouterLink, SolesPipe, BarChartComponent, IconComponent],
+  imports: [LoadingIndicatorComponent, RouterLink, SolesPipe, RevenueChartComponent, IconComponent],
   templateUrl: './dashboard-home.page.html',
+  styleUrl: './dashboard-home.page.css',
 })
 export class DashboardHomePage {
   private readonly http = inject(HttpClient);
   private readonly clipboard = inject(Clipboard);
   protected readonly auth = inject(AuthService);
   protected readonly copied = signal(false);
+  protected readonly period = signal<7 | 30>(30);
 
   protected readonly state = toSignal(
     forkJoin({
@@ -63,19 +65,54 @@ export class DashboardHomePage {
 
   protected readonly firstName = computed(() => this.auth.user()?.fullName.split(' ')[0] ?? '');
 
-  protected readonly chart = computed<BarPoint[]>(() => {
+  protected readonly chartDays = computed<DayAmount[]>(() => {
     const s = this.state();
-    if (s.status !== 'ready') return [];
-    const days = s.dashboard.last30Days;
-    return days.map((d, i) => ({
-      label: new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long' }).format(
-        new Date(`${d.date}T12:00:00`),
-      ),
-      tick: d.date.slice(8, 10),
-      value: Number(d.amount),
-      highlight: i === days.length - 1,
-    }));
+    return s.status === 'ready' ? s.dashboard.last30Days.slice(-this.period()) : [];
   });
+  protected readonly week = computed(() => {
+    const s = this.state();
+    return s.status === 'ready' ? s.dashboard.last30Days.slice(-7) : [];
+  });
+  protected readonly weeklySales = computed(() =>
+    this.week().reduce((sum, day) => sum + day.count, 0),
+  );
+  protected readonly maxDailySales = computed(() =>
+    Math.max(...this.week().map((day) => day.count), 1),
+  );
+
+  protected dayLabel(date: string): string {
+    return new Intl.DateTimeFormat('es-PE', {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    }).format(new Date(`${date}T12:00:00Z`));
+  }
+
+  protected rangeLabel(days: DayAmount[]): string {
+    return days.length
+      ? `${this.dayLabel(days[0]!.date)} — ${this.dayLabel(days[days.length - 1]!.date)}`
+      : 'Sin movimientos en el periodo';
+  }
+
+  protected activityLink(item: Dashboard['recentActivity'][number]): string | null {
+    switch (item.entityType) {
+      case 'ORDER':
+        return item.entityId ? '/panel/ventas/' + item.entityId : '/panel/ventas';
+      case 'PAYMENT':
+        return '/panel/ventas';
+      case 'SUBSCRIPTION':
+        return '/panel/suscripciones';
+      case 'RENEWAL':
+      case 'NOTIFICATION':
+        return '/panel/renovaciones';
+      case 'PRODUCT':
+        return item.entityId ? '/panel/productos/' + item.entityId : '/panel/productos';
+      case 'CUSTOMER':
+        return item.entityId ? '/panel/clientes/' + item.entityId : '/panel/clientes';
+      default:
+        return null;
+    }
+  }
 
   protected storeUrl(slug: string): string {
     return `${window.location.origin}/tienda/${slug}`;
@@ -94,14 +131,25 @@ export class DashboardHomePage {
 
   protected time(iso: string): string {
     const d = new Date(iso);
-    const sameDay = d.toDateString() === new Date().toDateString();
+    const s = this.state();
+    const zone = s.status === 'ready' ? s.dashboard.timeZone : 'America/Lima';
+    const calendar = new Intl.DateTimeFormat('es-PE', { timeZone: zone });
+    const sameDay = calendar.format(d) === calendar.format(new Date());
     return new Intl.DateTimeFormat(
       'es-PE',
-      sameDay ? { hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short' },
+      sameDay
+        ? { hour: '2-digit', minute: '2-digit', timeZone: zone }
+        : { day: 'numeric', month: 'short', timeZone: zone },
     ).format(d);
   }
 
   protected monthName(): string {
-    return new Intl.DateTimeFormat('es-PE', { month: 'long' }).format(new Date());
+    const s = this.state();
+    return new Intl.DateTimeFormat('es-PE', {
+      month: 'long',
+      timeZone: s.status === 'ready' ? s.dashboard.timeZone : 'America/Lima',
+    })
+      .format(new Date())
+      .toLocaleLowerCase('es-PE');
   }
 }

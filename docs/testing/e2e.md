@@ -23,6 +23,19 @@ avisos enviados/omitidos, exclusión y rollback. No sustituyen una revisión pre
 
 Al fallar, el CI conserva capturas y trazas como artefactos de la ejecución (no se versionan en el repositorio).
 
+## Panel de ingresos del vendedor
+
+`dashboard.spec.ts` usa API y PostgreSQL reales en los dos formatos de navegador: parte de un negocio
+sin cobros, crea tres pedidos de S/ 15 con referencias E2E y verifica dos administrativamente. Comprueba
+S/ 30 confirmados frente a S/ 15 pendientes, los periodos de 7/30 días sin peticiones adicionales,
+consulta por teclado y toque, tabla de datos, accesibilidad y ausencia de desbordamiento a
+360/390/768/1440 píxeles. En móvil comprueba que los cobros precedan al gráfico. Guarda una captura de
+cada formato. No realiza transferencias bancarias.
+
+Las pruebas unitarias adicionales comprueban sumas en céntimos, selección y reducción de periodos,
+estados vacíos, separación entre pendientes y confirmados, enlaces de actividad y cambio de mes en la
+zona horaria del negocio. El bloque mantiene los límites de tamaño de Angular y no añade dependencias.
+
 ## En GitHub Actions
 
 El flujo `.github/workflows/ci.yml` comprueba estos entornos:

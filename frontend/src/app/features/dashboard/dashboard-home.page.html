@@ -1,14 +1,14 @@
-<section aria-labelledby="inicio-titulo" class="mx-auto max-w-6xl">
-  <div class="dashboard-welcome">
+<section aria-labelledby="inicio-titulo" class="mx-auto max-w-6xl income-home">
+  <header class="dashboard-welcome">
     <div>
       <p class="type-eyebrow">Tu negocio, bajo control</p>
       <h1 id="inicio-titulo" class="type-h1 mt-2">Hola, {{ firstName() }}.</h1>
-      <p>Aquí tienes un resumen de tu negocio.</p>
+      <p>Tus ingresos y lo que necesita tu atención, en un solo lugar.</p>
     </div>
     <a routerLink="/panel/productos/nuevo" class="btn btn-primary"
       ><app-icon name="plus" />Nuevo producto</a
     >
-  </div>
+  </header>
   @let s = state();
   @if (s.status === 'loading') {
     <app-loading-indicator class="mt-8" label="Cargando indicadores…" />
@@ -20,87 +20,148 @@
     @if (d.notificationsDue > 0) {
       <a
         routerLink="/panel/renovaciones"
-        class="notice notice-info mb-4 flex-wrap items-center justify-between no-underline"
-        ><span
+        class="notice notice-info mb-5 flex-wrap items-center justify-between no-underline"
+      >
+        <span
           >{{ d.notificationsDue }}
           {{
             d.notificationsDue === 1 ? 'aviso de renovación listo' : 'avisos de renovación listos'
           }}
           para enviar.</span
-        ><span class="inline-flex items-center gap-2 text-sm font-semibold"
-          >Ver avisos <app-icon name="arrow" /></span
-      ></a>
+        >
+        <span class="inline-flex items-center gap-2 text-sm font-semibold"
+          >Ver avisos <app-icon name="arrow"
+        /></span>
+      </a>
     }
-    @if (d.pendingVerification.count > 0) {
-      <a
-        routerLink="/panel/ventas"
-        [queryParams]="{ filtro: 'TO_VERIFY' }"
-        class="notice notice-warning mb-4 flex-wrap items-center justify-between no-underline"
-        ><span
-          >{{ d.pendingVerification.count }}
-          {{ d.pendingVerification.count === 1 ? 'pago espera' : 'pagos esperan' }} verificación ·
-          {{ d.pendingVerification.amount | soles }}.</span
-        ><span class="inline-flex items-center gap-2 text-sm font-semibold"
-          >Revisar pagos <app-icon name="arrow" /></span
-      ></a>
-    }
-    <dl class="dashboard-kpis">
-      <div class="metric-tile">
-        <dt>Ingresos de {{ monthName() }} <app-icon name="wallet" /></dt>
-        <dd>
-          {{ d.confirmedMonth.amount | soles }}
-          <p>Solo pagos verificados</p>
-        </dd>
-      </div>
-      <div class="metric-tile">
-        <dt>Suscripciones activas <app-icon name="renew" /></dt>
-        <dd>
-          <a
-            class="no-underline"
-            routerLink="/panel/suscripciones"
-            [queryParams]="{ filtro: 'ACTIVE' }"
-            >{{ d.subscriptions.active }}</a
-          >
-          <p>Servicios vigentes</p>
-        </dd>
-      </div>
-      <div class="metric-tile">
-        <dt>Ventas del mes <app-icon name="chart" /></dt>
-        <dd>
-          {{ d.confirmedMonth.count }}
-          <p>Hoy: {{ d.confirmedToday.count }} · {{ d.confirmedToday.amount | soles }}</p>
-        </dd>
-      </div>
-      <div class="metric-tile">
-        <dt>Clientes registrados <app-icon name="users" /></dt>
-        <dd>
-          <a class="no-underline" routerLink="/panel/clientes">{{ d.customers }}</a>
-          <p>Tu comunidad, en un lugar</p>
-        </dd>
-      </div>
-    </dl>
-    <div class="dashboard-chart-layout">
-      <section class="dashboard-surface" aria-labelledby="ingresos-titulo">
-        <div class="surface-heading">
-          <h2 id="ingresos-titulo">Ingresos confirmados</h2>
-          <a class="link" routerLink="/panel/reportes">Ver reportes</a>
+    <div class="income-grid">
+      <dl class="dashboard-kpis" aria-label="Resumen del negocio">
+        <div class="metric-tile metric-income">
+          <dt>Cobrado en {{ monthName() }} <app-icon name="wallet" /></dt>
+          <dd>
+            {{ d.confirmedMonth.amount | soles }}
+            <p>Solo pagos verificados</p>
+          </dd>
         </div>
-        <p class="mt-2 text-xs text-[var(--text-muted)]">Últimos 30 días · soles peruanos</p>
-        <div class="mt-6">
-          <app-bar-chart
-            [points]="chart()"
-            variant="area"
-            caption="Ingresos confirmados de los últimos 30 días"
-          />
+        <div class="metric-tile">
+          <dt>Ventas del mes <app-icon name="chart" /></dt>
+          <dd>
+            {{ d.confirmedMonth.count }}
+            <p>Compras y renovaciones cobradas</p>
+          </dd>
         </div>
-        @if (d.renewalsMonth.count > 0) {
-          <p class="mt-4 text-xs text-[var(--text-muted)]">
-            Este mes: {{ d.renewalsMonth.count }} renovaciones cobradas ·
-            {{ d.renewalsMonth.amount | soles }}.
+        <div class="metric-tile">
+          <dt>Suscripciones activas <app-icon name="renew" /></dt>
+          <dd>
+            <a
+              class="no-underline"
+              routerLink="/panel/suscripciones"
+              [queryParams]="{ filtro: 'ACTIVE' }"
+              >{{ d.subscriptions.active }}</a
+            >
+            <p>Servicios vigentes</p>
+          </dd>
+        </div>
+        <div class="metric-tile">
+          <dt>Clientes registrados <app-icon name="users" /></dt>
+          <dd>
+            <a class="no-underline" routerLink="/panel/clientes">{{ d.customers }}</a>
+            <p>Compradores de tu negocio</p>
+          </dd>
+        </div>
+      </dl>
+      <aside class="income-balances" aria-label="Cobros de hoy y pagos pendientes">
+        <section class="balance-today" aria-labelledby="cobrado-hoy-titulo">
+          <div class="balance-heading">
+            <h2 id="cobrado-hoy-titulo">Cobrado hoy</h2>
+            <app-icon name="wallet" />
+          </div>
+          <p class="balance-amount">{{ d.confirmedToday.amount | soles }}</p>
+          <p>
+            {{ d.confirmedToday.count }}
+            {{ d.confirmedToday.count === 1 ? 'pago verificado' : 'pagos verificados' }}
           </p>
-        }
+          <a routerLink="/panel/ventas" [queryParams]="{ filtro: 'PAID' }"
+            >Ver ventas cobradas <app-icon name="arrow"
+          /></a>
+        </section>
+        <section class="balance-pending" aria-labelledby="por-verificar-titulo">
+          <div class="balance-heading">
+            <h2 id="por-verificar-titulo">Por verificar</h2>
+            <app-icon name="clock" />
+          </div>
+          <p class="balance-amount">{{ d.pendingVerification.amount | soles }}</p>
+          <p>
+            {{ d.pendingVerification.count }}
+            {{ d.pendingVerification.count === 1 ? 'pago pendiente' : 'pagos pendientes' }} · total
+            por revisar
+          </p>
+          <p class="balance-note">
+            Se suma a tus ingresos cuando confirmas que recibiste el dinero.
+          </p>
+          @if (d.pendingVerification.count > 0) {
+            <a routerLink="/panel/ventas" [queryParams]="{ filtro: 'TO_VERIFY' }"
+              >Revisar pagos <app-icon name="arrow"
+            /></a>
+          } @else {
+            <p class="balance-updated"><app-icon name="check" />Estás al día</p>
+          }
+        </section>
+      </aside>
+      <section class="dashboard-surface income-main" aria-labelledby="ingresos-titulo">
+        <div class="income-chart-heading">
+          <div>
+            <h2 id="ingresos-titulo">Ingresos confirmados</h2>
+            <p>Últimos {{ period() }} días · {{ rangeLabel(chartDays()) }}</p>
+          </div>
+          <div class="income-period" role="group" aria-label="Periodo de ingresos">
+            <button type="button" [attr.aria-pressed]="period() === 7" (click)="period.set(7)">
+              7 días
+            </button>
+            <button type="button" [attr.aria-pressed]="period() === 30" (click)="period.set(30)">
+              30 días
+            </button>
+          </div>
+        </div>
+        <app-revenue-chart [days]="chartDays()" />
+        <div class="income-chart-footer">
+          @if (d.renewalsMonth.count > 0) {
+            <p>
+              {{ d.renewalsMonth.count }} renovaciones cobradas en {{ monthName() }} ·
+              {{ d.renewalsMonth.amount | soles }}. Ya incluidas en lo cobrado del mes.
+            </p>
+          }
+          <a class="link" routerLink="/panel/reportes">Ver reportes <app-icon name="arrow" /></a>
+        </div>
       </section>
-      <section class="dashboard-surface" aria-labelledby="suscripciones-titulo">
+      <section class="dashboard-surface sales-week" aria-labelledby="ventas-semana-titulo">
+        <div class="surface-heading">
+          <h2 id="ventas-semana-titulo">Ventas confirmadas</h2>
+          <app-icon name="chart" />
+        </div>
+        <div class="week-total">
+          <strong>{{ weeklySales() }}</strong
+          ><span>últimos 7 días</span>
+        </div>
+        <ol class="week-bars" aria-label="Ventas confirmadas por día">
+          @for (day of week(); track day.date; let last = $last) {
+            <li [class.is-today]="last">
+              <span class="week-count">{{ day.count }}<span class="sr-only"> ventas</span></span>
+              <span class="week-track" aria-hidden="true"
+                ><span [style.height.%]="(day.count / maxDailySales()) * 100"></span
+              ></span>
+              <time [attr.datetime]="day.date" [attr.aria-label]="dayLabel(day.date)">{{
+                day.date.slice(8)
+              }}</time>
+            </li>
+          }
+        </ol>
+        <p class="week-range">{{ rangeLabel(week()) }}</p>
+      </section>
+      <section
+        class="dashboard-surface income-subscriptions"
+        aria-labelledby="suscripciones-titulo"
+      >
         <div class="surface-heading">
           <h2 id="suscripciones-titulo">Tus suscripciones</h2>
           <app-icon name="renew" />
@@ -142,87 +203,87 @@
           </div>
         </dl>
         <a
-          class="mt-6 flex items-center justify-between border-t border-[var(--line-subtle)] pt-4 text-xs font-medium text-corporate no-underline"
+          class="capacity-pending"
           routerLink="/panel/renovaciones"
           [queryParams]="{ vista: 'RELEASE' }"
           ><span>{{ d.subscriptions.capacityReleasePending }} cupos por liberar</span
           ><app-icon name="arrow"
         /></a>
       </section>
-    </div>
-    <div class="dashboard-bottom">
-      <section class="dashboard-surface" aria-labelledby="actividad-titulo">
+      <section class="dashboard-surface income-activity" aria-labelledby="actividad-titulo">
         <div class="surface-heading">
           <h2 id="actividad-titulo">Actividad reciente</h2>
           <app-icon name="clock" />
         </div>
         @if (d.recentActivity.length === 0) {
-          <p class="py-8 text-sm text-[var(--text-muted)]">
-            Aquí verás pedidos, pagos y activaciones a medida que ocurran.
-          </p>
+          <p class="activity-empty">Aquí verás los pedidos, pagos y activaciones de tu negocio.</p>
         } @else {
-          <ol class="mt-4 divide-y divide-[var(--line-subtle)]">
-            @for (a of d.recentActivity; track $index) {
-              <li class="flex items-start justify-between gap-4 py-4 text-xs">
-                <span class="text-night">{{ a.text }}</span
-                ><time class="shrink-0 text-[var(--text-muted)]" [attr.datetime]="a.at">{{
-                  time(a.at)
-                }}</time>
+          <div class="activity-columns" aria-hidden="true">
+            <span>Movimiento</span><span>Cuándo</span><span></span>
+          </div>
+          <ol class="activity-rows">
+            @for (activity of d.recentActivity.slice(0, 5); track $index) {
+              <li>
+                <span>{{ activity.text }}</span>
+                <time [attr.datetime]="activity.at">{{ time(activity.at) }}</time>
+                @if (activityLink(activity); as link) {
+                  <a [routerLink]="link" [attr.aria-label]="'Consultar: ' + activity.text"
+                    ><app-icon name="chevron"
+                  /></a>
+                }
               </li>
             }
           </ol>
         }
       </section>
-      <div class="grid gap-5">
-        <section
-          class="overflow-hidden rounded-2xl bg-night p-6 text-snow"
-          aria-labelledby="enlace-titulo"
-        >
-          <p id="enlace-titulo" class="type-eyebrow !text-mist">Tu tienda, abierta al mundo</p>
-          <p class="mt-3 break-all font-[family-name:var(--font-editorial)] text-2xl">
-            {{ business.businessName }}
+      <section
+        class="dashboard-store overflow-hidden rounded-2xl bg-night p-6 text-snow"
+        aria-labelledby="enlace-titulo"
+      >
+        <p id="enlace-titulo" class="type-eyebrow !text-mist">Tu tienda, abierta al mundo</p>
+        <p class="mt-3 break-all font-[family-name:var(--font-editorial)] text-2xl">
+          {{ business.businessName }}
+        </p>
+        <p class="mt-2 break-all text-xs text-mist">{{ storeUrl(business.slug) }}</p>
+        @if (!(s.setup.publishedProducts > 0 && s.setup.paymentConfigured)) {
+          <p class="mt-3 text-xs text-mist">
+            Habilita Yape o Plin y publica un producto para recibir pedidos.
           </p>
-          <p class="mt-2 break-all text-xs text-mist">{{ storeUrl(business.slug) }}</p>
-          @if (!(s.setup.publishedProducts > 0 && s.setup.paymentConfigured)) {
-            <p class="mt-3 text-xs text-mist">
-              Habilita Yape o Plin y publica un producto para recibir pedidos.
-            </p>
-          }
-          <div class="mt-5 flex flex-wrap gap-2">
-            <button
-              class="btn btn-light !min-h-10 !text-xs"
-              type="button"
-              (click)="copyStoreUrl(business.slug)"
-            >
-              {{ copied() ? 'Enlace copiado' : 'Copiar enlace' }}</button
-            ><a
-              class="btn btn-ghost-light !min-h-10 !text-xs"
-              [href]="'/tienda/' + business.slug"
-              target="_blank"
-              rel="noopener"
-              >Ver tienda <app-icon name="external"
-            /></a>
-          </div>
-          <span class="sr-only" role="status">{{ copied() ? 'Enlace copiado' : '' }}</span>
-        </section>
-        <section class="dashboard-surface" aria-labelledby="agotados-titulo">
-          <h2 id="agotados-titulo">Disponibilidad del catálogo</h2>
-          @if (d.soldOutProducts.length === 0) {
-            <p class="mt-3 text-xs text-[var(--text-muted)]">
-              Ningún producto publicado está agotado.
-            </p>
-          } @else {
-            <ul class="mt-4 grid gap-3">
-              @for (p of d.soldOutProducts; track p.id) {
-                <li class="flex items-center justify-between gap-3 text-xs">
-                  <a [routerLink]="['/panel/productos', p.id]" class="link">{{ p.name }}</a
-                  ><span>{{ p.capacity }} cupos ocupados</span>
-                </li>
-              }
-            </ul>
-          }
-        </section>
-      </div>
+        }
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button
+            class="btn btn-light !min-h-10 !text-xs"
+            type="button"
+            (click)="copyStoreUrl(business.slug)"
+          >
+            {{ copied() ? 'Enlace copiado' : 'Copiar enlace' }}</button
+          ><a
+            class="btn btn-ghost-light !min-h-10 !text-xs"
+            [href]="'/tienda/' + business.slug"
+            target="_blank"
+            rel="noopener"
+            >Ver tienda <app-icon name="external"
+          /></a>
+        </div>
+        <span class="sr-only" role="status">{{ copied() ? 'Enlace copiado' : '' }}</span>
+      </section>
+      <section class="dashboard-surface dashboard-availability" aria-labelledby="agotados-titulo">
+        <h2 id="agotados-titulo">Disponibilidad del catálogo</h2>
+        @if (d.soldOutProducts.length === 0) {
+          <p class="mt-3 text-xs text-[var(--text-muted)]">
+            Ningún producto publicado está agotado.
+          </p>
+        } @else {
+          <ul class="mt-4 grid gap-3">
+            @for (p of d.soldOutProducts; track p.id) {
+              <li class="flex items-center justify-between gap-3 text-xs">
+                <a [routerLink]="['/panel/productos', p.id]" class="link">{{ p.name }}</a
+                ><span>{{ p.capacity }} cupos ocupados</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
     </div>
     @if (!setupComplete(s.setup, business)) {
       <section
