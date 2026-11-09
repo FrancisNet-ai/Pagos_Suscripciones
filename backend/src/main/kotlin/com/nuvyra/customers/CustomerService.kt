@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
 import java.util.UUID
 
-const val CONSENT_POLICY_VERSION = "2026-10"
+const val CONSENT_POLICY_VERSION = "2026-11"
 
 @Service
 class CustomerService(
