@@ -66,7 +66,7 @@ import { AdminApi, PlanPayload } from './admin.api';
           <div class="field">
             <label class="field-label" for="adminUserLimit">Usuarios administradores</label>
             <input id="adminUserLimit" class="input type-numeric" type="number" min="1" formControlName="adminUserLimit" />
-            <p class="field-hint">Se aplicará cuando existan cuentas de colaboradores; hoy cada negocio tiene solo a su titular.</p>
+            <p class="field-hint">Incluye al titular. Al llegar al límite, el negocio no puede invitar a más colaboradores.</p>
           </div>
         </div>
         <fieldset class="grid gap-3">
