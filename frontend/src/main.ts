@@ -5,10 +5,13 @@ import { App } from './app/app';
 bootstrapApplication(App, appConfig).catch((err: unknown) => {
   console.error(err);
   document.querySelector('[data-bootstrap-loader]')?.remove();
-  const error = document.getElementById('app-startup-error');
-  if (error) {
+  const template = document.querySelector<HTMLTemplateElement>('#app-startup-error');
+  if (template) {
+    const error = template.content.cloneNode(true) as DocumentFragment;
     const retry = error.querySelector('a');
     if (retry) retry.href = window.location.href;
-    error.hidden = false;
+    const root = document.querySelector('app-root');
+    if (root) root.replaceChildren(error);
+    else document.body.append(error);
   }
 });

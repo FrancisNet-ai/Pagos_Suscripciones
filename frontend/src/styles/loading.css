@@ -21,7 +21,7 @@
     background: var(--color-snow, #f6fafd);
   }
 
-  .app-startup-error:not([hidden]) {
+  .app-startup-error {
     display: grid;
     min-block-size: 100dvh;
     place-content: center;

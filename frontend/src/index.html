@@ -41,11 +41,13 @@
         />
       </div>
     </app-root>
-    <div id="app-startup-error" class="app-startup-error" role="alert" hidden>
-      <h1 class="type-h2">No pudimos cargar la página</h1>
-      <p>Comprueba tu conexión y vuelve a intentarlo.</p>
-      <a class="btn btn-primary" href="">Volver a intentar</a>
-    </div>
+    <template id="app-startup-error">
+      <main class="app-startup-error" role="alert">
+        <h1 class="type-h2">No pudimos cargar la página</h1>
+        <p>Comprueba tu conexión y vuelve a intentarlo.</p>
+        <a class="btn btn-primary" href="">Volver a intentar</a>
+      </main>
+    </template>
     <noscript>
       <style>
         [data-bootstrap-loader] {

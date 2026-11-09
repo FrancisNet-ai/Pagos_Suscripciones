@@ -39,6 +39,7 @@ test('el arranque muestra solo el monograma hasta recuperar la sesión', async (
   }
   await expect(page.getByRole('heading', { name: 'Vende, crece y conecta.' })).toBeVisible();
   await expect(page.locator('[data-bootstrap-loader]')).toHaveCount(0);
+  await expect(page.locator('h1')).toHaveCount(1);
 });
 
 test('la espera de la tienda termina también cuando el servidor devuelve un error', async ({
