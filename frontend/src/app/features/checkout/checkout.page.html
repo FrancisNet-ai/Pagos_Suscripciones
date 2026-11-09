@@ -72,7 +72,7 @@
           </div>
 
           <div class="field">
-            <label class="field-label" for="phone">Tu celular</label>
+            <label class="field-label" for="phone">Tu celular con WhatsApp</label>
             <input
               id="phone"
               class="input"
@@ -84,7 +84,7 @@
               [attr.aria-invalid]="!!err('phone')"
               aria-describedby="phone-hint"
             />
-            <p id="phone-hint" class="field-hint">El vendedor te contactará a este número.</p>
+            <p id="phone-hint" class="field-hint">Usa el número donde tienes WhatsApp: por ahí te escribirá el vendedor sobre tu pedido y tu renovación. También te identifica si vuelves a comprar.</p>
             @if (err('phone'); as e) {
               <p class="field-error">{{ e }}</p>
             }

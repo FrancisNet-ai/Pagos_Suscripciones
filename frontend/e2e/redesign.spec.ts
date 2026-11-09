@@ -113,7 +113,7 @@ test('compra sin cuenta, verificación manual y renovación con el mismo cupo', 
     await capture(page, info, '06-compra');
     await accessible(page);
     await page.getByRole('textbox', { name: 'Tu nombre', exact: true }).fill('María E2E');
-    await page.getByRole('textbox', { name: 'Tu celular', exact: true }).fill('911000001');
+    await page.getByRole('textbox', { name: 'Tu celular con WhatsApp', exact: true }).fill('911000001');
     await page.getByRole('checkbox').nth(0).check();
     await page.getByRole('checkbox').nth(1).check();
     await page.getByRole('checkbox').nth(2).check();
