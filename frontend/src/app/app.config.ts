@@ -5,6 +5,7 @@ import { TitleStrategy, provideRouter, withComponentInputBinding, withInMemorySc
 import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
 import { sessionExpiredInterceptor } from './core/interceptors/session-expired.interceptor';
+import { resilientReadsInterceptor } from './core/interceptors/resilient-reads.interceptor';
 import { NuvyraTitleStrategy } from './core/title.strategy';
 
 export const appConfig: ApplicationConfig = {
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),
-      withInterceptors([sessionExpiredInterceptor]),
+      withInterceptors([sessionExpiredInterceptor, resilientReadsInterceptor]),
     ),
     { provide: TitleStrategy, useClass: NuvyraTitleStrategy },
     provideAppInitializer(() => inject(AuthService).initialize()),

@@ -35,7 +35,7 @@ compatibles entre sí y se actualizan juntas al subir Spring Boot.
 | Grupo | Dependencias | Para qué |
 |---|---|---|
 | Aplicación | `@angular/core`, `common`, `compiler`, `forms`, `platform-browser`, `router`, `cdk`, `rxjs`, `tslib` | Interfaz, formularios, rutas y accesibilidad (CDK) |
-| Tipografías | `@fontsource-variable/inter`, `playfair-display`, `bodoni-moda` | Fuentes servidas desde la propia app, sin terceros |
+| Tipografías | `@fontsource-variable/inter`, `bodoni-moda` | Fuentes servidas desde la propia app, sin terceros |
 | Compilación | `@angular/build`, `@angular/cli`, `@angular/compiler-cli`, `typescript` | Compilar y servir la aplicación |
 | Estilos | `tailwindcss`, `@tailwindcss/postcss`, `postcss` | Sistema visual |
 | Pruebas | `vitest`, `jsdom`, `@playwright/test`, `@axe-core/playwright` | Pruebas unitarias, de extremo a extremo y de accesibilidad |

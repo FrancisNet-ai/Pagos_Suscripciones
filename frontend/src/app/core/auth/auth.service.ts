@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, firstValueFrom, map, of, tap } from 'rxjs';
+import { Observable, catchError, firstValueFrom, forkJoin, map, of, tap } from 'rxjs';
 import {
   BusinessSummary,
   LoginPayload,
@@ -31,8 +31,11 @@ export class AuthService {
 
   /** Se ejecuta al iniciar la aplicación: obtiene el token CSRF y recupera la sesión si existe. */
   async initialize(): Promise<void> {
-    await firstValueFrom(this.http.get<void>(`${API}/csrf`).pipe(catchError(() => of(undefined))));
-    await firstValueFrom(this.loadSession());
+    // Son lecturas independientes: no añadir otro viaje de red antes de mostrar la página.
+    await firstValueFrom(forkJoin([
+      this.http.get<void>(`${API}/csrf`).pipe(catchError(() => of(undefined))),
+      this.loadSession(),
+    ]));
   }
 
   loadSession(): Observable<SessionResponse | null> {

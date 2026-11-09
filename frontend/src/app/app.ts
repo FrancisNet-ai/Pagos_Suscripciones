@@ -11,11 +11,12 @@ import {
 } from '@angular/router';
 import { filter, map, of, switchMap, timer } from 'rxjs';
 import { LoadingIndicatorComponent } from './shared/components/loading-indicator.component';
+import { ConnectionStatusComponent } from './shared/components/connection-status.component';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, LoadingIndicatorComponent],
+  imports: [RouterOutlet, LoadingIndicatorComponent, ConnectionStatusComponent],
   template: `
     <div [attr.inert]="navigating() ? '' : null" [attr.aria-busy]="navigating()">
       <router-outlet />
@@ -23,6 +24,7 @@ import { LoadingIndicatorComponent } from './shared/components/loading-indicator
     @if (navigating()) {
       <app-loading-indicator class="app-loading-screen" label="Cargando página…" />
     }
+    <app-connection-status />
   `,
 })
 export class App {

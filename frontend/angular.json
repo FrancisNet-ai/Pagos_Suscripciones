@@ -27,7 +27,6 @@
             ],
             "styles": [
               "node_modules/@fontsource-variable/inter/index.css",
-              "node_modules/@fontsource-variable/playfair-display/index.css",
               "node_modules/@fontsource-variable/bodoni-moda/index.css",
               "src/styles.css"
             ]
