@@ -1,0 +1,191 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+.revenue-total {
+  display: grid;
+  gap: 6px;
+  margin: 18px 0;
+}
+.revenue-total strong {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+  color: var(--color-night);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.revenue-total > span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.revenue-plot {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 12px;
+}
+.revenue-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 160px;
+  padding: 1px 0;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.revenue-canvas {
+  min-width: 0;
+}
+.revenue-drawing {
+  position: relative;
+  height: 160px;
+}
+.revenue-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--color-corporate);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 160px;
+  overflow: visible;
+  touch-action: pan-y;
+}
+.revenue-dates {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+.revenue-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--line-subtle);
+}
+.revenue-selection div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.revenue-selection time {
+  color: var(--color-night);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.revenue-selection span {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+.revenue-selection strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-night);
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+.revenue-day-picker {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.revenue-day-picker > span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+input[type='range'] {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  accent-color: var(--color-corporate);
+  cursor: pointer;
+}
+.revenue-empty {
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  height: 240px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.revenue-empty p:first-of-type {
+  color: var(--color-night);
+  font-weight: 600;
+}
+.revenue-empty-line {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-bottom: 22px;
+  background: var(--color-mist);
+}
+.revenue-data {
+  margin-top: 12px;
+  border-top: 1px solid var(--line-subtle);
+}
+.revenue-data summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-corporate);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.revenue-data summary::after {
+  content: '+';
+  margin-left: auto;
+}
+.revenue-data[open] summary::after {
+  content: '−';
+}
+.revenue-data table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.revenue-data th,
+.revenue-data td {
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+.revenue-data th {
+  font-weight: 500;
+  text-align: left;
+}
+.revenue-data td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .revenue-plot {
+    gap: 8px;
+  }
+  .revenue-dates span:nth-child(2),
+  .revenue-dates span:nth-child(4) {
+    display: none;
+  }
+  .revenue-selection {
+    gap: 8px;
+  }
+  .revenue-selection time {
+    font-size: 0.75rem;
+  }
+}

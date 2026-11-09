@@ -59,6 +59,27 @@ Los planes y precios vienen de la API. La composición promocional de la portada
 ilustración y no contiene ingresos ficticios. Las tiendas conservan el logotipo, la portada y el color
 configurados por el vendedor. No se añaden botones de autenticación social ni controles sin destino.
 
+## Inicio del vendedor: ingresos claros
+
+Adaptación de la referencia financiera del propietario (9 de noviembre de 2026), conservando la
+identidad azul Nuvyra y sus datos reales:
+
+- Cuatro indicadores: cobrado en el mes, ventas cobradas del mes, suscripciones activas y clientes.
+- Gráfico de área de ingresos confirmados con periodos de 7 y 30 días, consulta por puntero, pantalla
+  táctil o teclado y tabla desplegable con los mismos datos. Las barras resumen las ventas verificadas
+  de los últimos siete días. No se inventan porcentajes de crecimiento ni se añaden gastos inexistentes.
+- «Cobrado hoy» y «Por verificar» separan dinero confirmado del total pendiente de revisar. Las
+  renovaciones cobradas ya están incluidas en el total mensual; el texto lo aclara cuando las hay.
+- En escritorio, indicadores y barras arriba, gráfico amplio junto a los cobros y actividad reciente
+  junto a suscripciones. En móvil, los cobros aparecen antes del gráfico; las filas de actividad se
+  adaptan y no requieren desplazamiento horizontal. Se muestran los cinco movimientos más recientes.
+- Los importes proceden de `/api/v1/reports/dashboard`. Cambiar el periodo reutiliza `last30Days` sin
+  nuevas consultas. El gráfico es SVG local y no añade dependencias ni descargas externas. La pantalla
+  sigue cargándose mediante su ruta diferida; no aumenta el bundle inicial.
+- Las fechas respetan la zona horaria del negocio y los días de calendario devueltos por la API.
+  Los estados sin cobros muestran cero y una explicación. Se conservan tareas, avisos, enlace de la
+  tienda y pasos de configuración. El panel de colaboradores y el de SUPER_ADMIN mantienen su alcance.
+
 ## Accesibilidad y móvil
 
 ### Animación de carga
@@ -74,8 +95,9 @@ configurados por el vendedor. No se añaden botones de autenticación social ni 
 - Formatos comprobados a 360, 390, 768 y 1440 píxeles, con formularios de una columna en móvil.
 - Menús móviles con foco contenido, cierre por Escape y devolución del foco al botón que los abrió.
 - Objetivos táctiles principales de al menos 44 píxeles y estilos de foco visibles.
-- Gráfico con resumen y tabla equivalente para lectores de pantalla. La tabla se oculta mediante un
-  contenedor de 1 píxel, evitando que su tamaño intrínseco provoque desbordamientos o espacio vacío.
+- Gráficos con resumen y tabla equivalente para lectores de pantalla. El gráfico de ingresos del
+  vendedor permite desplegar la tabla; los demás conservan su tabla accesible oculta, evitando
+  desbordamientos o espacio vacío.
 - Mensajes de estado y errores conservan sus roles accesibles. La ilustración no comunica información esencial.
 - Transiciones breves y desactivadas con `prefers-reduced-motion`; el checkout no introduce animaciones.
 
