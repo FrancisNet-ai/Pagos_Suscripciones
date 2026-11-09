@@ -27,9 +27,9 @@
   margin-bottom: 10px;
   padding: 3px 12px;
   border-radius: 999px;
-  background: var(--color-steel);
+  background: var(--color-corporate);
   color: var(--color-snow);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -39,7 +39,7 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--color-steel);
+  color: var(--color-corporate);
 }
 :host(.plan-card--featured) .plan-card__name {
   color: var(--color-mist);
@@ -84,13 +84,17 @@
 }
 .plan-card__mark {
   font-weight: 700;
-  color: var(--color-steel);
+  color: var(--color-corporate);
 }
 :host(.plan-card--featured) .plan-card__mark {
   color: var(--color-mist);
 }
+:host(.plan-card--featured) .plan-card__badge {
+  background: var(--color-mist);
+  color: var(--color-night);
+}
 .plan-card__missing {
-  opacity: 0.5;
+  opacity: 0.7;
 }
 .plan-card__missing s {
   text-decoration-thickness: 1px;
