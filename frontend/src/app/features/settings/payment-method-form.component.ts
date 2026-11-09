@@ -60,7 +60,7 @@ import { PaymentMethod, SettingsApi } from './settings.api';
 
       <div>
         <h3 class="field-label mb-3">Código QR (opcional)</h3>
-        <app-image-upload label="QR" noun="código QR" [imageUrl]="m.qrImageUrl" [busy]="uploading()" [disabled]="!m.configured" [error]="qrError()"
+        <app-image-upload label="QR" noun="código QR" hint="El QR para cobrar que descargas desde tu app de Yape o Plin. Tus clientes podrán escanearlo." [imageUrl]="m.qrImageUrl" [busy]="uploading()" [disabled]="!m.configured" [error]="qrError()"
                           (selected)="uploadQr($event)" (remove)="removeQr()" />
         @if (!m.configured) { <p class="field-hint mt-2">Guarda primero el titular y el celular para subir el QR.</p> }
       </div>

@@ -10,12 +10,12 @@
       <div class="mt-6 grid gap-8 border-y border-[var(--line-subtle)] py-8 md:grid-cols-2">
         <div>
           <h3 class="field-label mb-3">Logotipo</h3>
-          <app-image-upload label="Logotipo" shape="circle" [imageUrl]="business()!.logoUrl" [busy]="uploading() === 'logo'"
+          <app-image-upload label="Logotipo" shape="circle" hint="El logo de tu negocio. Aparece en tu tienda junto a su nombre." [imageUrl]="business()!.logoUrl" [busy]="uploading() === 'logo'"
                             [error]="imageErrorFor('logo')" (selected)="upload('logo', $event)" (remove)="removeImage('logo')" />
         </div>
         <div>
           <h3 class="field-label mb-3">Portada</h3>
-          <app-image-upload label="Portada" shape="wide" [imageUrl]="business()!.coverUrl" [busy]="uploading() === 'cover'"
+          <app-image-upload label="Portada" shape="wide" hint="Una imagen ancha que aparece arriba de tu tienda, como un banner." [imageUrl]="business()!.coverUrl" [busy]="uploading() === 'cover'"
                             [error]="imageErrorFor('cover')" (selected)="upload('cover', $event)" (remove)="removeImage('cover')" />
         </div>
       </div>

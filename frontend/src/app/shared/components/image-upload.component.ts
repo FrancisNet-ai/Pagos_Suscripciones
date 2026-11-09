@@ -34,6 +34,7 @@ const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp'];
             <button type="button" class="btn !min-h-10 text-danger hover:bg-danger-soft" [disabled]="busy() || disabled()" (click)="remove.emit()">Quitar</button>
           }
         </div>
+        @if (hint(); as text) { <p class="text-sm">{{ text }}</p> }
         <p class="field-hint">PNG, JPG o WebP · máximo 2 MB.</p>
         @if (localError() || error(); as message) {
           <p class="field-error" role="alert">{{ message }}</p>
@@ -52,6 +53,8 @@ export class ImageUploadComponent {
   readonly disabled = input(false);
   readonly error = input<string | null>(null);
   readonly shape = input<'square' | 'circle' | 'wide'>('square');
+  /** Qué imagen se espera y dónde se verá, para que nadie suba «cualquier cosa». */
+  readonly hint = input<string>();
 
   readonly selected = output<File>();
   readonly remove = output<void>();

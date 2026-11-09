@@ -130,7 +130,7 @@
 
           <section aria-labelledby="imagen-titulo">
             <h2 id="imagen-titulo" class="field-label mb-3">Imagen</h2>
-            <app-image-upload label="Imagen" [imageUrl]="p.imageUrl" [busy]="imageBusy()" [error]="imageError()"
+            <app-image-upload label="Imagen" hint="La foto o el logo del producto que verán tus clientes en tu tienda, por ejemplo el logo del servicio que vendes." [imageUrl]="p.imageUrl" [busy]="imageBusy()" [error]="imageError()"
                               (selected)="uploadImage($event)" (remove)="removeImage()" />
           </section>
 

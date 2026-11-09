@@ -43,8 +43,13 @@
           lugar, con una tienda que lleva tu nombre.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#planes">Comenzar ahora <app-icon name="arrow" /></a>
-          <a class="btn btn-secondary" href="#beneficios">Ver soluciones</a>
+          @if (auth.isAuthenticated()) {
+            <a class="btn btn-primary" [routerLink]="auth.homeRoute()">Ir a mi panel <app-icon name="arrow" /></a>
+            <a class="btn btn-secondary" href="#planes">Ver planes</a>
+          } @else {
+            <a class="btn btn-primary" routerLink="/registro">Crear mi cuenta <app-icon name="arrow" /></a>
+            <a class="btn btn-secondary" routerLink="/ingresar">Iniciar sesión</a>
+          }
         </div>
         <div class="hero-points">
           <div class="hero-point">
