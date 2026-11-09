@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
@@ -12,7 +13,7 @@ const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
 @Component({
   selector: 'app-billing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, PlanCardComponent, SolesPipe, StatusBadgeComponent],
+  imports: [LoadingIndicatorComponent, ReactiveFormsModule, PlanCardComponent, SolesPipe, StatusBadgeComponent],
   templateUrl: './billing.page.html',
 })
 export class BillingPage {

@@ -1,20 +1,60 @@
 <!doctype html>
 <html lang="es-PE">
-<head>
-  <meta charset="utf-8">
-  <title>Nuvyra — Tu negocio, bajo control.</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="application-name" content="Nuvyra">
-  <meta name="description" content="Nuvyra: plataforma para vendedores de servicios y productos digitales. Tienda pública, cobros por Yape y Plin, clientes, cupos y renovaciones en un solo lugar.">
-  <meta property="og:site_name" content="Nuvyra">
-  <meta property="og:title" content="Nuvyra — Tu negocio, bajo control.">
-  <meta property="og:description" content="Tienda pública, cobros por Yape y Plin, clientes, cupos y renovaciones para vendedores de servicios digitales.">
-  <meta name="theme-color" content="#0A1931">
-  <link rel="icon" type="image/svg+xml" href="icon.svg">
-  <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Nuvyra — Tu negocio, bajo control.</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="application-name" content="Nuvyra" />
+    <meta
+      name="description"
+      content="Nuvyra: plataforma para vendedores de servicios y productos digitales. Tienda pública, cobros por Yape y Plin, clientes, cupos y renovaciones en un solo lugar."
+    />
+    <meta property="og:site_name" content="Nuvyra" />
+    <meta property="og:title" content="Nuvyra — Tu negocio, bajo control." />
+    <meta
+      property="og:description"
+      content="Tienda pública, cobros por Yape y Plin, clientes, cupos y renovaciones para vendedores de servicios digitales."
+    />
+    <meta name="theme-color" content="#0A1931" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+  <body>
+    <app-root>
+      <!-- Visible mientras se descargan los scripts y se recupera la sesión. Angular lo sustituye al arrancar. -->
+      <div
+        class="app-loading-screen"
+        data-bootstrap-loader
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label="Cargando Nuvyra…"
+      >
+        <img
+          class="loading-indicator__mark"
+          src="loading-mark.svg"
+          width="86"
+          height="86"
+          alt=""
+          aria-hidden="true"
+        />
+      </div>
+    </app-root>
+    <template id="app-startup-error">
+      <main class="app-startup-error" role="alert">
+        <h1 class="type-h2">No pudimos cargar la página</h1>
+        <p>Comprueba tu conexión y vuelve a intentarlo.</p>
+        <a class="btn btn-primary" href="">Volver a intentar</a>
+      </main>
+    </template>
+    <noscript>
+      <style>
+        [data-bootstrap-loader] {
+          display: none;
+        }
+      </style>
+      <p class="app-startup-error">Activa JavaScript en tu navegador para utilizar Nuvyra.</p>
+    </noscript>
+  </body>
 </html>

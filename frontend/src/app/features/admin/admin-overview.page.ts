@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -12,7 +13,7 @@ type State = { status: 'loading' } | { status: 'error'; message: string } | { st
 @Component({
   selector: 'app-admin-overview-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SolesPipe, BarChartComponent],
+  imports: [LoadingIndicatorComponent, RouterLink, SolesPipe, BarChartComponent],
   template: `
     <p class="type-eyebrow">Nuvyra</p>
     <h1 class="type-h1 mt-3">Resumen</h1>
@@ -20,7 +21,7 @@ type State = { status: 'loading' } | { status: 'error'; message: string } | { st
 
     @let s = state();
     @if (s.status === 'loading') {
-      <div class="mt-10 h-56 animate-pulse rounded bg-mist/25" aria-busy="true"><span class="sr-only">Cargando…</span></div>
+      <app-loading-indicator class="mt-10" label="Cargando resumen…" />
     } @else if (s.status === 'error') {
       <p class="notice notice-error mt-8" role="alert">{{ s.message }}</p>
     } @else {

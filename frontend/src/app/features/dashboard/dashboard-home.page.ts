@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { IconComponent } from '../../shared/components/icon.component';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { HttpClient } from '@angular/common/http';
@@ -25,7 +26,7 @@ type LoadState =
 @Component({
   selector: 'app-dashboard-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, SolesPipe, BarChartComponent, IconComponent],
+  imports: [LoadingIndicatorComponent, RouterLink, SolesPipe, BarChartComponent, IconComponent],
   templateUrl: './dashboard-home.page.html',
 })
 export class DashboardHomePage {

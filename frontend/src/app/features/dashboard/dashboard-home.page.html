@@ -11,11 +11,7 @@
   </div>
   @let s = state();
   @if (s.status === 'loading') {
-    <div class="mt-8 space-y-4" aria-busy="true" aria-live="polite">
-      <div class="h-28 animate-pulse rounded-xl bg-mist/30"></div>
-      <div class="h-64 animate-pulse rounded-xl bg-mist/20"></div>
-      <span class="sr-only">Cargando indicadores…</span>
-    </div>
+    <app-loading-indicator class="mt-8" label="Cargando indicadores…" />
   } @else if (s.status === 'error') {
     <p class="notice notice-error mt-8" role="alert">{{ s.message }}</p>
   } @else {

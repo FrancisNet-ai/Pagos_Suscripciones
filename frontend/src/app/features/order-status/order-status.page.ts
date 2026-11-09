@@ -1,3 +1,4 @@
+import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,7 +15,7 @@ const MAX_RECEIPT = 5 * 1024 * 1024;
 @Component({
   selector: 'app-order-status-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SmallImagePipe, ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
+  imports: [LoadingIndicatorComponent, SmallImagePipe, ReactiveFormsModule, RouterLink, SolesPipe, DurationPipe],
   templateUrl: './order-status.page.html',
 })
 export class OrderStatusPage implements OnInit {
