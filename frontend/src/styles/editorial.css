@@ -422,17 +422,7 @@
     background: #eaf2f8;
   }
   .pricing-grid {
-    display: grid;
-    gap: 22px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
     margin-top: 44px;
-  }
-  .pricing-grid app-plan-card {
-    display: block;
-    background: #fff;
-    border: 1px solid #d7e5ef;
-    border-radius: 18px;
-    padding: 28px;
   }
   .site-footer {
     max-width: 1200px;

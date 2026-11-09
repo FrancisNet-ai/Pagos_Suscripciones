@@ -1,19 +1,22 @@
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { StepperComponent } from '../../shared/components/stepper.component';
 import { ApiError } from '../../core/services/api-error';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
 import { SolesPipe } from '../../shared/pipes/soles.pipe';
 import { BillingApi, BillingOverview, Invoice, Method, Plan, formatDate } from './billing.api';
 import { PlanCardComponent } from './plan-card.component';
+import { RailDotsComponent } from '../../shared/components/rail-dots.component';
 
 const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
 
 @Component({
   selector: 'app-billing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, ReactiveFormsModule, PlanCardComponent, SolesPipe, StatusBadgeComponent],
+  imports: [LoadingIndicatorComponent, ReactiveFormsModule, PlanCardComponent, RailDotsComponent, SolesPipe, StatusBadgeComponent, StepperComponent],
   templateUrl: './billing.page.html',
 })
 export class BillingPage {
@@ -28,6 +31,10 @@ export class BillingPage {
   protected readonly receipt = signal<File | null>(null);
   protected readonly receiptError = signal<string | null>(null);
   protected readonly formatDate = formatDate;
+  /** Llega desde el registro (`?paso=pago`): se muestra el paso 3 y se lleva a la persona directo al cobro. */
+  protected readonly fromRegistration = inject(ActivatedRoute).snapshot.queryParamMap.get('paso') === 'pago';
+  protected readonly registrationSteps = ['Tus datos', 'Tu plan', 'Pago'];
+  private scrolledToInvoice = false;
 
   protected readonly form = this.fb.group({
     method: this.fb.control<Method | ''>('', Validators.required),
@@ -160,6 +167,11 @@ export class BillingPage {
 
   private apply(d: BillingOverview): void {
     this.data.set(d);
+    if (this.fromRegistration && d.openInvoice && !this.scrolledToInvoice) {
+      this.scrolledToInvoice = true;
+      // En celular el cobro queda debajo del estado del plan: ir directo a él.
+      setTimeout(() => document.getElementById('cobro-titulo')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
     if (d.paymentOptions.length === 1 && !this.form.controls.method.value) this.form.controls.method.setValue(d.paymentOptions[0]!.method);
   }
 }

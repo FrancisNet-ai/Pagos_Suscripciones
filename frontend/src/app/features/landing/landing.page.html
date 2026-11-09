@@ -128,9 +128,10 @@
         </div>
         @if (plans(); as list) {
           @if (list.length > 0) {
-            <div class="pricing-grid">
-              @for (p of list; track p.id) {
-                <app-plan-card [plan]="p"
+            <div class="pricing-grid plan-rail" #rail>
+              @for (p of list; track p.id; let i = $index) {
+                <app-plan-card [plan]="p" [featured]="isRecommended(i, list.length)"
+                  [label]="isRecommended(i, list.length) ? 'Recomendado' : null"
                   ><a
                     class="btn btn-primary btn-block"
                     routerLink="/registro"
@@ -139,6 +140,7 @@
                 ></app-plan-card>
               }
             </div>
+            @if (list.length > 1) { <app-rail-dots [rail]="rail" [count]="list.length" /> }
           } @else {
             <div class="mt-10 border-t border-mist pt-7">
               <p>Los planes se publicarán aquí cuando estén disponibles.</p>

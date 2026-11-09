@@ -130,6 +130,29 @@ export function planLines(p: Plan): string[] {
   ];
 }
 
+export interface PlanBenefit {
+  text: string;
+  /** `false`: el plan no lo incluye; se muestra tachado para comparar. */
+  included: boolean;
+}
+
+/**
+ * Lo que obtiene el vendedor con el plan, en una línea cada cosa y dicho como beneficio. Los límites salen de la
+ * configuración del plan; las funciones que no incluye también se listan, para comparar planes de un vistazo.
+ */
+export function planBenefits(p: Plan): PlanBenefit[] {
+  const n = new Intl.NumberFormat('es-PE');
+  const team = p.adminUserLimit - 1;
+  return [
+    { included: true, text: p.productLimit ? `Hasta ${n.format(p.productLimit)} ${p.productLimit === 1 ? 'producto' : 'productos'} en tu tienda` : 'Productos sin límite en tu tienda' },
+    { included: true, text: p.customerLimit ? `Hasta ${n.format(p.customerLimit)} ${p.customerLimit === 1 ? 'cliente' : 'clientes'} registrados` : 'Clientes sin límite' },
+    { included: true, text: team <= 0 ? 'Solo tú administras tu negocio' : `Tú y ${team} ${team === 1 ? 'persona' : 'personas'} más de tu equipo` },
+    { included: p.featureReminders, text: 'Avisos de renovación listos para enviar: no pierdes clientes por olvido' },
+    { included: p.featureReports, text: 'Reportes: qué vendes más y quién vuelve a comprar' },
+    { included: p.featureBranding, text: 'Tienda con tus colores y tu portada' },
+  ];
+}
+
 export function periodSuffix(period: BillingPeriod): string {
   return { MONTHLY: 'al mes', QUARTERLY: 'cada 3 meses', YEARLY: 'al año' }[period];
 }
