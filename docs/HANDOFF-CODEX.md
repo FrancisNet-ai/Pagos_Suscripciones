@@ -58,7 +58,7 @@ updates* en *Settings → Code security*.
 - Pagos automáticos: Yape/Plin no tienen API oficial.
 - Poner en marcha producción en **Render + Supabase** (Oracle rechazó la cuenta): guía en `docs/deployment/render-supabase.md` y decisión en ADR-008.
 - Cuenta de Brevo y su clave en Render (`APP_MAIL_BREVO_API_KEY`) para que salgan los correos.
-- Textos legales (Ley 29733): borradores en `docs/legal/`, pendientes de revisión por un abogado.
+- Textos legales publicados (`/legal/condiciones`, `/legal/privacidad`): faltan los datos del titular, la inscripción del banco de datos y la revisión de un abogado (`docs/legal/README.md`).
 - Comprobantes SUNAT.
 - Licencias de las tipografías.
 - Verificar la marca y el dominio.

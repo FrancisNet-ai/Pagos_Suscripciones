@@ -41,7 +41,9 @@
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
 - [x] Correos de recuperación e invitaciones en producción por la API HTTPS de Brevo (Render Free bloquea el SMTP).
 - [x] Borradores de términos y condiciones, política de privacidad y política de conservación en `docs/legal/`, con las preguntas para el abogado.
-- [ ] Revisión legal de los borradores (Ley 29733 y su reglamento), completar los datos del titular y publicarlos en `/legal/condiciones` y `/legal/privacidad`.
+- [x] Términos y condiciones y política de privacidad completos, publicados en `/legal/condiciones` y `/legal/privacidad` (texto en `frontend/.../legal/legal-documents.ts`).
+- [ ] Completar los datos del titular (nombre, RUC, domicilio), inscribir el banco de datos ante la ANPD y revisión de un abogado (ver `docs/legal/README.md`).
+- [ ] Libro de Reclamaciones virtual, si el abogado confirma que aplica.
 - [ ] Inscribir los bancos de datos personales que indique el abogado ante la Autoridad Nacional de Protección de Datos Personales.
 - [ ] Programar los plazos de conservación aprobados (pedidos no pagados, comprobantes, auditoría, cuentas sin plan) y la exportación y eliminación de los datos de un negocio.
 - [x] Row Level Security, primera etapa (V17): en las peticiones del panel, la base de datos solo deja ver y escribir filas del negocio de la sesión en las tablas con datos de compradores ([ADR-007](decisions/ADR-007-row-level-security.md)).
