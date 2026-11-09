@@ -51,8 +51,8 @@ suscripciones, productos y servicios digitales, cobrando a sus compradores media
 ## 3. Módulos del backend
 
 Paquete raíz `com.nuvyra`. Cada módulo agrupa su `Controller`, `Service`, `Repository`,
-`Entity` y `DTO`. Un módulo solo accede a otro mediante su **servicio público**, nunca a su
-repositorio, para evitar dependencias circulares y mantener límites claros.
+`Entity` y `DTO`. Las reglas de dependencias entre módulos, los niveles y el nudo pendiente están en
+[modulos.md](modulos.md); `ArchitectureTest` las comprueba en cada CI.
 
 | Módulo | Responsabilidad | Fase |
 |---|---|---|
@@ -60,14 +60,15 @@ repositorio, para evitar dependencias circulares y mantener límites claros.
 | `security` | Cadena de filtros, sesiones por cookie, CSRF, CORS, resolución del negocio actual | 1 |
 | `auth` | Registro, login, logout, rotación de sesión, recuperación de contraseña | 1 |
 | `users` | Cuentas de vendedores y superadministradores | 1 |
-| `businesses` | Negocio, miembros, slug, código empresarial, personalización | 1–2 |
+| `businesses` | Negocio, slug, código empresarial, personalización | 1–2 |
+| `membership` | Miembros del negocio, roles y permisos de colaboradores | 1 |
 | `audit` (en `common`) | Registro de auditoría de acciones sensibles | 1 |
-| `products` | Catálogo por negocio, tipos SUBSCRIPTION / ONE_TIME | 2 |
-| `capacity` | Cupos, reservas y liberaciones con bloqueo pesimista | 2–5 |
-| `customers` | Compradores por negocio, consentimientos, clientes antiguos | 3–4 |
+| `products` | Catálogo por negocio (SUBSCRIPTION / ONE_TIME) y cupos: reservas y liberaciones con bloqueo pesimista | 2–5 |
+| `customers` | Compradores por negocio y consentimientos | 3–4 |
+| `customeradmin` | Panel de clientes: listado, detalle, clientes antiguos | 4 |
 | `orders` | Pedidos públicos, numeración `ORD-AAAA-NNNNNN`, snapshots | 3 |
 | `payments` | Métodos Yape/Plin por negocio, reporte y verificación manual, `PaymentProvider` | 3 |
-| `whatsapp` | Enlaces `wa.me`, `MessagingProvider` | 3 / 7 |
+| `whatsapp` | WhatsApp Cloud API, webhooks y envío de avisos (los enlaces `wa.me` están en `common.messaging`) | 3 / 7 |
 | `subscriptions` | Suscripciones del comprador, activación, vencimiento | 4 |
 | `reports` | Indicadores del vendedor (solo su `business_id`) | 4 |
 | `renewals` | Solicitudes, tokens, respuestas, recordatorios | 5 |
