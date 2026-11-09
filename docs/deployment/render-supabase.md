@@ -113,14 +113,19 @@ seguir copiando el enlace de invitación que muestra el panel).
 
 1. Crea una cuenta gratuita en https://www.brevo.com con el correo del proyecto Nuvyra. Ese correo queda como
    remitente verificado. Si usas otro remitente, agrégalo y verifícalo en **Senders, Domains & Dedicated IPs → Senders**.
-2. En **SMTP & API → API Keys**, pulsa **Generate a new API key**, ponle de nombre `nuvyra-render` y guárdala en
-   Bitwarden. Empieza por `xkeysib-` y solo se muestra una vez.
+2. En **SMTP & API → API Keys** (`https://app.brevo.com/settings/keys/api`), genera una clave nueva:
+   - Nombre `nuvyra-render`, vencimiento **Sin vencimiento**.
+   - Acceso **Restringido**, con **Emails transaccionales: Todos** y todo lo demás en **Ninguno**.
+   - Guárdala en Bitwarden. Empieza por `xkeysib-` y solo se muestra una vez.
+   - Brevo desactiva una clave **tras 90 días sin uso**, aunque no venza. Si pasan tres meses sin correos,
+     genera otra y reemplázala en Render.
 3. En Render → **Environment**: pega la clave en `APP_MAIL_BREVO_API_KEY` y revisa que `APP_MAIL_FROM` sea el
    remitente verificado. **Save and deploy**.
 4. Prueba: en `/recuperar` pide un enlace para tu propio correo. Debe llegar en un minuto (revisa también Spam).
 
 Si no llega:
 - En el registro de Render busca «No se pudo enviar el correo de recuperación». El mensaje dice qué respondió Brevo.
+- `401` con «Key not found» o clave desactivada: la clave venció o pasó 90 días sin uso. Genera otra.
 - `401` con «unrecognised IP address»: en Brevo, **Security → Authorized IPs**, desactiva el bloqueo por IP
   (Render no tiene una IP fija en el plan gratuito).
 - Un remitente de correo gratuito (Hotmail, Gmail) llega peor que uno de dominio propio. Con un dominio propio,
