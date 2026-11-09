@@ -10,11 +10,12 @@ import { BrandMarkComponent } from '../../shared/components/brand-mark.component
 import { WaveArtComponent } from '../../shared/components/wave-art.component';
 import { BillingApi, Plan } from '../billing/billing.api';
 import { PlanCardComponent } from '../billing/plan-card.component';
+import { RailDotsComponent } from '../../shared/components/rail-dots.component';
 
 @Component({
   selector: 'app-landing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent, IconComponent],
+  imports: [LoadingIndicatorComponent, RouterLink, BrandMarkComponent, WaveArtComponent, PlanCardComponent, RailDotsComponent, IconComponent],
   templateUrl: './landing.page.html',
 })
 export class LandingPage {

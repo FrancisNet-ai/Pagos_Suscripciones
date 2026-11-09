@@ -112,3 +112,43 @@
   border-color: var(--color-mist);
   color: var(--color-snow);
 }
+.plan-card__more {
+  margin-top: 14px;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-corporate);
+}
+.plan-card__chevron {
+  display: inline-block;
+  line-height: 1;
+  transform: translateY(-3px);
+  transition: transform 0.2s ease;
+}
+.plan-card__more[aria-expanded='true'] .plan-card__chevron {
+  transform: translateY(3px) rotate(180deg);
+}
+:host(.plan-card--featured) .plan-card__more {
+  color: var(--color-snow);
+}
+.plan-card__more:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+/* En celular solo los primeros beneficios; desde tablet se ven todos para comparar. */
+@media (max-width: 767.98px) {
+  .plan-card__extra {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) {
+  .plan-card__more {
+    display: none;
+  }
+}

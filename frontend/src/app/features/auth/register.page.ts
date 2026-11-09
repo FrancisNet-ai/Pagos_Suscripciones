@@ -12,13 +12,14 @@ import { applyServerErrors, controlError } from '../../shared/validators/form-er
 import { AuthLayoutComponent } from './auth-layout.component';
 import { BillingApi, Plan } from '../billing/billing.api';
 import { PlanCardComponent } from '../billing/plan-card.component';
+import { RailDotsComponent } from '../../shared/components/rail-dots.component';
 
 type Field = 'fullName' | 'email' | 'phone' | 'password' | 'businessName' | 'acceptTerms' | 'acceptPrivacy';
 
 @Component({
   selector: 'app-register-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, PasswordInputComponent, PlanCardComponent, StepperComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, PasswordInputComponent, PlanCardComponent, RailDotsComponent, StepperComponent],
   templateUrl: './register.page.html',
 })
 export class RegisterPage {

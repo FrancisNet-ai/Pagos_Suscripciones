@@ -1,9 +1,10 @@
 /*
- * Fila de planes. En celular se desliza de lado (un plan por pantalla, con el siguiente asomando) para no apilar
+ * Fila de planes. En celular se desliza de lado (un plan por pantalla, con el siguiente asomando y puntos debajo) para no apilar
  * tarjetas largas una debajo de otra; desde tablet, cuadrícula.
  */
 @layer components {
   .plan-rail {
+    position: relative;
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: min(84%, 320px);
@@ -15,12 +16,6 @@
     padding: 6px 2px 14px;
     -webkit-overflow-scrolling: touch;
   }
-  .plan-rail-hint {
-    margin-top: 2px;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-  }
   @media (min-width: 768px) {
     .plan-rail {
       grid-auto-flow: row;
@@ -29,9 +24,6 @@
       gap: 20px;
       overflow: visible;
       align-items: stretch;
-    }
-    .plan-rail-hint {
-      display: none;
     }
   }
 }

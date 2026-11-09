@@ -65,7 +65,7 @@
       @if (plans(); as list) {
         @if (list.length > 0) {
           <p class="-mt-1 text-[0.9375rem]">Toca el plan que quieres. En el siguiente paso pagas por Yape o Plin y lo activamos al confirmar tu pago.</p>
-          <div class="plan-rail">
+          <div class="plan-rail" #rail>
             @for (p of list; track p.id) {
               <app-plan-card [plan]="p" [featured]="form.controls.planId.value === p.id" [selected]="form.controls.planId.value === p.id">
                 <button type="button" class="btn btn-block !min-h-10" [class]="form.controls.planId.value === p.id ? 'btn-primary' : 'btn-secondary'"
@@ -75,7 +75,7 @@
               </app-plan-card>
             }
           </div>
-          @if (list.length > 1) { <p class="plan-rail-hint">Desliza para ver todos los planes →</p> }
+          @if (list.length > 1) { <app-rail-dots [rail]="rail" [count]="list.length" /> }
           <p class="text-sm text-[var(--text-muted)]">¿Aún no decides? Puedes crear tu cuenta sin plan y elegirlo después en «Mi plan».</p>
         } @else {
           <p class="text-[0.9375rem]">Todavía no hay planes publicados. Crea tu cuenta y elige uno cuando estén disponibles.</p>

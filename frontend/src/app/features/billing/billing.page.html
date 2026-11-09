@@ -153,7 +153,7 @@
       @if (plans().length === 0) {
         <p class="mt-4">Todavía no hay planes publicados. Escribe a soporte para activar tu cuenta.</p>
       } @else {
-        <div class="plan-rail mt-8">
+        <div class="plan-rail mt-8" #rail>
           @for (p of plans(); track p.id) {
             <app-plan-card [plan]="p" [current]="isCurrent(p)" [featured]="isCurrent(p)" [selected]="open()?.planId === p.id">
               <button type="button" class="btn btn-block" [class]="open()?.planId === p.id ? 'btn-secondary' : 'btn-primary'"
@@ -161,7 +161,7 @@
             </app-plan-card>
           }
         </div>
-        @if (plans().length > 1) { <p class="plan-rail-hint">Desliza para ver todos los planes →</p> }
+        @if (plans().length > 1) { <app-rail-dots [rail]="rail" [count]="plans().length" /> }
         @if (pendingPayment()) { <p class="mt-4 text-sm">Podrás cambiar de plan cuando confirmemos el pago en revisión.</p> }
       }
     </section>

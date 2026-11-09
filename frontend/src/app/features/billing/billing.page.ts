@@ -9,13 +9,14 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge.compo
 import { SolesPipe } from '../../shared/pipes/soles.pipe';
 import { BillingApi, BillingOverview, Invoice, Method, Plan, formatDate } from './billing.api';
 import { PlanCardComponent } from './plan-card.component';
+import { RailDotsComponent } from '../../shared/components/rail-dots.component';
 
 const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
 
 @Component({
   selector: 'app-billing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, ReactiveFormsModule, PlanCardComponent, SolesPipe, StatusBadgeComponent, StepperComponent],
+  imports: [LoadingIndicatorComponent, ReactiveFormsModule, PlanCardComponent, RailDotsComponent, SolesPipe, StatusBadgeComponent, StepperComponent],
   templateUrl: './billing.page.html',
 })
 export class BillingPage {
