@@ -112,8 +112,14 @@ data class AppProperties(
 
     data class Mail(
         val from: String = "no-reply@localhost",
+        /** Nombre que ve el destinatario como remitente (solo Brevo; SMTP envía únicamente la dirección). */
+        val fromName: String = com.nuvyra.common.Brand.NAME,
         /** Solo para desarrollo: escribir en el log los enlaces que se enviarían por correo. */
         val logLinks: Boolean = false,
+        /** Clave de la API de Brevo. Si tiene valor, el correo sale por HTTPS en lugar de SMTP (Render bloquea SMTP). */
+        val brevoApiKey: String = "",
+        val brevoBaseUrl: String = "https://api.brevo.com",
+        val requestTimeout: Duration = Duration.ofSeconds(10),
     )
 
     data class Bootstrap(

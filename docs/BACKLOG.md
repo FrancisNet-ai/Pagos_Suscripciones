@@ -39,7 +39,7 @@
 - [x] Permiso propio para aprobar o rechazar pagos (`PAYMENTS`), separado de atender pedidos (`ORDERS`); los ingresos siguen en `REPORTS` y los reembolsos son del titular.
 - [x] Acceso de soporte a pedidos y clientes: solo con autorización temporal del titular (1–72 h, revocable), motivo obligatorio en cada consulta y registro visible para el titular.
 - [ ] Comprobantes electrónicos SUNAT para los cobros SaaS (los cobros `PLAN-…` no lo son).
-- [ ] Correos de recuperación en producción: Render Free bloquea el SMTP, así que hay que enviarlos por una API HTTPS (por ejemplo Brevo, con plan gratuito).
+- [x] Correos de recuperación e invitaciones en producción por la API HTTPS de Brevo (Render Free bloquea el SMTP).
 - [x] Borradores de términos y condiciones, política de privacidad y política de conservación en `docs/legal/`, con las preguntas para el abogado.
 - [ ] Revisión legal de los borradores (Ley 29733 y su reglamento), completar los datos del titular y publicarlos en `/legal/condiciones` y `/legal/privacidad`.
 - [ ] Inscribir los bancos de datos personales que indique el abogado ante la Autoridad Nacional de Protección de Datos Personales.
@@ -58,6 +58,6 @@
 - [x] Verificación en dos pasos (TOTP) opcional para titulares y colaboradores, y obligatoria para el superadministrador en producción, con 10 códigos de recuperación.
 - [x] Lista de sesiones abiertas con dispositivo y opción de cerrar cada una.
 - [ ] Restablecer la verificación en dos pasos de una cuenta que perdió celular y códigos (hoy no hay forma desde la plataforma: requiere un proceso de soporte con verificación de identidad).
-- [ ] Verificar el correo al registrarse (requiere SMTP real).
-- [ ] Aviso por correo de inicio de sesión desde un dispositivo nuevo (requiere SMTP real).
+- [ ] Verificar el correo al registrarse (ya hay envío real con Brevo).
+- [ ] Aviso por correo de inicio de sesión desde un dispositivo nuevo (ya hay envío real con Brevo).
 - [x] Rechazar contraseñas filtradas al registrarse, cambiarla, recuperarla o aceptar una invitación (Pwned Passwords por prefijo de hash, sin enviar la contraseña; si el servicio no responde, se acepta).

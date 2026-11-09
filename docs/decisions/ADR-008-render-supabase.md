@@ -38,8 +38,8 @@
   carga).
 
 ## Consecuencias
-- **Correo:** Render Free bloquea el SMTP saliente, así que los correos de recuperación necesitan una API de
-  correo por HTTPS. Pendiente.
+- **Correo:** Render Free bloquea el SMTP saliente, así que los correos salen por la API HTTPS de Brevo
+  (`APP_MAIL_BREVO_API_KEY`, plan gratuito de 300 correos al día). SMTP sigue disponible para un servidor propio.
 - **Rendimiento:** limitado por el plan gratuito.
 - **Migración futura:** al haber ingresos, se pasa a planes de pago de Render y Supabase sin tocar el código.
   También se puede volver a un VPS con Docker Compose (`compose.prod.yaml` sigue funcionando).

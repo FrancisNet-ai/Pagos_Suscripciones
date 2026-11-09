@@ -20,7 +20,7 @@ copias en Object Storage: [oracle-servidor.md](oracle-servidor.md).
 1. Servidor con Docker y un proxy TLS delante (Caddy, Traefik o Nginx con Let's Encrypt) que termine HTTPS
    y reenvíe al contenedor `web`.
 2. Variables: `SPRING_PROFILES_ACTIVE=prod`, credenciales de base de datos propias, `APP_PUBLIC_BASE_URL=https://tudominio.com`,
-   `APP_SESSION_COOKIE_SECURE=true`, SMTP y `APP_RENEWAL_TOKEN_SECRET` (obligatorio, ≥ 32 caracteres,
+   `APP_SESSION_COOKIE_SECURE=true`, correo (`APP_MAIL_BREVO_API_KEY` o SMTP) y `APP_RENEWAL_TOKEN_SECRET` (obligatorio, ≥ 32 caracteres,
    `openssl rand -base64 48`; cambiarlo invalida los enlaces de renovación ya enviados) y `APP_SECRETS_ENCRYPTION_KEY`
    (obligatorio, `openssl rand -base64 32`; cifra los tokens de WhatsApp de los negocios y los secretos de la verificación
    en dos pasos). En producción el superadministrador debe activar la verificación en dos pasos en «Mi cuenta» antes de usar `/admin`.

@@ -74,6 +74,8 @@ app:
   mail:
     from: ${APP_MAIL_FROM:no-reply@localhost}
     log-links: false
+    # Correo por la API HTTPS de Brevo (Render Free bloquea SMTP). Vacío: se usa SMTP si SPRING_MAIL_HOST tiene valor.
+    brevo-api-key: ${APP_MAIL_BREVO_API_KEY:}
   storage:
     local-dir: ${APP_STORAGE_LOCAL_DIR:./data/media}
     private-dir: ${APP_STORAGE_PRIVATE_DIR:./data/private}

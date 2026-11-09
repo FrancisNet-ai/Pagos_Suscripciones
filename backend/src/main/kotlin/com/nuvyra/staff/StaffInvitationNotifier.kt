@@ -1,40 +1,35 @@
 package com.nuvyra.staff
 
 import com.nuvyra.common.Brand
-import com.nuvyra.common.config.AppProperties
+import com.nuvyra.common.mail.MailGateway
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.mail.SimpleMailMessage
-import org.springframework.mail.javamail.JavaMailSender
 
 /** Entrega la invitación por correo. Devuelve `true` solo si realmente se envió. */
 fun interface StaffInvitationNotifier {
     fun send(email: String, fullName: String, businessName: String, link: String): Boolean
 }
 
-class SmtpStaffInvitationNotifier(private val mailSender: JavaMailSender, private val properties: AppProperties) : StaffInvitationNotifier {
+class MailStaffInvitationNotifier(private val mail: MailGateway) : StaffInvitationNotifier {
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun send(email: String, fullName: String, businessName: String, link: String): Boolean = try {
-        mailSender.send(
-            SimpleMailMessage().apply {
-                from = properties.mail.from
-                setTo(email)
-                subject = "$businessName te invitó a su equipo en ${Brand.NAME}"
-                text = """
-                    Hola, $fullName.
+        mail.send(
+            to = email,
+            toName = fullName,
+            subject = "$businessName te invitó a su equipo en ${Brand.NAME}",
+            text = """
+                Hola, $fullName.
 
-                    $businessName te invitó a colaborar en su panel de ${Brand.NAME}. Crea tu contraseña con este enlace (vence en 7 días):
-                    $link
+                $businessName te invitó a colaborar en su panel de ${Brand.NAME}. Crea tu contraseña con este enlace (vence en 7 días):
+                $link
 
-                    Si no esperabas esta invitación, ignora este mensaje.
+                Si no esperabas esta invitación, ignora este mensaje.
 
-                    ${Brand.NAME} · ${Brand.TAGLINE}
-                """.trimIndent()
-            },
+                ${Brand.NAME} · ${Brand.TAGLINE}
+            """.trimIndent(),
         )
         true
     } catch (ex: Exception) {
@@ -43,19 +38,14 @@ class SmtpStaffInvitationNotifier(private val mailSender: JavaMailSender, privat
     }
 }
 
-/** Sin SMTP no se envía nada: el titular comparte el enlace que se le muestra. */
+/** Sin proveedor de correo no se envía nada: el titular comparte el enlace que se le muestra. */
 class UnconfiguredStaffInvitationNotifier : StaffInvitationNotifier {
     override fun send(email: String, fullName: String, businessName: String, link: String) = false
 }
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class StaffInvitationNotifierConfig {
     @Bean
-    @ConditionalOnExpression("!'\${spring.mail.host:}'.isBlank()")
-    fun smtpStaffInvitationNotifier(mailSender: JavaMailSender, properties: AppProperties): StaffInvitationNotifier =
-        SmtpStaffInvitationNotifier(mailSender, properties)
-
-    @Bean
-    @ConditionalOnMissingBean(StaffInvitationNotifier::class)
-    fun unconfiguredStaffInvitationNotifier(): StaffInvitationNotifier = UnconfiguredStaffInvitationNotifier()
+    fun staffInvitationNotifier(mail: ObjectProvider<MailGateway>): StaffInvitationNotifier =
+        mail.ifAvailable?.let(::MailStaffInvitationNotifier) ?: UnconfiguredStaffInvitationNotifier()
 }
