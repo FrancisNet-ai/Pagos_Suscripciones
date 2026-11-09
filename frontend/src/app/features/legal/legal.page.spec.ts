@@ -26,8 +26,10 @@ describe('LegalPage', () => {
     expect(text).toContain('Autoridad Nacional de Protección de Datos Personales');
   });
 
-  it('avisa mientras falten los datos del titular', () => {
-    expect(render('privacidad').textContent).toContain('[por completar]');
+  it('identifica al titular del servicio', () => {
+    const text = render('condiciones').textContent ?? '';
+    expect(text).toContain('Kevin Francisco Cabrel Peralta');
+    expect(text).not.toContain('Estamos completando los datos');
   });
 
   it('un documento desconocido muestra «no encontrado»', () => {

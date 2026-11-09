@@ -14,12 +14,8 @@ programados. Si el producto cambia, hay que actualizarlos.
 - Contratación electrónica: Código Civil, art. 141-A, y Ley N.º 27291.
 
 ## Pendiente del titular
-1. Completar en `LEGAL_HOLDER` (en `legal-documents.ts`) los datos que hoy se ven como «[por completar]»:
-   - nombre o razón social;
-   - RUC (o DNI);
-   - domicilio.
-
-   Mientras falten, las páginas muestran un aviso.
+1. Datos del titular en `LEGAL_HOLDER` (`legal-documents.ts`): nombre y DNI ya publicados. Al obtener RUC,
+   reemplazar el DNI; completar el domicilio con la dirección exacta si el abogado lo pide.
 2. Inscribir el banco de datos «Usuarios de Nuvyra» en el Registro Nacional de Protección de Datos Personales
    y poner su código en `dataBankCode`.
 3. Revisión de un abogado. Puntos a confirmar:

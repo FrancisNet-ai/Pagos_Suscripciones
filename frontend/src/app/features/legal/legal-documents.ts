@@ -10,10 +10,10 @@ import { BRAND } from '../../core/brand';
 
 /** Datos de quien presta el servicio. `null` = pendiente: la página lo muestra como «por completar». */
 export const LEGAL_HOLDER = {
-  name: null as string | null,
+  name: 'Kevin Francisco Cabrel Peralta' as string | null,
   /** RUC (o DNI si aún no tiene RUC). */
-  taxId: null as string | null,
-  address: null as string | null,
+  taxId: 'DNI N.º 70491701' as string | null,
+  address: 'Huacho, provincia de Huaura, departamento de Lima' as string | null,
   email: 'nuvyra.suppor@hotmail.com',
   /** Código de inscripción del banco de datos en el Registro Nacional de Protección de Datos Personales. */
   dataBankCode: null as string | null,
@@ -267,8 +267,10 @@ export function legalDocs(): Record<string, LegalDoc> {
           paragraphs: [
             `Responsable: ${holderId()}.`,
             `Contacto para datos personales: ${email}.`,
-            `Banco de datos: «Usuarios de ${N}», inscrito en el Registro Nacional de Protección de Datos Personales ` +
-              `con el código ${LEGAL_HOLDER.dataBankCode ?? pending}.`,
+            LEGAL_HOLDER.dataBankCode
+              ? `Banco de datos: «Usuarios de ${N}», inscrito en el Registro Nacional de Protección de Datos ` +
+                `Personales con el código ${LEGAL_HOLDER.dataBankCode}.`
+              : `Banco de datos: «Usuarios de ${N}».`,
           ],
         },
         {
