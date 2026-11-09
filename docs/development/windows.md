@@ -1,13 +1,11 @@
 # Ejecutar Nuvyra en Windows sin Docker
 
-Para la configuración del propietario: **Node 24.20.0, npm 11.19.0 y JDK 26.0.2.1**.
-Se mantiene también soporte de compilación y ejecución con Java 21 LTS. El proyecto utiliza el JDK
-activo sin obligar a instalar Java 21 cuando se dispone de Java 26.
+Requisitos: **Node 24.20.0, npm 11.19.0 y JDK 21 LTS**, la misma versión de producción y del CI.
 
 ## 1. Requisitos
 
 - Instalar PostgreSQL 17 para Windows con pgAdmin. Guardar la contraseña elegida para `postgres`.
-- Tener Node 24 y un JDK completo (21 o 26). Configurar `JAVA_HOME` hacia la carpeta del JDK, sin `bin`,
+- Tener Node 24 y el JDK 21. Configurar `JAVA_HOME` hacia la carpeta del JDK, sin `bin`,
   y agregar su carpeta `bin` al PATH. Reiniciar Visual Studio Code después de instalar las herramientas.
 - Abrir en VS Code la carpeta que contiene `backend`, `frontend` y `compose.yaml`.
 
@@ -83,7 +81,7 @@ npm.cmd run build
 
 Las pruebas de integración de backend (`.\gradlew.bat test`) utilizan Testcontainers y necesitan Docker.
 La aplicación con PostgreSQL nativo y el comando `bootRun` funcionan sin Docker ni virtualización.
-GitHub Actions ejecuta las pruebas de backend en Java 21 y 26, y los recorridos E2E en escritorio y móvil.
+GitHub Actions ejecuta las pruebas de backend en Java 21 y los recorridos E2E en escritorio y móvil.
 
 Si algo falla, compartir el mensaje de error, sin contraseñas ni tokens. Un error de conexión a PostgreSQL
 se revisa verificando servicio, puerto, nombre de base, usuario y contraseña. `JAVA_HOME` debe apuntar

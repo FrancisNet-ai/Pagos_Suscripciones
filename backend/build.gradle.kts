@@ -14,8 +14,7 @@ version = "0.1.0"
 extra["kotlin.version"] = libs.versions.kotlin.get()
 
 java {
-    // Usa el JDK que ejecuta Gradle (JAVA_HOME), incluido Java 26, sin exigir instalar otro JDK.
-    // El artefacto conserva el mínimo Java 21 LTS para el contenedor de producción.
+    // Java 21 LTS: la versión de producción (Render) y del CI.
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }

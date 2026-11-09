@@ -89,13 +89,12 @@ compose.yaml      Entorno completo con Docker
 
 ## Desarrollo local
 
-Requisitos recomendados: **Node 24.20**, **npm 11.19** y **JDK 21 LTS o JDK 26**. Gradle 9.4.1 usa el
-JDK activo (`JAVA_HOME`) y genera código compatible con Java 21; desarrollar con Java 26 no exige
-instalar Java 21. El contenedor de producción conserva Java 21 LTS.
+Requisitos recomendados: **Node 24.20**, **npm 11.19** y **JDK 21 LTS**, la misma versión de producción
+(Render) y del CI.
 
 Para ejecutar en Windows sin Docker ni virtualización, ver [la guía paso a paso](docs/development/windows.md).
 La aplicación necesita PostgreSQL 17 local. Las pruebas backend con Testcontainers sí requieren Docker;
-también se ejecutan automáticamente en GitHub Actions con Java 21 y Java 26.
+también se ejecutan automáticamente en GitHub Actions con Java 21.
 
 ```bash
 # 1. Base de datos
