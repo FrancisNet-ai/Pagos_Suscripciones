@@ -206,7 +206,7 @@
           class="capacity-pending"
           routerLink="/panel/renovaciones"
           [queryParams]="{ vista: 'RELEASE' }"
-          ><span>{{ d.subscriptions.capacityReleasePending }} cupos por liberar</span
+          ><span>{{ d.subscriptions.capacityReleasePending }} {{ d.subscriptions.capacityReleasePending === 1 ? 'cupo' : 'cupos' }} por liberar</span
           ><app-icon name="arrow"
         /></a>
       </section>
