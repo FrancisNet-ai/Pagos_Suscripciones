@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './styles/tokens.css';
 @import './styles/base.css';
+@import './styles/loading.css';
 
 @import './styles/editorial.css';

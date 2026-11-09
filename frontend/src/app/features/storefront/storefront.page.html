@@ -152,9 +152,5 @@
     </main>
   </div>
 } @else {
-  <div class="mx-auto max-w-5xl px-5 py-10" aria-busy="true">
-    <div class="h-56 animate-pulse rounded-2xl bg-mist/30"></div>
-    <div class="mt-6 h-8 w-1/2 animate-pulse rounded bg-mist/30"></div>
-    <span class="sr-only">Cargando tienda…</span>
-  </div>
+  <app-loading-indicator class="min-h-dvh" label="Cargando tienda…" />
 }

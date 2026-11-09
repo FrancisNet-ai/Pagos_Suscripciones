@@ -255,9 +255,7 @@
         Guarda este enlace para consultar tu pedido. Es personal: no lo compartas.
       </p>
     } @else {
-      <div class="mt-10 h-48 animate-pulse rounded bg-mist/30" aria-busy="true">
-        <span class="sr-only">Cargando pedido…</span>
-      </div>
+      <app-loading-indicator class="mt-10" label="Cargando pedido…" />
     }
   </main>
 </div>

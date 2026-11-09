@@ -5,6 +5,14 @@ Incluye compra sin registro, verificación manual, renovación sin duplicar cupo
 importación, invitación/revocación de colaboradores y resolución de pendientes con su historial.
 Se ejecuta en Chromium de escritorio y móvil, con comprobaciones de accesibilidad y de ancho.
 
+`loading.spec.ts` comprueba por separado la presentación de la carga, con respuestas HTTP controladas
+para mantener la espera y provocar un error sin modificar datos: monograma centrado y accesible antes
+de recuperar la sesión, retirada del indicador al fallar la tienda y arco detenido con movimiento
+reducido. Son tres casos en escritorio y móvil (seis comprobaciones); no simulan una compra ni una
+verificación de pago. También hay pruebas unitarias de navegación rápida, finalización, cancelación,
+error y carga de catálogo. Validación del bloque de carga: 109 pruebas frontend y build de producción
+aprobados, además de las seis comprobaciones de navegador.
+
 Validación local de este bloque: **173 pruebas backend**, **83 pruebas frontend**, compilación de
 producción correcta y **10 recorridos E2E aprobados**. Las pruebas de historial cubren separación entre
 empresas, permisos por sección, autor distinto del asignado, repetición tras rechazo, cancelación,

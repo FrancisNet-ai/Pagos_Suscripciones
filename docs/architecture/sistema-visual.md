@@ -61,6 +61,16 @@ configurados por el vendedor. No se añaden botones de autenticación social ni 
 
 ## Accesibilidad y móvil
 
+### Animación de carga
+
+- Solo el monograma «N» con un arco azul que gira en 2,4 segundos, sobre el fondo blanco azulado. No hay texto visible debajo.
+- `frontend/public/loading-mark.svg` comparte el dibujo entre el arranque estático y el componente `LoadingIndicatorComponent`; no se descarga un GIF ni se añaden bibliotecas.
+- Se muestra antes de recuperar la sesión, en navegaciones que tardan más de 150 ms y durante la carga inicial de tienda, checkout, pedido, renovación, panel, resumen de administración, planes y facturación.
+- Terminar o cancelar una navegación, o producirse un error, retira el indicador sin una duración mínima. Las cargas de datos conservan sus estados reales de error; las operaciones de formularios mantienen sus indicadores dentro del botón.
+- Los lectores de pantalla reciben una etiqueta de estado; `prefers-reduced-motion: reduce` detiene el arco. Durante la pantalla de navegación el contenido anterior queda `inert` para impedir acciones sobre él.
+
+### Comportamiento general
+
 - Formatos comprobados a 360, 390, 768 y 1440 píxeles, con formularios de una columna en móvil.
 - Menús móviles con foco contenido, cierre por Escape y devolución del foco al botón que los abrió.
 - Objetivos táctiles principales de al menos 44 píxeles y estilos de foco visibles.

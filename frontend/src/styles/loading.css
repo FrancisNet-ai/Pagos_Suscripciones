@@ -1,0 +1,32 @@
+/* Las utilidades de cada pantalla pueden ajustar el tamaño del contenedor. */
+@layer components {
+  .loading-indicator {
+    display: grid;
+    min-block-size: 12rem;
+    place-items: center;
+  }
+
+  .loading-indicator__mark {
+    display: block;
+    inline-size: 86px;
+    block-size: 86px;
+  }
+
+  .app-loading-screen {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--color-snow, #f6fafd);
+  }
+
+  .app-startup-error:not([hidden]) {
+    display: grid;
+    min-block-size: 100dvh;
+    place-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+  }
+}
