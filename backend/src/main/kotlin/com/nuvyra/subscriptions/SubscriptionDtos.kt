@@ -1,6 +1,6 @@
 package com.nuvyra.subscriptions
 
-import com.nuvyra.capacity.AllocationStatus
+import com.nuvyra.products.AllocationStatus
 import jakarta.validation.constraints.DecimalMax
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Digits

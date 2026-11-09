@@ -1,6 +1,5 @@
 package com.nuvyra.products
 
-import com.nuvyra.capacity.CapacityService
 import com.nuvyra.support.IntegrationTest
 import jakarta.servlet.http.Cookie
 import org.junit.jupiter.api.Test

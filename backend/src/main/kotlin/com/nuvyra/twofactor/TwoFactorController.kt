@@ -1,6 +1,6 @@
 package com.nuvyra.twofactor
 
-import com.nuvyra.auth.ClientInfo
+import com.nuvyra.common.web.ClientInfo
 import com.nuvyra.common.web.clientIp
 import com.nuvyra.common.web.userAgentTruncated
 import com.nuvyra.security.AuthenticatedUser

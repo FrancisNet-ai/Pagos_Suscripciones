@@ -2,7 +2,6 @@ package com.nuvyra.security
 
 import com.nuvyra.common.config.AppProperties
 import com.nuvyra.common.error.ProblemDetails
-import com.nuvyra.common.tenancy.TenantContextFilter
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

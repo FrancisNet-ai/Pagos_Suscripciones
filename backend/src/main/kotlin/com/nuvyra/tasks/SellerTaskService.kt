@@ -1,7 +1,7 @@
 package com.nuvyra.tasks
 
-import com.nuvyra.businesses.BusinessRole
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.BusinessRole
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditRecordedEvent
 import com.nuvyra.common.audit.AuditService

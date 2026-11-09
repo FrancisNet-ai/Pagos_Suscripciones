@@ -1,7 +1,7 @@
 package com.nuvyra.security
 
-import com.nuvyra.businesses.BusinessRole
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.BusinessRole
+import com.nuvyra.membership.StaffPermission
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

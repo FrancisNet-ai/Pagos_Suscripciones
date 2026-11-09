@@ -1,7 +1,6 @@
 package com.nuvyra.orders
 
 import com.nuvyra.payments.PaymentStatus
-import com.nuvyra.whatsapp.OrderMessageStage
 
 /** Estado real del pedido en lenguaje del comprador. Nunca adelanta una verificación. */
 object OrderLabels {

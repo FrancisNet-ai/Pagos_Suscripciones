@@ -1,4 +1,4 @@
-package com.nuvyra.businesses
+package com.nuvyra.membership
 
 import com.nuvyra.common.persistence.VersionedEntity
 import jakarta.persistence.Column

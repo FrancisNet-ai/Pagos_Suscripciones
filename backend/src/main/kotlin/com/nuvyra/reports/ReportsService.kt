@@ -3,13 +3,13 @@ package com.nuvyra.reports
 import com.nuvyra.saas.EntitlementService
 import com.nuvyra.saas.PlanFeature
 import com.nuvyra.businesses.BusinessService
-import com.nuvyra.capacity.CapacityAllocationRepository
-import com.nuvyra.capacity.CapacityService
+import com.nuvyra.products.CapacityAllocationRepository
+import com.nuvyra.products.CapacityService
 import com.nuvyra.common.audit.AuditLogRepository
 import com.nuvyra.products.ProductRepository
 import com.nuvyra.products.PublicationStatus
 import com.nuvyra.security.CurrentBusiness
-import com.nuvyra.whatsapp.OrderMessages
+import com.nuvyra.orders.OrderMessages
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.format.annotation.DateTimeFormat

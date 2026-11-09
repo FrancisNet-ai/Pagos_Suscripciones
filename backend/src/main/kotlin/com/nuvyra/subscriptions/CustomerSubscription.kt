@@ -71,8 +71,8 @@ interface CustomerSubscriptionRepository : JpaRepository<CustomerSubscription, U
         where c.id = s.customerId and s.businessId = :businessId
           and s.status in :statuses
           and (:expiringOnly = false or s.expiresAt < :expiringBefore)
-          and (:releasePendingOnly = false or exists (select 1 from com.nuvyra.capacity.CapacityAllocation a
-               where a.customerSubscriptionId = s.id and a.allocationStatus = com.nuvyra.capacity.AllocationStatus.RELEASE_PENDING))
+          and (:releasePendingOnly = false or exists (select 1 from com.nuvyra.products.CapacityAllocation a
+               where a.customerSubscriptionId = s.id and a.allocationStatus = com.nuvyra.products.AllocationStatus.RELEASE_PENDING))
           and (lower(c.fullName) like :pattern escape '\' or c.phone like :pattern escape '\' or lower(s.productNameSnapshot) like :pattern escape '\')
         """,
     )

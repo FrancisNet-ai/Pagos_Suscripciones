@@ -1,6 +1,6 @@
 package com.nuvyra.orders
 
-import com.nuvyra.capacity.AllocationStatus
+import com.nuvyra.products.AllocationStatus
 import com.nuvyra.payments.PaymentMethodType
 import com.nuvyra.payments.PaymentStatus
 import com.nuvyra.products.ProductType

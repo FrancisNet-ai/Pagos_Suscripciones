@@ -1,13 +1,13 @@
 package com.nuvyra.staff
 
 import com.nuvyra.auth.AuthService
-import com.nuvyra.auth.ClientInfo
-import com.nuvyra.businesses.BusinessMember
-import com.nuvyra.businesses.BusinessMemberRepository
+import com.nuvyra.common.web.ClientInfo
+import com.nuvyra.membership.BusinessMember
+import com.nuvyra.membership.BusinessMemberRepository
 import com.nuvyra.businesses.BusinessRepository
-import com.nuvyra.businesses.BusinessRole
-import com.nuvyra.businesses.MemberStatus
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.BusinessRole
+import com.nuvyra.membership.MemberStatus
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.config.AppProperties

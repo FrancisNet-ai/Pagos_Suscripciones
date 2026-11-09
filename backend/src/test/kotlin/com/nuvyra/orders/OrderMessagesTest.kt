@@ -1,5 +1,6 @@
-package com.nuvyra.whatsapp
+package com.nuvyra.orders
 
+import com.nuvyra.common.messaging.ManualWhatsAppLinkProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal

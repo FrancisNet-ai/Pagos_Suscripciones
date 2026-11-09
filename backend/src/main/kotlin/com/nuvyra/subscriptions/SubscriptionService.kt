@@ -1,6 +1,6 @@
 package com.nuvyra.subscriptions
 
-import com.nuvyra.capacity.CapacityService
+import com.nuvyra.products.CapacityService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException

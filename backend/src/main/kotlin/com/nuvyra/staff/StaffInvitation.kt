@@ -1,6 +1,6 @@
 package com.nuvyra.staff
 
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.common.persistence.VersionedEntity
 import com.nuvyra.common.validation.PeruvianMobile
 import jakarta.persistence.Column
@@ -91,8 +91,8 @@ data class TeamMember(
     val userId: UUID,
     val fullName: String,
     val email: String,
-    val role: com.nuvyra.businesses.BusinessRole,
-    val status: com.nuvyra.businesses.MemberStatus,
+    val role: com.nuvyra.membership.BusinessRole,
+    val status: com.nuvyra.membership.MemberStatus,
     val permissions: Set<StaffPermission>,
     val since: Instant,
     val revokedAt: Instant?,

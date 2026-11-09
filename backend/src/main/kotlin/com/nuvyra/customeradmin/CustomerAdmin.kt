@@ -1,5 +1,10 @@
-package com.nuvyra.customers
+package com.nuvyra.customeradmin
 
+import com.nuvyra.customers.CustomerSource
+import com.nuvyra.customers.CustomerRepository
+import com.nuvyra.customers.CustomerConsentRepository
+import com.nuvyra.customers.Customer
+import com.nuvyra.customers.ConsentPurpose
 import com.nuvyra.saas.EntitlementService
 import com.nuvyra.businesses.BusinessService
 import com.nuvyra.common.audit.AuditActions

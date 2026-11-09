@@ -1,6 +1,6 @@
 package com.nuvyra.tasks
 
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.StaffPermission
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
