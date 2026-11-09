@@ -5,6 +5,12 @@
     Lo que pagas por usar Nuvyra. Es independiente de tus ventas: el dinero de tus compradores llega directo a tus cuentas Yape y Plin.
   </p>
 
+  @if (fromRegistration && open()) {
+    <div class="mt-6 grid gap-3 rounded-[var(--radius-panel)] bg-white p-5 ring-1 ring-[var(--line-subtle)]">
+      <app-stepper [steps]="registrationSteps" [current]="3" />
+      <p class="text-center text-[0.9375rem]">Último paso: paga tu plan por Yape o Plin y reporta el código. Lo activamos al confirmar el pago.</p>
+    </div>
+  }
   @if (notice(); as n) { <p class="notice notice-success mt-6" role="status">{{ n }}</p> }
   @if (error(); as e) { <p class="notice notice-error mt-6" role="alert">{{ e }}</p> }
 
@@ -147,14 +153,15 @@
       @if (plans().length === 0) {
         <p class="mt-4">Todavía no hay planes publicados. Escribe a soporte para activar tu cuenta.</p>
       } @else {
-        <div class="mt-8 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="plan-rail mt-8">
           @for (p of plans(); track p.id) {
-            <app-plan-card [plan]="p" [current]="isCurrent(p)" [selected]="open()?.planId === p.id">
+            <app-plan-card [plan]="p" [current]="isCurrent(p)" [featured]="isCurrent(p)" [selected]="open()?.planId === p.id">
               <button type="button" class="btn btn-block" [class]="open()?.planId === p.id ? 'btn-secondary' : 'btn-primary'"
                       [disabled]="busy() || open()?.planId === p.id || !!pendingPayment()" (click)="choose(p)">{{ actionLabel(p) }}</button>
             </app-plan-card>
           }
         </div>
+        @if (plans().length > 1) { <p class="plan-rail-hint">Desliza para ver todos los planes →</p> }
         @if (pendingPayment()) { <p class="mt-4 text-sm">Podrás cambiar de plan cuando confirmemos el pago en revisión.</p> }
       }
     </section>

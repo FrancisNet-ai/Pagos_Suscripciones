@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { StepperComponent } from '../../shared/components/stepper.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,7 +18,7 @@ type Field = 'fullName' | 'email' | 'phone' | 'password' | 'businessName' | 'acc
 @Component({
   selector: 'app-register-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, PasswordInputComponent, PlanCardComponent],
+  imports: [ReactiveFormsModule, RouterLink, AuthLayoutComponent, PasswordInputComponent, PlanCardComponent, StepperComponent],
   templateUrl: './register.page.html',
 })
 export class RegisterPage {
@@ -26,6 +27,10 @@ export class RegisterPage {
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly loading = signal(false);
+  /** 1: tus datos y tu negocio; 2: tu plan. El pago (paso 3) se hace en «Mi plan», ya con la cuenta creada. */
+  protected readonly step = signal<1 | 2>(1);
+  protected readonly steps = ['Tus datos', 'Tu plan', 'Pago'];
+  private readonly firstStep: Field[] = ['fullName', 'email', 'phone', 'password', 'businessName'];
   protected readonly error = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
@@ -45,6 +50,24 @@ export class RegisterPage {
     this.form.controls.planId.setValue(this.form.controls.planId.value === id ? '' : id);
   }
 
+  /** Valida solo los datos del primer paso antes de mostrar los planes. */
+  protected next(): void {
+    const invalid = this.firstStep.filter((f) => this.form.controls[f].invalid);
+    if (invalid.length > 0) {
+      invalid.forEach((f) => this.form.controls[f].markAsTouched());
+      document.getElementById(invalid[0]!)?.focus();
+      return;
+    }
+    this.error.set(null);
+    this.step.set(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  protected back(): void {
+    this.step.set(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   protected err(name: Field): string | null {
     return controlError(this.form.controls[name]);
   }
@@ -60,11 +83,13 @@ export class RegisterPage {
     // Un plan que ya no se ofrece (enlace antiguo) no se envía.
     const chosen = this.plans()?.some((p) => p.id === planId) ? planId : null;
     this.auth.register({ ...data, planId: chosen }).subscribe({
-      next: () => void this.router.navigateByUrl(chosen ? '/panel/plan' : '/panel'),
+      next: () => void this.router.navigateByUrl(chosen ? '/panel/plan?paso=pago' : '/panel'),
       error: (e: unknown) => {
         const apiError = ApiError.from(e);
         applyServerErrors(this.form, apiError);
         this.error.set(apiError.message);
+        // Un correo ya registrado u otro dato del primer paso: volver a mostrarlo.
+        if (this.firstStep.some((f) => this.form.controls[f].invalid)) this.step.set(1);
         this.loading.set(false);
       },
     });

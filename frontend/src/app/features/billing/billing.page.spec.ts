@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { BillingOverview, Plan, planLines } from './billing.api';
+import { BillingOverview, Plan, planBenefits, planLines } from './billing.api';
 import { BillingPage } from './billing.page';
 
 const plan: Plan = {
@@ -74,5 +74,13 @@ describe('BillingPage', () => {
       'Colores y portada propios en tu tienda',
     ]);
     expect(planLines({ ...plan, adminUserLimit: 1 })).toContain('Solo el titular');
+  });
+
+  it('los beneficios explican lo que incluye y tachan lo que no', () => {
+    const benefits = planBenefits({ ...plan, featureReminders: false });
+    expect(benefits.map((b) => b.text)).toContain('Hasta 10 productos en tu tienda');
+    expect(benefits.map((b) => b.text)).toContain('Tú y 2 personas más de tu equipo');
+    expect(benefits.find((b) => b.text.startsWith('Avisos de renovación'))?.included).toBe(false);
+    expect(planBenefits({ ...plan, adminUserLimit: 1 }).map((b) => b.text)).toContain('Solo tú administras tu negocio');
   });
 });

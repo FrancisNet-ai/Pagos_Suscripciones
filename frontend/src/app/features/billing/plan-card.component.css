@@ -1,0 +1,110 @@
+/* Tarjeta de plan inspirada en una tabla de precios, con la paleta de Nuvyra (noche, corporativo, acero, niebla). */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 26px 22px 22px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--color-mist) 22%, white);
+  border: 1px solid color-mix(in srgb, var(--color-mist) 70%, white);
+  color: var(--color-night);
+  text-align: center;
+  scroll-snap-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+:host(.plan-card--selected) {
+  border-color: var(--color-steel);
+  box-shadow: 0 0 0 2px var(--color-steel);
+}
+:host(.plan-card--featured) {
+  background: linear-gradient(160deg, var(--color-night), var(--color-corporate));
+  border-color: transparent;
+  color: var(--color-snow);
+  box-shadow: 0 14px 34px rgb(10 25 49 / 22%);
+}
+.plan-card__badge {
+  align-self: center;
+  margin-bottom: 10px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--color-steel);
+  color: var(--color-snow);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.plan-card__name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-steel);
+}
+:host(.plan-card--featured) .plan-card__name {
+  color: var(--color-mist);
+}
+.plan-card__price {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  line-height: 1.05;
+}
+.plan-card__price small {
+  margin-top: 4px;
+  font-family: var(--font-sans, inherit);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.plan-card__description {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+.plan-card__benefits {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  display: grid;
+  gap: 9px;
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.plan-card__benefits li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 8px;
+}
+.plan-card__mark {
+  font-weight: 700;
+  color: var(--color-steel);
+}
+:host(.plan-card--featured) .plan-card__mark {
+  color: var(--color-mist);
+}
+.plan-card__missing {
+  opacity: 0.5;
+}
+.plan-card__missing s {
+  text-decoration-thickness: 1px;
+}
+.plan-card__action {
+  margin-top: auto;
+  padding-top: 20px;
+}
+:host(.plan-card--featured) .plan-card__action ::ng-deep .btn-primary {
+  background: var(--color-snow);
+  color: var(--color-night);
+}
+:host(.plan-card--featured) .plan-card__action ::ng-deep .btn-secondary {
+  background: transparent;
+  border-color: var(--color-mist);
+  color: var(--color-snow);
+}
