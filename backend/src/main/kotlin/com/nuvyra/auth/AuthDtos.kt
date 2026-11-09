@@ -1,8 +1,8 @@
 package com.nuvyra.auth
 
-import com.nuvyra.businesses.BusinessRole
+import com.nuvyra.membership.BusinessRole
 import com.nuvyra.businesses.BusinessStatus
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.common.validation.PeruvianMobile
 import com.nuvyra.saas.AccessSummary
 import jakarta.validation.constraints.AssertTrue

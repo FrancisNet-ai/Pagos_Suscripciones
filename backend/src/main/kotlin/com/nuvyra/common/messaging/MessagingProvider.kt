@@ -1,4 +1,4 @@
-package com.nuvyra.whatsapp
+package com.nuvyra.common.messaging
 
 import org.springframework.stereotype.Component
 import java.net.URLEncoder

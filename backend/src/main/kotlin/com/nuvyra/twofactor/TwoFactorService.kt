@@ -1,6 +1,6 @@
 package com.nuvyra.twofactor
 
-import com.nuvyra.auth.ClientInfo
+import com.nuvyra.common.web.ClientInfo
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.config.AppProperties

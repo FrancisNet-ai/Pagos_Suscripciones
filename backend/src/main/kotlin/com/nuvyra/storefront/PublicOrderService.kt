@@ -1,8 +1,8 @@
 package com.nuvyra.storefront
 
 import com.nuvyra.businesses.BusinessRepository
-import com.nuvyra.capacity.AllocationStatus
-import com.nuvyra.capacity.CapacityService
+import com.nuvyra.products.AllocationStatus
+import com.nuvyra.products.CapacityService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.config.AppProperties
@@ -20,9 +20,9 @@ import com.nuvyra.payments.CustomerPayment
 import com.nuvyra.payments.CustomerPaymentRepository
 import com.nuvyra.payments.PaymentProviders
 import com.nuvyra.payments.PaymentStatus
-import com.nuvyra.whatsapp.ManualWhatsAppLinkProvider
-import com.nuvyra.whatsapp.OrderMessageData
-import com.nuvyra.whatsapp.OrderMessages
+import com.nuvyra.common.messaging.ManualWhatsAppLinkProvider
+import com.nuvyra.orders.OrderMessageData
+import com.nuvyra.orders.OrderMessages
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Clock

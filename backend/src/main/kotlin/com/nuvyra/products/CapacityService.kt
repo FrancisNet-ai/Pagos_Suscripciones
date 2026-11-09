@@ -1,4 +1,4 @@
-package com.nuvyra.capacity
+package com.nuvyra.products
 
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.products.Product

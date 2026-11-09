@@ -1,7 +1,7 @@
 package com.nuvyra.security
 
-import com.nuvyra.businesses.BusinessRole
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.BusinessRole
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.common.error.ApiException
 import org.springframework.core.MethodParameter
 import org.springframework.security.core.context.SecurityContextHolder

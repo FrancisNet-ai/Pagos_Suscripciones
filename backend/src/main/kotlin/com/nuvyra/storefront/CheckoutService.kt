@@ -2,7 +2,7 @@ package com.nuvyra.storefront
 
 import com.nuvyra.businesses.Business
 import com.nuvyra.saas.EntitlementService
-import com.nuvyra.capacity.CapacityService
+import com.nuvyra.products.CapacityService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.config.AppProperties

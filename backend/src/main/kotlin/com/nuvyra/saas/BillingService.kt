@@ -9,7 +9,7 @@ import com.nuvyra.common.ratelimit.RateLimiter
 import com.nuvyra.media.MediaStorage
 import com.nuvyra.media.StoredFile
 import com.nuvyra.payments.PaymentMethodType
-import com.nuvyra.whatsapp.ManualWhatsAppLinkProvider
+import com.nuvyra.common.messaging.ManualWhatsAppLinkProvider
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service

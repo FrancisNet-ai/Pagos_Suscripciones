@@ -4,7 +4,7 @@ import com.nuvyra.businesses.Business
 import com.nuvyra.businesses.BusinessRepository
 import com.nuvyra.saas.EntitlementService
 import com.nuvyra.saas.PlanFeature
-import com.nuvyra.capacity.CapacityService
+import com.nuvyra.products.CapacityService
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.payments.PaymentMethodService
 import com.nuvyra.products.Product
@@ -76,7 +76,7 @@ class StorefrontService(
         products.findByIdAndBusinessId(productId, business.id)?.takeIf { it.publicationStatus == PublicationStatus.PUBLISHED }
             ?: throw ApiException.notFound("Este producto no está disponible en la tienda.")
 
-    private fun toPublic(p: Product, a: com.nuvyra.capacity.Availability) = PublicProductResponse(
+    private fun toPublic(p: Product, a: com.nuvyra.products.Availability) = PublicProductResponse(
         id = p.id,
         name = p.name,
         description = p.description,

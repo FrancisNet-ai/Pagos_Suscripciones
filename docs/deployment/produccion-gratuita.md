@@ -13,7 +13,7 @@ cualquier dispositivo: marca cada casilla (`[x]`) al completarla.
 
 - **La laptop no sirve como servidor:** se apaga, no es accesible desde internet, no tiene copias de
   seguridad y no tiene virtualización (no puede usar Docker). Queda solo para desarrollo, con
-  PostgreSQL 17 nativo, JDK 26 y Node 24 (ver [desarrollo en Windows](../development/windows.md)).
+  PostgreSQL 17 nativo, JDK 21 y Node 24 (ver [desarrollo en Windows](../development/windows.md)).
 - **Presupuesto: 0.** Solo se usan servicios gratuitos.
 - **Lo que necesita Nuvyra en producción:**
   - Un backend **encendido siempre**, porque hay tareas programadas: recordatorios, vencimientos y pendientes.

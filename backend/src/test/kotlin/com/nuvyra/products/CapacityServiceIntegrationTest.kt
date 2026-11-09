@@ -1,9 +1,6 @@
-package com.nuvyra.capacity
+package com.nuvyra.products
 
 import com.nuvyra.common.error.ApiException
-import com.nuvyra.products.Product
-import com.nuvyra.products.ProductRepository
-import com.nuvyra.products.ProductType
 import com.nuvyra.support.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy

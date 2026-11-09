@@ -1,7 +1,7 @@
 package com.nuvyra.security
 
-import com.nuvyra.businesses.BusinessMemberRepository
-import com.nuvyra.businesses.MemberStatus
+import com.nuvyra.membership.BusinessMemberRepository
+import com.nuvyra.membership.MemberStatus
 import com.nuvyra.common.config.AppProperties
 import com.nuvyra.common.text.SecureTokens
 import com.nuvyra.users.PlatformRole

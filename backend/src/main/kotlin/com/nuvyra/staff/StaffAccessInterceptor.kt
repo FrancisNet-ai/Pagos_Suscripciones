@@ -1,7 +1,7 @@
 package com.nuvyra.staff
 
-import com.nuvyra.businesses.BusinessRole
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.BusinessRole
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.security.currentUserOrNull
 import jakarta.servlet.http.HttpServletRequest

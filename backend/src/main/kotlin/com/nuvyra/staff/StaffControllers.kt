@@ -1,7 +1,7 @@
 package com.nuvyra.staff
 
 import com.nuvyra.auth.AuthService
-import com.nuvyra.auth.ClientInfo
+import com.nuvyra.common.web.ClientInfo
 import com.nuvyra.auth.SessionResponse
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.common.web.clientIp

@@ -61,7 +61,7 @@ contradiga. Antes del primer despliegue con datos reales se adoptará por etapas
   esquema, que ejecuta Flyway y en Docker y en Windows es administrador de PostgreSQL. Como los
   administradores ignoran RLS, V17 crea el rol `nuvyra_app` (sin `BYPASSRLS` ni privilegios de
   administración) y la aplicación cambia a él solo cuando hace falta. No se necesitan credenciales nuevas.
-- **Cuándo se aplica:** `TenantContextFilter` fija el negocio de la sesión en las rutas del panel; quedan fuera
+- **Cuándo se aplica:** `security.TenantContextFilter` fija el negocio de la sesión en las rutas del panel; quedan fuera
   `/api/v1/public/**`, `/api/v1/auth/**` y `/api/v1/admin/**`.
 - **Cómo se aplica:** `TenantAwareDataSource` envuelve el pool. Al entregar cada conexión ejecuta
   `set_config('role', …)` y `set_config('app.business_id', …)`:

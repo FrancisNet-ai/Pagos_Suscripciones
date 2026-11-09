@@ -4,8 +4,8 @@ import com.nuvyra.businesses.Business
 import com.nuvyra.businesses.BusinessRepository
 import com.nuvyra.saas.EntitlementService
 import com.nuvyra.saas.PlanFeature
-import com.nuvyra.capacity.AllocationStatus
-import com.nuvyra.capacity.CapacityAllocationRepository
+import com.nuvyra.products.AllocationStatus
+import com.nuvyra.products.CapacityAllocationRepository
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.config.AppProperties
@@ -32,7 +32,7 @@ import com.nuvyra.common.text.SecureTokens
 import com.nuvyra.subscriptions.CustomerSubscriptionRepository
 import com.nuvyra.subscriptions.SubscriptionService
 import com.nuvyra.subscriptions.SubscriptionStatus
-import com.nuvyra.whatsapp.ManualWhatsAppLinkProvider
+import com.nuvyra.common.messaging.ManualWhatsAppLinkProvider
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service

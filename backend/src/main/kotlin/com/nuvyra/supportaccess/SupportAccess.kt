@@ -5,9 +5,9 @@ import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.common.web.PageResponse
-import com.nuvyra.customers.CustomerAdminService
-import com.nuvyra.customers.CustomerFilter
-import com.nuvyra.customers.CustomerSummary
+import com.nuvyra.customeradmin.CustomerAdminService
+import com.nuvyra.customeradmin.CustomerFilter
+import com.nuvyra.customeradmin.CustomerSummary
 import com.nuvyra.orders.OrderFilter
 import com.nuvyra.orders.OrderService
 import com.nuvyra.orders.OrderSummary

@@ -1,5 +1,6 @@
 package com.nuvyra.common.tenancy
 
+import com.nuvyra.security.TenantContextFilter
 import com.nuvyra.support.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy

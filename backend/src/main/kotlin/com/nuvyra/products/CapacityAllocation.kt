@@ -1,4 +1,4 @@
-package com.nuvyra.capacity
+package com.nuvyra.products
 
 import com.nuvyra.common.persistence.VersionedEntity
 import jakarta.persistence.Column
@@ -42,7 +42,7 @@ interface CapacityAllocationRepository : JpaRepository<CapacityAllocation, UUID>
     fun findFirstByCustomerSubscriptionIdAndBusinessIdOrderByCreatedAtDesc(subscriptionId: UUID, businessId: UUID): CapacityAllocation?
 
     @Query(
-        "select count(a) from CapacityAllocation a where a.businessId = :businessId and a.allocationStatus = com.nuvyra.capacity.AllocationStatus.RELEASE_PENDING",
+        "select count(a) from CapacityAllocation a where a.businessId = :businessId and a.allocationStatus = com.nuvyra.products.AllocationStatus.RELEASE_PENDING",
     )
     fun countReleasePending(businessId: UUID): Long
 

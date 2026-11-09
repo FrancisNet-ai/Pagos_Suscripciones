@@ -1,8 +1,9 @@
 package com.nuvyra.auth
 
+import com.nuvyra.common.web.ClientInfo
 import com.nuvyra.businesses.Business
-import com.nuvyra.businesses.BusinessRole
-import com.nuvyra.businesses.StaffPermission
+import com.nuvyra.membership.BusinessRole
+import com.nuvyra.membership.StaffPermission
 import com.nuvyra.businesses.BusinessService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
@@ -30,8 +31,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
 import java.time.Duration
 import java.util.UUID
-
-data class ClientInfo(val ip: String, val userAgent: String?)
 
 data class AuthResult(val response: SessionResponse, val session: IssuedSession)
 

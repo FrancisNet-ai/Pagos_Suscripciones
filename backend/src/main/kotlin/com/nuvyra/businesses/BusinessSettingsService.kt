@@ -1,13 +1,12 @@
 package com.nuvyra.businesses
 
-import com.nuvyra.saas.EntitlementService
-import com.nuvyra.saas.PlanFeature
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException
 import com.nuvyra.common.text.SlugGenerator
 import com.nuvyra.common.validation.PeruPhone
 import com.nuvyra.media.MediaStorage
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -22,7 +21,8 @@ class BusinessSettingsService(
     private val businesses: BusinessRepository,
     private val media: MediaStorage,
     private val audit: AuditService,
-    private val entitlements: EntitlementService,
+    /** Opcional: sin el módulo de planes, la personalización no tiene restricciones. */
+    private val brandingGate: ObjectProvider<BrandingGate>,
 ) {
     @Transactional
     fun update(businessId: UUID, actorId: UUID, request: UpdateBusinessRequest): Business {
@@ -36,7 +36,7 @@ class BusinessSettingsService(
         business.businessName = request.businessName!!.trim()
         business.description = request.description?.trim()?.ifEmpty { null }
         val color = request.primaryColor?.uppercase()?.ifEmpty { null }
-        if (color != null && color != business.primaryColor) entitlements.requireFeature(businessId, PlanFeature.BRANDING)
+        if (color != null && color != business.primaryColor) brandingGate.ifAvailable?.requireBranding(businessId)
         business.primaryColor = color
         business.whatsappNumber = request.whatsappNumber?.takeIf { it.isNotBlank() }?.let { PeruPhone.normalize(it) }
         business.timeZone = timeZone
@@ -74,7 +74,7 @@ class BusinessSettingsService(
     @Transactional
     fun replaceImage(businessId: UUID, actorId: UUID, kind: BusinessImageKind, file: MultipartFile?): Business {
         val business = load(businessId)
-        if (kind == BusinessImageKind.COVER && file != null) entitlements.requireFeature(businessId, PlanFeature.BRANDING)
+        if (kind == BusinessImageKind.COVER && file != null) brandingGate.ifAvailable?.requireBranding(businessId)
         val newUrl = file?.let { media.storeImage(it) }
         val previous = when (kind) {
             BusinessImageKind.LOGO -> business.logoUrl.also { business.logoUrl = newUrl }

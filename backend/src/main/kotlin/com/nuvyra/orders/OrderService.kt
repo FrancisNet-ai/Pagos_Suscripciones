@@ -1,6 +1,6 @@
 package com.nuvyra.orders
 
-import com.nuvyra.capacity.CapacityService
+import com.nuvyra.products.CapacityService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException
@@ -13,7 +13,7 @@ import com.nuvyra.payments.PaymentStatus
 import com.nuvyra.products.ProductService
 import com.nuvyra.subscriptions.SubscriptionLabels
 import com.nuvyra.subscriptions.SubscriptionService
-import com.nuvyra.whatsapp.ManualWhatsAppLinkProvider
+import com.nuvyra.common.messaging.ManualWhatsAppLinkProvider
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service

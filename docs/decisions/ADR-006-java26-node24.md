@@ -1,6 +1,8 @@
 # ADR-006 — Desarrollo con Java 26 y Node 24
 
-Estado: aceptado para compatibilidad con el equipo del propietario.
+Estado: **reemplazado (9 de noviembre de 2026).** Java 26 dejó de usarse: la laptop ya no es un entorno de
+ejecución, producción usa Java 21 (Render) y la descarga de Java 26 en el CI fallaba por caídas externas.
+Todo usa Java 21 LTS; Node 24 se mantiene.
 
 ## Contexto
 

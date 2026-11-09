@@ -8,14 +8,16 @@ RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 RUN npx ng build --configuration production
 
-FROM eclipse-temurin:21-jdk AS api
+# Imagen oficial con Gradle 9.4.1 (la versión del wrapper) y Java 21: no descarga Gradle en cada build, así una
+# caída de services.gradle.org no frena el despliegue.
+FROM gradle:9.4.1-jdk21 AS api
 WORKDIR /app
 ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx1g"
-COPY backend/gradlew backend/settings.gradle.kts backend/build.gradle.kts ./
+COPY backend/settings.gradle.kts backend/build.gradle.kts ./
 COPY backend/gradle gradle
-RUN ./gradlew dependencies --no-daemon -q > /dev/null
+RUN gradle dependencies --no-daemon -q > /dev/null
 COPY backend/src src
-RUN ./gradlew bootJar --no-daemon -x test
+RUN gradle bootJar --no-daemon -x test
 
 FROM eclipse-temurin:21-jre
 RUN groupadd --system app && useradd --system --gid app --home /app app

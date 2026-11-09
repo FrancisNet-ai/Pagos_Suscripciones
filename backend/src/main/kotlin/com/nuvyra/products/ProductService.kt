@@ -1,7 +1,6 @@
 package com.nuvyra.products
 
 import com.nuvyra.saas.EntitlementService
-import com.nuvyra.capacity.CapacityService
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException

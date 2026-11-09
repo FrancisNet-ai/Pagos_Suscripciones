@@ -1,5 +1,6 @@
 package com.nuvyra.auth
 
+import com.nuvyra.common.web.ClientInfo
 import com.nuvyra.common.web.clientIp
 import com.nuvyra.common.web.userAgentTruncated
 import com.nuvyra.security.AuthenticatedUser
