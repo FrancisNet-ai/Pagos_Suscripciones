@@ -23,7 +23,7 @@ combina espacio claro a la izquierda y mármol fluido azul a la derecha.
 
 - **Bodoni Moda:** logotipo tipográfico, titulares editoriales y mensajes destacados.
 - **Inter:** menús, paneles, formularios, tablas, importes y fechas; números tabulares.
-- **Playfair Display:** permanece disponible para compatibilidad con componentes existentes.
+- Playfair Display se retiró al comprobar que ninguna pantalla la utilizaba; las dos familias anteriores conservan la identidad editorial.
 - Las familias son las alternativas OFL ya empaquetadas mediante Fontsource. No se incorporan Voga
   ni Bodoni FLF sin licencia de distribución comercial verificada.
 - `frontend/public/art/nuvyra-fluid.webp`: ilustración original generada para este rediseño, sin marcas,

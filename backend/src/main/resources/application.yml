@@ -34,6 +34,10 @@ server:
     include-message: never
     include-stacktrace: never
   shutdown: graceful
+  compression:
+    enabled: true
+    min-response-size: 1KB
+    mime-types: text/html,text/plain,text/css,application/javascript,text/javascript,application/json,image/svg+xml
 
 management:
   endpoints:

@@ -141,5 +141,6 @@ en [docs/deployment](docs/deployment/README.md).
 * [Sistema visual](docs/architecture/sistema-visual.md)
 * [Seguridad y riesgos](docs/architecture/seguridad.md)
 * [Dependencias y su revisión automática](docs/development/dependencias.md)
+* [Rendimiento y conexiones inestables](docs/testing/rendimiento.md)
 * [Textos legales (borradores para revisión)](docs/legal/README.md)
 * [Decisiones técnicas (ADR)](docs/decisions)

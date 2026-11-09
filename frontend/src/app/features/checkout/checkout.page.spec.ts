@@ -75,4 +75,27 @@ describe('CheckoutPage', () => {
     expect(el.textContent).toContain('Agotado — Actualmente no hay cupos disponibles.');
     expect(el.querySelector('form')).toBeNull();
   });
+
+  it('evita envíos simultáneos y conserva datos y clave de pedido al reintentar tras un corte', async () => {
+    const { fixture, el } = await render();
+    type(el, '#customerName', 'Carlos Ramírez');
+    type(el, '#phone', '987654321');
+    el.querySelector<HTMLInputElement>('input[type=radio]')!.click();
+    el.querySelector<HTMLInputElement>('input[formcontrolname=acceptTerms]')!.click();
+    el.querySelector<HTMLInputElement>('input[formcontrolname=acceptDataProcessing]')!.click();
+    const form = el.querySelector('form')!;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    const first = http.expectOne('/api/v1/public/stores/mi-tienda/orders');
+    const key = first.request.headers.get('Idempotency-Key');
+    first.error(new ProgressEvent('error'));
+    fixture.detectChanges();
+    expect(el.querySelector<HTMLInputElement>('#customerName')!.value).toBe('Carlos Ramírez');
+    expect(el.querySelector<HTMLInputElement>('#phone')!.value).toBe('987654321');
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    const retry = http.expectOne('/api/v1/public/stores/mi-tienda/orders');
+    expect(retry.request.headers.get('Idempotency-Key')).toBe(key);
+    expect(retry.request.body).toEqual(first.request.body);
+    retry.flush({}, { status: 503, statusText: 'Unavailable' });
+  });
 });

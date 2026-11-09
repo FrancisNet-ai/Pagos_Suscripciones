@@ -5,6 +5,9 @@ Incluye compra sin registro, verificación manual, renovación sin duplicar cupo
 importación, invitación/revocación de colaboradores y resolución de pendientes con su historial.
 Se ejecuta en Chromium de escritorio y móvil, con comprobaciones de accesibilidad y de ancho.
 
+Las pruebas de cortes en `connectivity.spec.ts` y las mediciones del build para conexiones lentas están
+descritas en [rendimiento](rendimiento.md). Esos casos controlan la red y no realizan compras reales.
+
 `loading.spec.ts` comprueba por separado la presentación de la carga, con respuestas HTTP controladas
 para mantener la espera y provocar un error sin modificar datos: monograma centrado y accesible antes
 de recuperar la sesión, retirada del indicador al fallar la tienda y arco detenido con movimiento

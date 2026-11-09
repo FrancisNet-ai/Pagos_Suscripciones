@@ -14,7 +14,7 @@
       <nav class="store-nav" aria-label="Tienda">
         <a href="#catalogo" class="store-identity">
           @if (s.logoUrl) {
-            <img [src]="s.logoUrl | smallImage" [alt]="'Logotipo de ' + s.businessName" />
+            <img [src]="s.logoUrl | smallImage" [alt]="'Logotipo de ' + s.businessName" width="44" height="44" decoding="async" />
           } @else {
             <span class="profile-avatar" aria-hidden="true">{{ initials() }}</span>
           }
@@ -24,7 +24,10 @@
       </nav>
       <div class="store-banner" [style.background-color]="'var(--store-accent)'">
         @if (s.coverUrl) {
-          <img [src]="s.coverUrl" alt="" class="store-cover" fetchpriority="high" />
+          <picture>
+            <source media="(max-width: 768px)" [srcset]="s.coverUrl | smallImage" />
+            <img [src]="s.coverUrl" alt="" class="store-cover" fetchpriority="high" decoding="async" />
+          </picture>
         } @else {
           <app-wave-art />
         }
