@@ -69,7 +69,7 @@ type MethodForm = FormGroup<{ holderName: FormControl<string>; phone: FormContro
             <button type="submit" class="btn btn-primary justify-self-start" [disabled]="busy()">Guardar {{ m.methodLabel }}</button>
             <div>
               <p class="field-label mb-3">Código QR (opcional)</p>
-              <app-image-upload label="QR" noun="código QR" [imageUrl]="m.qrImageUrl" [busy]="busy()" [disabled]="!m.holderName"
+              <app-image-upload label="QR" noun="código QR" hint="El QR de cobro de esta cuenta, descargado desde la app de Yape o Plin." [imageUrl]="m.qrImageUrl" [busy]="busy()" [disabled]="!m.holderName"
                                 (selected)="uploadQr(m.method, $event)" (remove)="removeQr(m.method)" />
             </div>
           </form>

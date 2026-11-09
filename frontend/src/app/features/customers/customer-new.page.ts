@@ -33,8 +33,9 @@ import { CustomersApi } from './customers.api';
             @if (err('fullName'); as e) { <p class="field-error">{{ e }}</p> }
           </div>
           <div class="field">
-            <label class="field-label" for="phone">Celular</label>
-            <input id="phone" class="input" type="tel" inputmode="tel" formControlName="phone" placeholder="987 654 321" [attr.aria-invalid]="!!err('phone')" />
+            <label class="field-label" for="phone">Celular con WhatsApp</label>
+            <input id="phone" class="input" type="tel" inputmode="tel" formControlName="phone" placeholder="987 654 321" [attr.aria-invalid]="!!err('phone')" aria-describedby="phone-hint" />
+            <p id="phone-hint" class="field-hint">El número donde el cliente usa WhatsApp: a ese le enviarás los avisos de renovación.</p>
             @if (err('phone'); as e) { <p class="field-error">{{ e }}</p> }
           </div>
         </div>
