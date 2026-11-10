@@ -132,7 +132,9 @@ describe('StorefrontPage: catálogo visual', () => {
       product.textContent?.includes('Curso agotado'),
     )!;
     expect(exhausted.textContent).toContain('Agotado');
-    expect(exhausted.querySelector('a')).toBeNull();
+    // Se puede ver su detalle, pero no comprarlo.
+    expect(exhausted.querySelector('a.btn-store')).toBeNull();
+    expect(exhausted.querySelector('a.store-product-link')).not.toBeNull();
     expect(el.querySelector('.store-nav')!.textContent).toContain('Negocio real');
   });
 
@@ -149,5 +151,23 @@ describe('StorefrontPage: catálogo visual', () => {
     fixture.detectChanges();
     expect(search.value).toBe('');
     expect(el.querySelectorAll('.store-product').length).toBe(3);
+  });
+  it('cada tarjeta abre el detalle del producto y muestra la descripción sin marcas de formato', () => {
+    const fixture = TestBed.createComponent(StorefrontPage);
+    fixture.componentRef.setInput('slug', 'demo');
+    fixture.detectChanges();
+    http.expectOne('/api/v1/public/stores/demo').flush({
+      slug: 'demo', businessName: 'Demo', description: '**Tienda Demo**: todo digital', logoUrl: null, coverUrl: null, primaryColor: null,
+      acceptingOrders: true, notice: null, paymentMethods: [], orderUpdatesByWhatsapp: false,
+    });
+    http.expectOne('/api/v1/public/stores/demo/products').flush([{
+      id: 'p9', name: 'Prime Video', description: '**Prime Video** 🎬\nSeries', category: null, productType: 'SUBSCRIPTION',
+      price: 5.2, currency: 'PEN', durationDays: 30, imageUrl: null, availableSlots: null, soldOut: false, purchasable: true,
+    }]);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.store-product-link')?.getAttribute('href')).toBe('/tienda/demo/producto/p9');
+    expect(el.querySelector('.product-description')?.textContent?.trim()).toBe('Prime Video 🎬 Series');
+    expect(el.querySelector('.store-banner-inner strong')?.textContent).toBe('Tienda Demo');
   });
 });

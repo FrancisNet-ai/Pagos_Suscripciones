@@ -35,12 +35,11 @@
           <!-- La portada es del vendedor: su nombre y su descripción; sin textos comerciales ajenos. -->
           <p class="type-eyebrow !mt-0 !text-mist">Tienda en línea</p>
           <h1 class="mt-4">{{ s.businessName }}</h1>
-          <p>
-            {{
-              s.description ||
-                'Elige un producto y compra sin crear una cuenta. Pagas por Yape o Plin directamente al vendedor.'
-            }}
-          </p>
+          @if (s.description) {
+            <p [innerHTML]="s.description | richText"></p>
+          } @else {
+            <p>Elige un producto y compra sin crear una cuenta. Pagas por Yape o Plin directamente al vendedor.</p>
+          }
         </div>
       </div>
     </header>
@@ -101,6 +100,7 @@
         <ul class="store-grid">
           @for (p of filteredProducts(); track p.id) {
             <li class="store-product">
+              <a class="store-product-link" [routerLink]="['/tienda', s.slug, 'producto', p.id]">
               <div class="store-product-image">
                 @if (p.imageUrl) {
                   <img [src]="p.imageUrl | smallImage" [alt]="p.name" loading="lazy" decoding="async" />
@@ -115,8 +115,10 @@
               }
               <h3>{{ p.name }}</h3>
               @if (p.description) {
-                <p class="product-description line-clamp-3">{{ p.description }}</p>
+                <p class="product-description line-clamp-3">{{ p.description | plainText }}</p>
               }
+              <span class="store-product-more">Ver detalles</span>
+              </a>
               <p class="store-price type-numeric">{{ p.price | soles }}</p>
               <p class="store-duration">
                 {{
