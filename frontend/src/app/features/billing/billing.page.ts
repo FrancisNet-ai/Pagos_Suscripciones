@@ -1,7 +1,7 @@
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { StepperComponent } from '../../shared/components/stepper.component';
 import { ApiError } from '../../core/services/api-error';
@@ -16,7 +16,7 @@ const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
 @Component({
   selector: 'app-billing-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, ReactiveFormsModule, PlanCardComponent, RailDotsComponent, SolesPipe, StatusBadgeComponent, StepperComponent],
+  imports: [LoadingIndicatorComponent, ReactiveFormsModule, RouterLink, PlanCardComponent, RailDotsComponent, SolesPipe, StatusBadgeComponent, StepperComponent],
   templateUrl: './billing.page.html',
 })
 export class BillingPage {
@@ -31,9 +31,12 @@ export class BillingPage {
   protected readonly receipt = signal<File | null>(null);
   protected readonly receiptError = signal<string | null>(null);
   protected readonly formatDate = formatDate;
-  /** Llega desde el registro (`?paso=pago`): se muestra el paso 3 y se lleva a la persona directo al cobro. */
-  protected readonly fromRegistration = inject(ActivatedRoute).snapshot.queryParamMap.get('paso') === 'pago';
-  protected readonly registrationSteps = ['Tus datos', 'Tu plan', 'Pago'];
+  /**
+   * Llega desde el registro (`?paso=activacion`): se muestra el paso 3 con la prueba gratuita activa o, si el
+   * celular ya la usó, se lleva a la persona directo al cobro.
+   */
+  protected readonly fromRegistration = ['activacion', 'pago'].includes(inject(ActivatedRoute).snapshot.queryParamMap.get('paso') ?? '');
+  protected readonly registrationSteps = ['Tus datos', 'Tu plan', 'Activación'];
   private scrolledToInvoice = false;
 
   protected readonly form = this.fb.group({
@@ -76,7 +79,9 @@ export class BillingPage {
   protected actionLabel(plan: Plan): string {
     const d = this.data();
     if (this.open()?.planId === plan.id) return 'Cobro generado';
+    if (d?.currentPlan?.id === plan.id && d.trialEndsAt) return 'Pagar este plan';
     if (d?.currentPlan?.id === plan.id && this.hasPeriod()) return 'Renovar este plan';
+    if (d?.trialAvailable && plan.price > 0) return `Probar ${d.trialDays} días gratis`;
     return plan.price === 0 ? 'Activar gratis' : 'Elegir este plan';
   }
 
@@ -85,7 +90,11 @@ export class BillingPage {
   }
 
   protected choose(plan: Plan): void {
-    this.run(this.api.checkout(plan.id), plan.price === 0 ? 'Tu plan está activo.' : 'Generamos tu cobro. Paga con Yape o Plin y reporta el código de operación.');
+    const trial = !!this.data()?.trialAvailable && plan.price > 0;
+    const message = plan.price === 0 ? 'Tu plan está activo.'
+      : trial ? `Empezó tu prueba gratis de ${this.data()!.trialDays} días.`
+      : 'Generamos tu cobro. Paga con Yape o Plin y reporta el código de operación.';
+    this.run(this.api.checkout(plan.id), message);
   }
 
   protected cancel(invoice: Invoice): void {

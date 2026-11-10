@@ -5,10 +5,15 @@
     Lo que pagas por usar Nuvyra. Es independiente de tus ventas: el dinero de tus compradores llega directo a tus cuentas Yape y Plin.
   </p>
 
-  @if (fromRegistration && open()) {
+  @if (fromRegistration && (open() || data()?.trialEndsAt)) {
     <div class="mt-6 grid gap-3 rounded-[var(--radius-panel)] bg-white p-5 ring-1 ring-[var(--line-subtle)]">
       <app-stepper [steps]="registrationSteps" [current]="3" />
-      <p class="text-center text-[0.9375rem]">Último paso: paga tu plan por Yape o Plin y reporta el código. Lo activamos al confirmar el pago.</p>
+      @if (data()?.trialEndsAt; as end) {
+        <p class="text-center text-[0.9375rem]">¡Listo! Tu prueba gratis está activa hasta el <strong>{{ formatDate(end) }}</strong>. Ya puedes configurar tu tienda y vender.</p>
+        <a routerLink="/panel" class="btn btn-primary justify-self-center">Ir a mi panel</a>
+      } @else {
+        <p class="text-center text-[0.9375rem]">Este celular ya usó su prueba gratis. Último paso: paga tu plan por Yape o Plin y reporta el código. Lo activamos al confirmar el pago.</p>
+      }
     </div>
   }
   @if (notice(); as n) { <p class="notice notice-success mt-6" role="status">{{ n }}</p> }
@@ -25,10 +30,12 @@
           <p class="mt-3 text-sm">Escribe a soporte para revisar tu caso. Tus datos se conservan.</p>
         } @else if (d.access.active) {
           <p class="text-xs font-semibold uppercase tracking-[0.12em]" [class]="d.access.subscriptionStatus === 'PAST_DUE' ? 'text-warning' : 'text-success'">
-            {{ d.access.subscriptionStatus === 'PAST_DUE' ? 'Vencido · en plazo de gracia' : 'Plan vigente' }}
+            {{ d.access.subscriptionStatus === 'PAST_DUE' ? 'Vencido · en plazo de gracia' : d.trialEndsAt ? 'Prueba gratis' : 'Plan vigente' }}
           </p>
           <p class="mt-2 font-[family-name:var(--font-display)] text-4xl text-night">{{ d.currentPlan?.name }}</p>
-          @if (d.access.subscriptionStatus === 'PAST_DUE') {
+          @if (d.trialEndsAt) {
+            <p class="mt-3">Tu prueba gratis termina el <strong>{{ formatDate(d.trialEndsAt) }}</strong>. Para seguir vendiendo después, paga tu plan antes de esa fecha: tu mes pagado empieza cuando termine la prueba.</p>
+          } @else if (d.access.subscriptionStatus === 'PAST_DUE') {
             <p class="mt-3">Venció el {{ formatDate(d.access.expiresAt) }}. Puedes seguir vendiendo hasta el <strong>{{ formatDate(d.access.usableUntil) }}</strong>; renueva antes para no interrumpir tu tienda.</p>
           } @else {
             <p class="mt-3">Vigente hasta el <strong>{{ formatDate(d.access.expiresAt) }}</strong>.</p>
@@ -155,7 +162,7 @@
       } @else {
         <div class="plan-rail mt-8" #rail>
           @for (p of plans(); track p.id) {
-            <app-plan-card [plan]="p" [current]="isCurrent(p)" [featured]="isCurrent(p)" [selected]="open()?.planId === p.id">
+            <app-plan-card [plan]="p" [trial]="d.trialAvailable" [current]="isCurrent(p)" [featured]="isCurrent(p)" [selected]="open()?.planId === p.id">
               <button type="button" class="btn btn-block" [class]="open()?.planId === p.id ? 'btn-secondary' : 'btn-primary'"
                       [disabled]="busy() || open()?.planId === p.id || !!pendingPayment()" (click)="choose(p)">{{ actionLabel(p) }}</button>
             </app-plan-card>

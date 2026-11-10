@@ -122,21 +122,21 @@
           <p class="type-eyebrow">Un plan para tu siguiente paso</p>
           <h2 id="planes-titulo">Invierte en tu negocio.<br />Conserva tus ventas.</h2>
           <p>
-            Pagas solo tu plan de Nuvyra. Lo que vendes llega directo a tus cuentas Yape y Plin;
-            nosotros no intervenimos en tus ventas.
+            Pruébalo gratis {{ trialDays }} días, sin pagar nada al registrarte. Luego pagas solo tu plan de
+            Nuvyra; lo que vendes llega directo a tus cuentas Yape y Plin y nosotros no intervenimos en tus ventas.
           </p>
         </div>
         @if (plans(); as list) {
           @if (list.length > 0) {
             <div class="pricing-grid plan-rail" #rail>
               @for (p of list; track p.id; let i = $index) {
-                <app-plan-card [plan]="p" [featured]="isRecommended(i, list.length)"
+                <app-plan-card [plan]="p" [trial]="true" [featured]="isRecommended(i, list.length)"
                   [label]="isRecommended(i, list.length) ? 'Recomendado' : null"
                   ><a
                     class="btn btn-primary btn-block"
                     routerLink="/registro"
                     [queryParams]="{ plan: p.id }"
-                    >Empezar con {{ p.name }} <app-icon name="arrow" /></a
+                    >{{ p.price > 0 ? 'Probar gratis ' + trialDays + ' días' : 'Empezar con ' + p.name }} <app-icon name="arrow" /></a
                 ></app-plan-card>
               }
             </div>

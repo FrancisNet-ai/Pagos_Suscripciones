@@ -45,7 +45,7 @@ export interface Invoice {
   planName: string;
   billingPeriod: BillingPeriod;
   billingPeriodLabel: string;
-  kind: 'NEW' | 'RENEWAL' | 'PLAN_CHANGE' | 'COMPLIMENTARY';
+  kind: 'NEW' | 'RENEWAL' | 'PLAN_CHANGE' | 'COMPLIMENTARY' | 'TRIAL';
   kindLabel: string;
   amount: number;
   status: InvoiceStatus;
@@ -77,7 +77,15 @@ export interface BillingOverview {
   support: { whatsapp: string | null; whatsappUrl: string | null; email: string | null };
   plans: Plan[];
   history: Invoice[];
+  /** Fin de la prueba gratuita en curso (null si el periodo actual no es de prueba). */
+  trialEndsAt: string | null;
+  /** Elegir un plan de pago empezaría la prueba gratuita. */
+  trialAvailable: boolean;
+  trialDays: number;
 }
+
+/** Días de prueba gratuita al elegir el primer plan de pago (igual que BillingService.TRIAL_DAYS). */
+export const TRIAL_DAYS = 14;
 
 @Injectable({ providedIn: 'root' })
 export class BillingApi {

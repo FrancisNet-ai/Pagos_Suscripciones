@@ -1,7 +1,7 @@
 <app-auth-layout quote="Tu tienda, tus precios, tus clientes." caption="Crea tu negocio en un minuto y obtén tu enlace público exclusivo." [wide]="true">
   <p class="type-eyebrow">Registro de vendedores</p>
   <h1 class="type-h1 mt-3">Crea tu negocio</h1>
-  <p class="mt-3">Tres pasos y listo: tus datos, tu plan y el pago.</p>
+  <p class="mt-3">Tres pasos y listo: tus datos, tu plan y empiezas tus {{ trialDays }} días gratis.</p>
   <app-stepper class="mt-6 block" [steps]="steps" [current]="step()" />
 
   @if (error(); as message) {
@@ -60,14 +60,14 @@
 
     <button class="btn btn-primary btn-block" type="submit">Continuar: elegir plan</button>
     } @else {
-    <fieldset class="grid gap-4">
+    <fieldset id="planes-registro" class="grid gap-4" tabindex="-1" [attr.aria-describedby]="planError() ? 'plan-error' : null">
       <legend class="mb-1 font-[family-name:var(--font-editorial)] text-xl font-semibold text-night">Elige tu plan</legend>
       @if (plans(); as list) {
         @if (list.length > 0) {
-          <p class="-mt-1 text-[0.9375rem]">Toca el plan que quieres. En el siguiente paso pagas por Yape o Plin y lo activamos al confirmar tu pago.</p>
+          <p class="-mt-1 text-[0.9375rem]">Toca el plan que quieres. Lo usas <strong>{{ trialDays }} días gratis</strong>, sin pagar nada ahora; antes de que termine la prueba eliges si lo pagas por Yape o Plin.</p>
           <div class="plan-rail" #rail>
             @for (p of list; track p.id) {
-              <app-plan-card [plan]="p" [featured]="form.controls.planId.value === p.id" [selected]="form.controls.planId.value === p.id">
+              <app-plan-card [plan]="p" [trial]="true" [featured]="form.controls.planId.value === p.id" [selected]="form.controls.planId.value === p.id">
                 <button type="button" class="btn btn-block !min-h-10" [class]="form.controls.planId.value === p.id ? 'btn-primary' : 'btn-secondary'"
                         [attr.aria-pressed]="form.controls.planId.value === p.id" (click)="selectPlan(p.id)">
                   {{ form.controls.planId.value === p.id ? 'Plan elegido ✓' : 'Elegir ' + p.name }}
@@ -76,7 +76,8 @@
             }
           </div>
           @if (list.length > 1) { <app-rail-dots [rail]="rail" [count]="list.length" /> }
-          <p class="text-sm text-[var(--text-muted)]">¿Aún no decides? Puedes crear tu cuenta sin plan y elegirlo después en «Mi plan».</p>
+          @if (planError()) { <p id="plan-error" class="field-error" role="alert">Elige un plan para empezar tu prueba gratis.</p> }
+          <p class="text-sm text-[var(--text-muted)]">La prueba gratis es una sola vez por celular. Puedes cambiar de plan cuando quieras.</p>
         } @else {
           <p class="text-[0.9375rem]">Todavía no hay planes publicados. Crea tu cuenta y elige uno cuando estén disponibles.</p>
         }
@@ -100,7 +101,7 @@
     <div class="grid gap-3">
       <button class="btn btn-primary btn-block" type="submit" [disabled]="loading()">
         @if (loading()) { <span class="spinner" aria-hidden="true"></span> Creando tu negocio… }
-        @else { {{ form.controls.planId.value ? 'Crear mi negocio y pagar' : 'Crear mi negocio' }} }
+        @else { {{ (plans()?.length ?? 0) > 0 ? 'Empezar mis ' + trialDays + ' días gratis' : 'Crear mi negocio' }} }
       </button>
       <button class="btn btn-secondary btn-block" type="button" (click)="back()" [disabled]="loading()">Volver a mis datos</button>
     </div>

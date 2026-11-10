@@ -61,4 +61,32 @@ describe('RegisterPage', () => {
     expect(el.querySelector('[aria-current=step]')?.textContent).toContain('Tu plan');
     http.expectNone('/api/v1/auth/register');
   });
+
+  it('el paso 2 exige elegir un plan y ofrece la prueba gratis de 14 días', async () => {
+    const { fixture, el } = render();
+    fill(el, 'fullName', 'Ana Pérez');
+    fill(el, 'email', 'ana@ejemplo.pe');
+    fill(el, 'phone', '987654321');
+    fill(el, 'password', 'una-frase-segura');
+    fill(el, 'businessName', 'Tienda Ana');
+    el.querySelector<HTMLButtonElement>('button[type=submit]')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('.plan-card__trial')?.textContent).toContain('14 días gratis');
+    el.querySelectorAll<HTMLInputElement>('input[type=checkbox]').forEach((c) => c.click());
+    fixture.detectChanges();
+    const submit = el.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    expect(submit.textContent).toContain('Empezar mis 14 días gratis');
+
+    submit.click();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Elige un plan para empezar tu prueba gratis.');
+    http.expectNone('/api/v1/auth/register');
+
+    Array.from(el.querySelectorAll<HTMLButtonElement>('app-plan-card button')).find((b) => b.textContent?.includes('Elegir'))!.click();
+    fixture.detectChanges();
+    submit.click();
+    const req = http.expectOne('/api/v1/auth/register');
+    expect(req.request.body.planId).toBe('p1');
+  });
 });

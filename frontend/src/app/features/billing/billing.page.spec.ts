@@ -17,6 +17,7 @@ function overview(extra: Partial<BillingOverview> = {}): BillingOverview {
     products: { used: 0, limit: null }, customers: { used: 0, limit: null }, openInvoice: null,
     paymentOptions: [{ method: 'YAPE', methodLabel: 'Yape', holderName: 'Plataforma SAC', phone: '+51955111222', qrImageUrl: null }],
     support: { whatsapp: null, whatsappUrl: null, email: null }, plans: [plan], history: [],
+    trialEndsAt: null, trialAvailable: false, trialDays: 14,
     ...extra,
   };
 }
@@ -49,6 +50,26 @@ describe('BillingPage', () => {
     expect(el.textContent).toContain('Cobro PLAN-2026-000001');
     expect(el.textContent).toContain('Titular declarado: Plataforma SAC');
     expect(el.textContent).toContain('955 111 222');
+  });
+
+  it('durante la prueba gratis muestra cuándo termina y permite pagar el plan', () => {
+    const { http, fixture, el } = setup();
+    http.expectOne('/api/v1/billing').flush(overview({
+      access: { active: true, block: null, message: null, subscriptionStatus: 'ACTIVE', planName: 'Emprende', expiresAt: '2026-11-24T15:00:00Z', usableUntil: '2026-11-24T15:00:00Z', features: [] },
+      currentPlan: plan, startAt: '2026-11-10T15:00:00Z', trialEndsAt: '2026-11-24T15:00:00Z',
+    }));
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Prueba gratis');
+    expect(el.textContent).toContain('Tu prueba gratis termina el');
+    expect(Array.from(el.querySelectorAll('button')).some((b) => b.textContent?.includes('Pagar este plan'))).toBe(true);
+  });
+
+  it('sin plan y con prueba disponible, elegir un plan ofrece los 14 días gratis', () => {
+    const { http, fixture, el } = setup();
+    http.expectOne('/api/v1/billing').flush(overview({ trialAvailable: true }));
+    fixture.detectChanges();
+    expect(el.querySelector('.plan-card__trial')?.textContent).toContain('14 días gratis');
+    expect(Array.from(el.querySelectorAll('button')).some((b) => b.textContent?.includes('Probar 14 días gratis'))).toBe(true);
   });
 
   it('un pago en revisión no permite reportar otro ni cambiar de plan', () => {

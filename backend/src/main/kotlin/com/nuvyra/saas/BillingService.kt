@@ -2,6 +2,7 @@ package com.nuvyra.saas
 
 import com.nuvyra.common.Brand
 import com.nuvyra.businesses.BusinessRepository
+import com.nuvyra.users.UserRepository
 import com.nuvyra.common.audit.AuditActions
 import com.nuvyra.common.audit.AuditService
 import com.nuvyra.common.error.ApiException
@@ -34,6 +35,7 @@ class BillingService(
     private val platformMethods: PlatformPaymentMethodRepository,
     private val settings: PlatformSettingsRepository,
     private val businesses: BusinessRepository,
+    private val users: UserRepository,
     private val entitlements: EntitlementService,
     private val media: MediaStorage,
     private val rateLimiter: RateLimiter,
@@ -62,7 +64,52 @@ class BillingService(
             plans = plans.findByActiveTrueOrderBySortOrderAscPriceAsc().map { PlanResponse.of(it) },
             history = invoices.findByBusinessIdOrderByCreatedAtDesc(businessId, PageRequest.of(0, 24))
                 .filter { it.status != InvoiceStatus.OPEN }.map(::toResponse),
+            trialEndsAt = sub?.takeIf { it.status == SaasSubscriptionStatus.ACTIVE && inTrialPeriod(it) }?.expiresAt,
+            trialAvailable = sub == null && trialAvailable(businessId),
         )
+    }
+
+    /**
+     * La prueba gratuita es una sola vez: por negocio y por celular del titular (quien ya la usó con otro
+     * negocio no la repite). Los planes gratuitos no la necesitan.
+     */
+    fun trialAvailable(businessId: UUID): Boolean {
+        val phone = ownerPhone(businessId) ?: return false
+        return !jdbc.queryForObject(
+            "select exists (select 1 from saas_trial_claims where phone = ? or business_id = ?)", Boolean::class.java, phone, businessId,
+        )!!
+    }
+
+    private fun ownerPhone(businessId: UUID): String? =
+        businesses.findById(businessId).orElse(null)?.let { b -> users.findById(b.ownerId).orElse(null)?.phone }
+
+    /** El periodo vigente de la suscripción es la prueba gratuita (aún no hay un periodo pagado después). */
+    private fun inTrialPeriod(sub: SaasSubscription): Boolean = sub.expiresAt != null && jdbc.queryForObject(
+        "select exists (select 1 from saas_invoices where subscription_id = ? and kind = 'TRIAL' and status = 'PAID' and period_end = ?)",
+        Boolean::class.java, sub.id, java.sql.Timestamp.from(sub.expiresAt),
+    )!!
+
+    /** Prueba gratuita de [TRIAL_DAYS] días: el plan queda vigente sin pago y se registra un cobro de S/ 0. */
+    private fun startTrial(businessId: UUID, actorId: UUID, plan: SaasPlan): BillingOverview {
+        val now = clock.instant()
+        val end = now.plus(Duration.ofDays(TRIAL_DAYS))
+        val sub = subscriptions.saveAndFlush(
+            SaasSubscription(businessId = businessId, planId = plan.id, status = SaasSubscriptionStatus.ACTIVE, startAt = now, expiresAt = end),
+        )
+        // Después del flush: el negocio recién creado ya existe para la clave foránea.
+        jdbc.update("insert into saas_trial_claims (phone, business_id) values (?, ?)", ownerPhone(businessId), businessId)
+        val invoice = invoices.saveAndFlush(
+            SaasInvoice(
+                invoiceNumber = nextNumber(), businessId = businessId, subscriptionId = sub.id, planId = plan.id,
+                planNameSnapshot = plan.name, billingPeriod = plan.billingPeriod, kind = InvoiceKind.TRIAL,
+                amount = java.math.BigDecimal.ZERO, status = InvoiceStatus.PAID, periodStart = now, periodEnd = end, paidAt = now,
+            ),
+        )
+        audit.record(
+            AuditActions.SAAS_TRIAL_STARTED, actorId = actorId, businessId = businessId, entityType = "SAAS_INVOICE", entityId = invoice.id,
+            metadata = mapOf("invoiceNumber" to invoice.invoiceNumber, "plan" to plan.name, "days" to TRIAL_DAYS, "endsAt" to end.toString()),
+        )
+        return overview(businessId)
     }
 
     /**
@@ -76,6 +123,8 @@ class BillingService(
         var sub = subscriptions.lockByBusinessId(businessId)
         // Un plan desactivado ya no se ofrece, pero quien lo tiene puede seguir renovándolo.
         if (!plan.active && sub?.planId != plan.id) throw ApiException.conflict("PLAN_UNAVAILABLE", "Este plan ya no está disponible. Elige otro.")
+        // Primer plan de un negocio nuevo: empieza con la prueba gratuita si el titular aún no la usó.
+        if (sub == null && plan.price.signum() > 0 && trialAvailable(businessId)) return startTrial(businessId, actorId, plan)
 
         if (sub == null) {
             sub = subscriptions.saveAndFlush(SaasSubscription(businessId = businessId, planId = plan.id))
@@ -97,7 +146,7 @@ class BillingService(
             void(open)
         }
         val kind = when {
-            sub.startAt == null -> InvoiceKind.NEW
+            sub.startAt == null || onlyTrialSoFar(sub) -> InvoiceKind.NEW
             sub.planId == plan.id -> InvoiceKind.RENEWAL
             else -> InvoiceKind.PLAN_CHANGE
         }
@@ -294,6 +343,11 @@ class BillingService(
         val sub = subscriptions.lockById(subscriptionId) ?: return false
         val now = clock.instant()
         if (sub.status != SaasSubscriptionStatus.ACTIVE || sub.expiresAt!!.isAfter(now)) return false
+        // La prueba gratuita no tiene plazo de gracia: al terminar, hay que pagar para seguir vendiendo.
+        if (inTrialPeriod(sub)) {
+            expire(sub)
+            return true
+        }
         val graceUntil = sub.expiresAt!!.plus(Duration.ofDays(entitlements.graceDays().toLong()))
         if (graceUntil.isAfter(now)) {
             sub.status = SaasSubscriptionStatus.PAST_DUE
@@ -335,6 +389,15 @@ class BillingService(
         invoices.flush()
     }
 
+    /** Solo tuvo la prueba gratuita: el primer pago es un alta, no una renovación. */
+    private fun onlyTrialSoFar(sub: SaasSubscription): Boolean = jdbc.queryForObject(
+        """
+        select exists (select 1 from saas_invoices where subscription_id = ? and status = 'PAID' and kind = 'TRIAL')
+           and not exists (select 1 from saas_invoices where subscription_id = ? and status = 'PAID' and kind <> 'TRIAL')
+        """.trimIndent(),
+        Boolean::class.java, sub.id, sub.id,
+    )!!
+
     private fun hasPendingPayment(invoiceId: UUID) =
         payments.findByInvoiceIdOrderByReportedAtDesc(invoiceId).any { it.status == SaasPaymentStatus.PENDING_VERIFICATION }
 
@@ -375,6 +438,9 @@ class BillingService(
 
     companion object {
         val PLATFORM_ZONE: ZoneId = ZoneId.of("America/Lima")
+
+        /** Días de la prueba gratuita al elegir el primer plan de pago. */
+        const val TRIAL_DAYS = 14L
         private val REFERENCE = Regex("^[A-Z0-9-]{4,40}$")
         private val ACTIVE_PAYMENT_STATUSES = setOf(SaasPaymentStatus.PENDING_VERIFICATION, SaasPaymentStatus.VERIFIED)
     }
