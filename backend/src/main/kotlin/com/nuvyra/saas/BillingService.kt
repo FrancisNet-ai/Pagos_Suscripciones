@@ -219,13 +219,51 @@ class BillingService(
      * Aplica un cobro pagado al contrato. Renovar el mismo plan con vigencia (o en gracia) continúa desde el
      * vencimiento; un alta, un cambio de plan o un plan ya vencido empiezan hoy (sin prorrateo).
      */
-    private fun applyPaid(invoice: SaasInvoice, actorId: UUID?) {
+    /**
+     * Plan de cortesía: lo otorga el SUPER_ADMIN sin cobro (su propia tienda, una prueba para un vendedor). Sirve con
+     * planes desactivados, así que nunca aparece en la página pública. Anula el cobro abierto, salvo que tenga un pago
+     * en revisión, y queda auditado con el motivo.
+     */
+    @Transactional
+    fun grantComplimentary(actorId: UUID, businessId: UUID, planId: UUID, periods: Int, reason: String) {
+        if (periods !in 1..12) throw ApiException.invalidField("periods", "La duración debe estar entre 1 y 12 periodos")
+        businesses.findById(businessId).orElseThrow { ApiException.notFound("El negocio no existe.") }
+        val plan = plans.findById(planId).orElse(null) ?: throw ApiException.notFound("Este plan no existe.")
+        var sub = subscriptions.lockByBusinessId(businessId)
+        invoices.findFirstByBusinessIdAndStatus(businessId, InvoiceStatus.OPEN)?.let { open ->
+            if (hasPendingPayment(open.id)) {
+                throw ApiException.conflict(
+                    "PAYMENT_UNDER_REVIEW",
+                    "Este negocio tiene un pago en revisión (${open.invoiceNumber}). Verifícalo o recházalo antes de dar una cortesía.",
+                )
+            }
+            void(open)
+        }
+        if (sub == null) sub = subscriptions.saveAndFlush(SaasSubscription(businessId = businessId, planId = plan.id))
+        val invoice = invoices.saveAndFlush(
+            SaasInvoice(
+                invoiceNumber = nextNumber(), businessId = businessId, subscriptionId = sub.id, planId = plan.id,
+                planNameSnapshot = plan.name, billingPeriod = plan.billingPeriod, kind = InvoiceKind.COMPLIMENTARY,
+                amount = java.math.BigDecimal.ZERO,
+            ),
+        )
+        applyPaid(invoice, actorId, periods)
+        audit.record(
+            AuditActions.SAAS_COMPLIMENTARY_GRANTED, actorId = actorId, businessId = businessId, entityType = "SAAS_INVOICE", entityId = invoice.id,
+            metadata = mapOf(
+                "invoiceNumber" to invoice.invoiceNumber, "plan" to plan.name, "periods" to periods,
+                "expiresAt" to invoice.periodEnd.toString(), "reason" to reason.trim(),
+            ),
+        )
+    }
+
+    private fun applyPaid(invoice: SaasInvoice, actorId: UUID?, periods: Int = 1) {
         val sub = subscriptions.lockById(invoice.subscriptionId)!!
         val now = clock.instant()
         val continues = invoice.planId == sub.planId && sub.expiresAt != null &&
             (sub.status == SaasSubscriptionStatus.ACTIVE || sub.status == SaasSubscriptionStatus.PAST_DUE)
         val zone = ZoneId.of(businesses.findById(invoice.businessId).orElseThrow().timeZone)
-        fun periodFrom(from: Instant) = from to from.atZone(zone).plus(invoice.billingPeriod.period).toInstant()
+        fun periodFrom(from: Instant) = from to from.atZone(zone).plus(invoice.billingPeriod.period.multipliedBy(periods)).toInstant()
         var (start, end) = periodFrom(if (continues) sub.expiresAt!! else now)
         // Un pago muy tardío dentro de la gracia nunca deja un periodo que ya terminó.
         if (!end.isAfter(now)) {

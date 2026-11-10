@@ -15,6 +15,19 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
+/** Plan de cortesía que otorga el SUPER_ADMIN: sin cobro, por `periods` periodos del plan (p. ej. meses). */
+data class ComplimentaryRequest(
+    @field:NotNull(message = "Elige un plan")
+    val planId: UUID?,
+    @field:NotNull(message = "Indica la duración")
+    @field:Min(1, message = "La duración mínima es 1 periodo")
+    @field:Max(12, message = "La duración máxima es 12 periodos")
+    val periods: Int?,
+    @field:NotBlank(message = "Indica el motivo")
+    @field:Size(min = 5, max = 300, message = "El motivo debe tener entre 5 y 300 caracteres")
+    val reason: String?,
+)
+
 data class PlanRequest(
     @field:NotBlank(message = "Ingresa el nombre del plan")
     @field:Size(min = 2, max = 80, message = "El nombre debe tener entre 2 y 80 caracteres")

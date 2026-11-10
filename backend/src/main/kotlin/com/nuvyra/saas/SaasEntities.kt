@@ -102,7 +102,7 @@ interface SaasSubscriptionRepository : JpaRepository<SaasSubscription, UUID> {
     fun findGraceEnded(now: Instant, pageable: Pageable): List<UUID>
 }
 
-enum class InvoiceKind(val label: String) { NEW("Alta"), RENEWAL("Renovación"), PLAN_CHANGE("Cambio de plan") }
+enum class InvoiceKind(val label: String) { NEW("Alta"), RENEWAL("Renovación"), PLAN_CHANGE("Cambio de plan"), COMPLIMENTARY("Cortesía") }
 
 enum class InvoiceStatus { OPEN, PAID, VOID }
 

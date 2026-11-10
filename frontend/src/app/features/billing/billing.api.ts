@@ -45,7 +45,7 @@ export interface Invoice {
   planName: string;
   billingPeriod: BillingPeriod;
   billingPeriodLabel: string;
-  kind: 'NEW' | 'RENEWAL' | 'PLAN_CHANGE';
+  kind: 'NEW' | 'RENEWAL' | 'PLAN_CHANGE' | 'COMPLIMENTARY';
   kindLabel: string;
   amount: number;
   status: InvoiceStatus;
