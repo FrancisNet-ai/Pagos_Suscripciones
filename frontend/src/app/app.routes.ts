@@ -49,6 +49,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/storefront/storefront.page').then((m) => m.StorefrontPage),
   },
   {
+    path: 'tienda/:slug/producto/:productId',
+    data: { storefront: true },
+    loadComponent: () => import('./features/storefront/product.page').then((m) => m.ProductPage),
+  },
+  {
     path: 'tienda/:slug/comprar/:productId',
     data: { storefront: true },
     title: 'Completar pedido',

@@ -1,4 +1,5 @@
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
+import { PlainTextPipe, RichTextPipe } from '../../shared/pipes/rich-text.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,7 +24,7 @@ import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 @Component({
   selector: 'app-storefront-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent, WaveArtComponent],
+  imports: [LoadingIndicatorComponent, SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent, WaveArtComponent, RichTextPipe, PlainTextPipe],
   templateUrl: './storefront.page.html',
 })
 export class StorefrontPage implements OnInit {
