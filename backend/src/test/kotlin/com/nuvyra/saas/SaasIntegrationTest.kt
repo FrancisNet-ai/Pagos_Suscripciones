@@ -46,12 +46,13 @@ class SaasIntegrationTest : IntegrationTest() {
         customerLimit: Int? = null,
         reports: Boolean = true,
         branding: Boolean = true,
+        active: Boolean = true,
     ): String {
         val body = mockMvc.perform(
             post("/api/v1/admin/plans").with(csrf()).cookie(admin).contentType(MediaType.APPLICATION_JSON).content(
                 """{"name":"Plan ${UUID.randomUUID().toString().take(6)}","description":"Para empezar","price":$price,"billingPeriod":"$period",
                    "productLimit":${productLimit ?: "null"},"customerLimit":${customerLimit ?: "null"},"adminUserLimit":1,
-                   "featureReports":$reports,"featureReminders":true,"featureBranding":$branding,"active":true,"sortOrder":1}""",
+                   "featureReports":$reports,"featureReminders":true,"featureBranding":$branding,"active":$active,"sortOrder":1}""",
             ),
         ).andExpect(status().isCreated).andReturn().response.contentAsString
         return fx.idFrom(body)
@@ -180,6 +181,65 @@ class SaasIntegrationTest : IntegrationTest() {
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.business.access.block").value("PENDING_PAYMENT"))
         assertThat(jdbc.queryForObject("select count(*) from saas_invoices where business_id = ? and status = 'OPEN'", Int::class.java, businessIdOf(email))).isEqualTo(1)
+    }
+
+    private fun complimentary(actor: Cookie, businessId: UUID, planId: String, periods: Int = 3): ResultActions = mockMvc.perform(
+        post("/api/v1/admin/businesses/$businessId/complimentary").with(csrf()).cookie(actor).contentType(MediaType.APPLICATION_JSON)
+            .content("""{"planId":"$planId","periods":$periods,"reason":"Tienda propia del titular"}"""),
+    )
+
+    @Test
+    fun `el superadministrador da un plan de cortesia oculto, sin cobro y auditado`() {
+        val hidden = createPlan(price = "40", active = false)
+        val paid = createPlan(price = "30")
+        val email = uniqueEmail()
+        val seller = registerSeller(email, withPlan = false)
+        val businessId = businessIdOf(email)
+        checkout(seller, paid)
+        val before = revenueTotal()
+
+        // Un vendedor no puede darse cortesías.
+        complimentary(seller, businessId, hidden).andExpect(status().isForbidden)
+
+        complimentary(admin, businessId, hidden).andExpect(status().isOk)
+            .andExpect(jsonPath("$.access.active").value(true))
+            .andExpect(jsonPath("$.invoices[0].kind").value("COMPLIMENTARY"))
+            .andExpect(jsonPath("$.invoices[0].kindLabel").value("Cortesía"))
+            .andExpect(jsonPath("$.invoices[0].amount").value(0))
+            .andExpect(jsonPath("$.invoices[1].status").value("VOID"))
+        mockMvc.perform(get("/api/v1/billing").cookie(seller))
+            .andExpect(jsonPath("$.access.active").value(true))
+            .andExpect(jsonPath("$.openInvoice").doesNotExist())
+        createProduct(seller).andExpect(status().isCreated)
+        val expires = jdbc.queryForObject("select expires_at from saas_subscriptions where business_id = ?", java.sql.Timestamp::class.java, businessId)!!.toInstant()
+        assertThat(Duration.between(Instant.now(), expires).toDays()).isBetween(87L, 93L)
+        assertThat(revenueTotal()).isEqualByComparingTo(before)
+        assertThat(
+            jdbc.queryForObject(
+                "select count(*) from audit_logs where business_id = ? and action = 'SAAS_COMPLIMENTARY_GRANTED' and metadata ->> 'reason' = 'Tienda propia del titular'",
+                Int::class.java, businessId,
+            ),
+        ).isEqualTo(1)
+        // Sigue oculto en la página pública.
+        assertThat(mockMvc.perform(get("/api/v1/public/saas-plans")).andReturn().response.contentAsString).doesNotContain(hidden)
+
+        // Otra cortesía del mismo plan extiende desde el vencimiento.
+        complimentary(admin, businessId, hidden, periods = 1).andExpect(status().isOk)
+        val extended = jdbc.queryForObject("select expires_at from saas_subscriptions where business_id = ?", java.sql.Timestamp::class.java, businessId)!!.toInstant()
+        assertThat(Duration.between(expires, extended).toDays()).isBetween(27L, 31L)
+    }
+
+    @Test
+    fun `no se da cortesia con un pago en revision ni con datos invalidos`() {
+        val planId = createPlan()
+        val email = uniqueEmail()
+        val seller = registerSeller(email, withPlan = false)
+        val businessId = businessIdOf(email)
+        checkout(seller, planId)
+        report(seller, openInvoiceId(seller)).andExpect(status().isOk)
+        complimentary(admin, businessId, planId).andExpect(status().isConflict).andExpect(jsonPath("$.code").value("PAYMENT_UNDER_REVIEW"))
+        complimentary(admin, businessId, planId, periods = 13).andExpect(status().isBadRequest)
+        complimentary(admin, UUID.randomUUID(), planId).andExpect(status().isNotFound)
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.nuvyra.common.error.ApiException
 import com.nuvyra.orders.ReasonRequest
 import com.nuvyra.payments.PaymentMethodType
 import com.nuvyra.saas.BillingService
+import com.nuvyra.saas.ComplimentaryRequest
 import com.nuvyra.saas.PlanRequest
 import com.nuvyra.saas.PlanService
 import com.nuvyra.saas.PlatformPaymentMethodRequest
@@ -78,6 +79,13 @@ class AdminController(
     @PostMapping("/businesses/{id}/reactivate")
     fun reactivate(user: AuthenticatedUser, @PathVariable id: UUID): AdminBusinessDetail {
         admin.reactivate(user.userId, id)
+        return admin.business(id)
+    }
+
+    @PostMapping("/businesses/{id}/complimentary")
+    @Operation(summary = "Activa o extiende un plan sin cobro (cortesía), con motivo auditado")
+    fun complimentary(user: AuthenticatedUser, @PathVariable id: UUID, @Valid @RequestBody body: ComplimentaryRequest): AdminBusinessDetail {
+        billing.grantComplimentary(user.userId, id, body.planId!!, body.periods!!, body.reason!!)
         return admin.business(id)
     }
 

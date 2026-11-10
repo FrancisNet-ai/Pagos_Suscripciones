@@ -138,6 +138,11 @@ export class AdminApi {
     return this.http.post<AdminBusinessDetail>(`${this.base}/businesses/${id}/reactivate`, {});
   }
 
+  /** Activa o extiende un plan sin cobro (cortesía). Queda auditado con el motivo. */
+  complimentary(id: string, planId: string, periods: number, reason: string): Observable<AdminBusinessDetail> {
+    return this.http.post<AdminBusinessDetail>(`${this.base}/businesses/${id}/complimentary`, { planId, periods, reason });
+  }
+
   payments(status: SaasPaymentStatus | null, page: number): Observable<Page<AdminSaasPayment>> {
     let params = new HttpParams().set('page', page).set('size', 20);
     if (status) params = params.set('status', status);
@@ -226,6 +231,7 @@ export const ACTION_LABEL: Record<string, string> = {
   SAAS_PAYMENT_REJECTED: 'Pago SaaS rechazado',
   SAAS_RECEIPT_VIEWED: 'Comprobante SaaS consultado',
   SAAS_SUBSCRIPTION_ACTIVATED: 'Plan activado o extendido',
+  SAAS_COMPLIMENTARY_GRANTED: 'Plan de cortesía otorgado',
   SAAS_SUBSCRIPTION_PAST_DUE: 'Plan vencido (en gracia)',
   SAAS_SUBSCRIPTION_EXPIRED: 'Plan sin vigencia',
   BUSINESS_SUSPENDED: 'Negocio suspendido',

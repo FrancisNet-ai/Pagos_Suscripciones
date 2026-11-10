@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiError } from '../../core/services/api-error';
 import { StatusBadgeComponent } from '../../shared/components/status-badge.component';
 import { SolesPipe } from '../../shared/pipes/soles.pipe';
-import { formatDate } from '../billing/billing.api';
+import { BillingPeriod, Plan, formatDate } from '../billing/billing.api';
 import { AdminSupportPanelComponent } from '../support/admin-support-panel.component';
 import { AdminApi, AdminBusinessDetail, SUBSCRIPTION_LABEL, actionLabel, subscriptionTone } from './admin.api';
 
@@ -66,6 +66,44 @@ import { AdminApi, AdminBusinessDetail, SUBSCRIPTION_LABEL, actionLabel, subscri
         }
       </section>
 
+      <!-- Cortesía -->
+      <section class="mt-10 max-w-2xl" aria-labelledby="cortesia-titulo">
+        <h2 id="cortesia-titulo" class="type-h2">Plan de cortesía</h2>
+        <p class="mt-3 text-sm">
+          Activa o extiende un plan sin cobro: para tu propia tienda o para regalar una prueba. Sirve también con planes
+          desactivados, que no aparecen en la página pública. Si el negocio ya tiene ese plan vigente, se suma al vencimiento.
+          Anula el cobro pendiente y queda registrado con el motivo.
+        </p>
+        @if (plans().length > 0) {
+          <form class="mt-4 grid gap-4" [formGroup]="gift" (ngSubmit)="grant(d)" novalidate>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="field">
+                <label class="field-label" for="gift-plan">Plan</label>
+                <select id="gift-plan" class="input" formControlName="planId">
+                  @for (p of plans(); track p.id) {
+                    <option [value]="p.id">{{ p.name }}{{ p.active ? '' : ' (oculto)' }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label" for="gift-periods">Duración</label>
+                <select id="gift-periods" class="input" formControlName="periods">
+                  @for (n of periodOptions; track n) { <option [ngValue]="n">{{ durationLabel(n) }}</option> }
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="gift-reason">Motivo</label>
+              <input id="gift-reason" class="input" formControlName="reason" maxlength="300" placeholder="Ej.: Tienda propia del titular" />
+              @if (gift.controls.reason.touched && gift.controls.reason.invalid) { <p class="field-error">Indica un motivo de 5 a 300 caracteres</p> }
+            </div>
+            <div><button type="submit" class="btn btn-primary" [disabled]="busy()">Dar plan de cortesía</button></div>
+          </form>
+        } @else {
+          <p class="mt-4 text-sm">Primero crea un plan en «Planes».</p>
+        }
+      </section>
+
       <app-admin-support-panel [businessId]="d.summary.id" [until]="d.supportAccessUntil ?? null" />
 
       <!-- Cobros -->
@@ -117,6 +155,13 @@ export class AdminBusinessDetailPage {
   protected readonly notice = signal<string | null>(null);
   protected readonly busy = signal(false);
   protected readonly reason = new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(5), Validators.maxLength(300)] });
+  protected readonly plans = signal<Plan[]>([]);
+  protected readonly periodOptions = [1, 2, 3, 6, 12];
+  protected readonly gift = new FormGroup({
+    planId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    periods: new FormControl(1, { nonNullable: true, validators: [Validators.required] }),
+    reason: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(5), Validators.maxLength(300)] }),
+  });
   protected readonly subscriptionLabel = SUBSCRIPTION_LABEL;
   protected readonly formatDate = formatDate;
   protected readonly actionLabel = actionLabel;
@@ -126,6 +171,29 @@ export class AdminBusinessDetailPage {
       next: (d) => this.data.set(d),
       error: (e: unknown) => this.error.set(ApiError.from(e).message),
     });
+    this.api.plans().subscribe({
+      next: (list) => {
+        this.plans.set(list);
+        if (list.length > 0 && !this.gift.controls.planId.value) this.gift.controls.planId.setValue(list[0].id);
+      },
+    });
+  }
+
+  /** «3 meses», «2 trimestres», «1 año», según el periodo del plan elegido. */
+  protected durationLabel(n: number): string {
+    const period: BillingPeriod = this.plans().find((p) => p.id === this.gift.controls.planId.value)?.billingPeriod ?? 'MONTHLY';
+    const [one, many] = { MONTHLY: ['mes', 'meses'], QUARTERLY: ['trimestre', 'trimestres'], YEARLY: ['año', 'años'] }[period];
+    return `${n} ${n === 1 ? one : many}`;
+  }
+
+  protected grant(d: AdminBusinessDetail): void {
+    if (this.gift.invalid) {
+      this.gift.markAllAsTouched();
+      return;
+    }
+    const { planId, periods, reason } = this.gift.getRawValue();
+    const planName = this.plans().find((p) => p.id === planId)?.name ?? '';
+    this.act(this.api.complimentary(d.summary.id, planId, periods, reason.trim()), `Plan ${planName} de cortesía activado.`);
   }
 
   protected tone(d: AdminBusinessDetail) {
@@ -156,6 +224,7 @@ export class AdminBusinessDetailPage {
         this.data.set(d);
         this.notice.set(success);
         this.reason.reset();
+        this.gift.controls.reason.reset();
         this.busy.set(false);
       },
       error: (e: unknown) => {
