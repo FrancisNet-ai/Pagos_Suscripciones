@@ -37,6 +37,84 @@ class SaasIntegrationTest : IntegrationTest() {
             put("/api/v1/admin/settings/payment-methods/yape").with(csrf()).cookie(admin).contentType(MediaType.APPLICATION_JSON)
                 .content("""{"holderName":"Plataforma SAC","phone":"955111222","enabled":true}"""),
         ).andExpect(status().isOk)
+        consumeDefaultTrial()
+    }
+
+    /**
+     * Las pruebas de cobro usan el celular por defecto: su titular ya usó la prueba gratuita, así que elegir un
+     * plan de pago genera el cobro. Las pruebas de la prueba gratuita usan un celular nuevo.
+     */
+    private fun consumeDefaultTrial() {
+        val used = jdbc.queryForObject(
+            "select exists (select 1 from saas_trial_claims where phone = '+51987654321')", Boolean::class.java,
+        )!!
+        if (!used) checkout(registerSeller(withPlan = false), createPlan()).andExpect(status().isOk)
+    }
+
+    private fun uniquePhone() = "9" + (10_000_000 + (System.nanoTime() % 89_999_999)).toString().padStart(8, '0')
+
+    private fun registerWithPlan(planId: String, phone: String, email: String = uniqueEmail()): ResultActions = mockMvc.perform(
+        post("/api/v1/auth/register").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+            .content(registerJson(email = email, phone = phone).replace("\"acceptPrivacy\":true", "\"acceptPrivacy\":true,\"planId\":\"$planId\"")),
+    )
+
+    @Test
+    fun `al registrarse con un plan de pago empieza la prueba gratuita de 14 dias, una sola vez por celular`() {
+        val planId = createPlan(price = "20")
+        val phone = uniquePhone()
+        val email = uniqueEmail()
+        val before = revenueTotal()
+        val seller = registerWithPlan(planId, phone, email).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.business.access.active").value(true))
+            .andReturn().response.getCookie("sid")!!
+        val businessId = businessIdOf(email)
+
+        mockMvc.perform(get("/api/v1/billing").cookie(seller))
+            .andExpect(jsonPath("$.access.subscriptionStatus").value("ACTIVE"))
+            .andExpect(jsonPath("$.openInvoice").doesNotExist())
+            .andExpect(jsonPath("$.history[0].kind").value("TRIAL"))
+            .andExpect(jsonPath("$.history[0].kindLabel").value("Prueba gratuita"))
+            .andExpect(jsonPath("$.history[0].amount").value(0))
+            .andExpect(jsonPath("$.trialEndsAt").isNotEmpty)
+            .andExpect(jsonPath("$.trialAvailable").value(false))
+        createProduct(seller).andExpect(status().isCreated)
+        val trialEnd = jdbc.queryForObject("select expires_at from saas_subscriptions where business_id = ?", java.sql.Timestamp::class.java, businessId)!!.toInstant()
+        assertThat(Duration.between(Instant.now(), trialEnd).toHours()).isBetween(14L * 24 - 1, 14L * 24)
+        assertThat(revenueTotal()).isEqualByComparingTo(before)
+        assertThat(jdbc.queryForObject("select count(*) from audit_logs where business_id = ? and action = 'SAAS_TRIAL_STARTED'", Int::class.java, businessId)).isEqualTo(1)
+
+        // Pagar durante la prueba: el cobro es un alta y el mes pagado empieza al terminar la prueba.
+        checkout(seller, planId).andExpect(jsonPath("$.openInvoice.kind").value("NEW")).andExpect(jsonPath("$.openInvoice.amount").value(20))
+        report(seller, openInvoiceId(seller)).andExpect(status().isOk)
+        mockMvc.perform(post("/api/v1/admin/saas-payments/${pendingPaymentId(businessId)}/verify").with(csrf()).cookie(admin)).andExpect(status().isOk)
+        val paidUntil = jdbc.queryForObject("select expires_at from saas_subscriptions where business_id = ?", java.sql.Timestamp::class.java, businessId)!!.toInstant()
+        assertThat(Duration.between(trialEnd, paidUntil).toDays()).isBetween(27L, 31L)
+        mockMvc.perform(get("/api/v1/billing").cookie(seller)).andExpect(jsonPath("$.trialEndsAt").doesNotExist())
+        assertThat(revenueTotal() - before).isEqualByComparingTo("20")
+
+        // Otro negocio con el mismo celular ya no tiene prueba: su plan queda pendiente de pago.
+        registerWithPlan(planId, phone).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.business.access.block").value("PENDING_PAYMENT"))
+    }
+
+    @Test
+    fun `la prueba gratuita termina sin plazo de gracia`() {
+        mockMvc.perform(put("/api/v1/admin/settings").with(csrf()).cookie(admin).contentType(MediaType.APPLICATION_JSON).content("""{"saasGraceDays":5}""")).andExpect(status().isOk)
+        val planId = createPlan(price = "10")
+        val email = uniqueEmail()
+        val seller = registerWithPlan(planId, uniquePhone(), email).andExpect(status().isCreated).andReturn().response.getCookie("sid")!!
+        val businessId = businessIdOf(email)
+        val past = java.sql.Timestamp.from(Instant.now().minus(Duration.ofMinutes(5)))
+        jdbc.update("update saas_subscriptions set start_at = ?, expires_at = ? where business_id = ?", java.sql.Timestamp.from(Instant.now().minus(Duration.ofDays(14))), past, businessId)
+        val start = java.sql.Timestamp.from(Instant.now().minus(Duration.ofDays(14)))
+        jdbc.update("update saas_invoices set period_start = ?, paid_at = ?, period_end = ? where business_id = ? and kind = 'TRIAL'", start, start, past, businessId)
+
+        job.run()
+        assertThat(jdbc.queryForObject("select status from saas_subscriptions where business_id = ?", String::class.java, businessId)).isEqualTo("EXPIRED")
+        mockMvc.perform(get("/api/v1/billing").cookie(seller)).andExpect(jsonPath("$.access.active").value(false))
+        createProduct(seller).andExpect(status().isForbidden)
+        // Elegir el plan genera el cobro (no otra prueba).
+        checkout(seller, planId).andExpect(jsonPath("$.openInvoice.kind").value("NEW"))
     }
 
     private fun createPlan(

@@ -163,6 +163,11 @@ data class BillingOverview(
     val support: SupportContact,
     val plans: List<PlanResponse>,
     val history: List<InvoiceResponse>,
+    /** Fin de la prueba gratuita en curso (`null`: el periodo actual no es de prueba). */
+    val trialEndsAt: Instant? = null,
+    /** Si al elegir un plan de pago empezaría la prueba gratuita (nunca tuvo plan ni usó su prueba). */
+    val trialAvailable: Boolean = false,
+    val trialDays: Long = BillingService.TRIAL_DAYS,
 )
 
 /** Campos del reporte de pago SaaS (multipart junto con el comprobante opcional). */

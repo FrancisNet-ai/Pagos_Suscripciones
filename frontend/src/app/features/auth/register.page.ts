@@ -10,7 +10,7 @@ import { PasswordInputComponent } from '../../shared/components/password-input.c
 import { peruMobileValidator } from '../../shared/validators/peru-phone';
 import { applyServerErrors, controlError } from '../../shared/validators/form-errors';
 import { AuthLayoutComponent } from './auth-layout.component';
-import { BillingApi, Plan } from '../billing/billing.api';
+import { BillingApi, Plan, TRIAL_DAYS } from '../billing/billing.api';
 import { PlanCardComponent } from '../billing/plan-card.component';
 import { RailDotsComponent } from '../../shared/components/rail-dots.component';
 
@@ -28,9 +28,13 @@ export class RegisterPage {
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly loading = signal(false);
-  /** 1: tus datos y tu negocio; 2: tu plan. El pago (paso 3) se hace en «Mi plan», ya con la cuenta creada. */
+  /**
+   * 1: tus datos y tu negocio; 2: tu plan. El paso 3 (activación) se ve en «Mi plan», ya con la cuenta creada:
+   * la prueba gratuita activa o, si el celular ya la usó, el cobro.
+   */
   protected readonly step = signal<1 | 2>(1);
-  protected readonly steps = ['Tus datos', 'Tu plan', 'Pago'];
+  protected readonly steps = ['Tus datos', 'Tu plan', 'Activación'];
+  protected readonly trialDays = TRIAL_DAYS;
   private readonly firstStep: Field[] = ['fullName', 'email', 'phone', 'password', 'businessName'];
   protected readonly error = signal<string | null>(null);
 
@@ -48,8 +52,12 @@ export class RegisterPage {
   protected readonly plans = toSignal(inject(BillingApi).publicPlans().pipe(catchError(() => of<Plan[]>([]))));
 
   protected selectPlan(id: string): void {
-    this.form.controls.planId.setValue(this.form.controls.planId.value === id ? '' : id);
+    this.form.controls.planId.setValue(id);
+    this.planError.set(false);
   }
+
+  /** Error de «elige un plan»: el registro siempre empieza con un plan (y su prueba gratuita). */
+  protected readonly planError = signal(false);
 
   /** Valida solo los datos del primer paso antes de mostrar los planes. */
   protected next(): void {
@@ -74,8 +82,12 @@ export class RegisterPage {
   }
 
   protected submit(): void {
-    if (this.form.invalid) {
+    const { planId: picked } = this.form.getRawValue();
+    const mustPick = (this.plans()?.length ?? 0) > 0 && !this.plans()!.some((p) => p.id === picked);
+    this.planError.set(mustPick);
+    if (this.form.invalid || mustPick) {
       this.form.markAllAsTouched();
+      if (mustPick) document.getElementById('planes-registro')?.focus();
       return;
     }
     this.loading.set(true);
@@ -84,7 +96,7 @@ export class RegisterPage {
     // Un plan que ya no se ofrece (enlace antiguo) no se envía.
     const chosen = this.plans()?.some((p) => p.id === planId) ? planId : null;
     this.auth.register({ ...data, planId: chosen }).subscribe({
-      next: () => void this.router.navigateByUrl(chosen ? '/panel/plan?paso=pago' : '/panel'),
+      next: () => void this.router.navigateByUrl(chosen ? '/panel/plan?paso=activacion' : '/panel'),
       error: (e: unknown) => {
         const apiError = ApiError.from(e);
         applyServerErrors(this.form, apiError);

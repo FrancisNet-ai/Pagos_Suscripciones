@@ -90,7 +90,7 @@ class AuthService(
             AuditActions.USER_REGISTERED, actorId = user.id, businessId = business.id,
             entityType = "BUSINESS", entityId = business.id, ipAddress = client.ip,
         )
-        // Elegir el plan genera su cobro; el plan se habilita cuando la plataforma verifica el pago.
+        // Elegir el plan empieza la prueba gratuita (si corresponde) o genera su cobro, que se habilita al verificar el pago.
         request.planId?.let { billing.checkout(business.id, user.id, it) }
         val session = sessionService.create(user.id, client.ip, client.userAgent)
         return AuthResult(toResponse(user, setOf(Roles.BUSINESS_OWNER), business, BusinessRole.OWNER, StaffPermission.entries.toSet()), session)

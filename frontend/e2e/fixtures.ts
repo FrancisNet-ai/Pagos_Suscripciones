@@ -90,7 +90,12 @@ export async function setup(browser: Browser, baseURL: string) {
     acceptPrivacy: true,
     planId: plan.id,
   });
-  const billing = await (await seller.request.get('/api/v1/billing')).json();
+  let billing = await (await seller.request.get('/api/v1/billing')).json();
+  // Con la prueba gratuita no hay cobro al registrarse: se genera el del plan para dejarlo pagado y verificado.
+  if (!billing.openInvoice) {
+    await write(seller.request, 'post', '/api/v1/billing/checkout', { planId: plan.id });
+    billing = await (await seller.request.get('/api/v1/billing')).json();
+  }
   await formPost(seller.request, `/api/v1/billing/invoices/${billing.openInvoice.id}/payments`, {
     method: 'YAPE',
     transactionReference: `SAAS${Date.now()}`,

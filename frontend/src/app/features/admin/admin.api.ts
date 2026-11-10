@@ -232,6 +232,7 @@ export const ACTION_LABEL: Record<string, string> = {
   SAAS_RECEIPT_VIEWED: 'Comprobante SaaS consultado',
   SAAS_SUBSCRIPTION_ACTIVATED: 'Plan activado o extendido',
   SAAS_COMPLIMENTARY_GRANTED: 'Plan de cortesía otorgado',
+  SAAS_TRIAL_STARTED: 'Prueba gratuita iniciada',
   SAAS_SUBSCRIPTION_PAST_DUE: 'Plan vencido (en gracia)',
   SAAS_SUBSCRIPTION_EXPIRED: 'Plan sin vigencia',
   BUSINESS_SUSPENDED: 'Negocio suspendido',

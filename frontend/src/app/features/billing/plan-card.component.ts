@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { SolesPipe } from '../../shared/pipes/soles.pipe';
-import { Plan, periodSuffix, planBenefits } from './billing.api';
+import { Plan, TRIAL_DAYS, periodSuffix, planBenefits } from './billing.api';
 
 /**
  * Tarjeta de un plan: nombre, precio, una frase y lo que incluye (con lo que no incluye tachado, para comparar).
@@ -22,6 +22,7 @@ let nextId = 0;
       <span class="type-numeric">{{ plan().price === 0 ? 'Gratis' : (plan().price | soles) }}</span>
       @if (plan().price > 0) { <small>{{ suffix() }}</small> }
     </p>
+    @if (trial() && plan().price > 0) { <p class="plan-card__trial">{{ trialDays }} días gratis para probar</p> }
     @if (plan().description) { <p class="plan-card__description">{{ plan().description }}</p> }
     <ul class="plan-card__benefits" [id]="listId">
       @for (b of benefits(); track b.text; let i = $index) {
@@ -48,6 +49,9 @@ export class PlanCardComponent {
   readonly selected = input(false);
   /** Etiqueta corta sobre el nombre, p. ej. «Recomendado» o «Tu plan». */
   readonly label = input<string | null>(null);
+  /** Muestra «14 días gratis para probar» (solo en planes de pago). */
+  readonly trial = input(false);
+  protected readonly trialDays = TRIAL_DAYS;
 
   /** Beneficios incluidos primero; los que no incluye, al final. */
   protected readonly benefits = computed(() => {

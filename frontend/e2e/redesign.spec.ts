@@ -250,9 +250,14 @@ test('paneles, facturación y herramientas de las fases 6 y 7', async ({ browser
         acceptPrivacy: true,
         planId: scenario.plan.id,
       });
+      // La prueba gratuita activa el plan al registrarse; se genera el cobro para pagarlo durante la prueba.
+      const before = await (await pending.request.get('/api/v1/billing')).json();
+      if (!before.openInvoice) {
+        await write(pending.request, 'post', '/api/v1/billing/checkout', { planId: scenario.plan.id });
+      }
       const pendingPage = await pending.newPage();
       await pendingPage.goto('/panel/plan');
-      await expect(pendingPage.getByText('Sin plan vigente', { exact: true })).toBeVisible();
+      await expect(pendingPage.getByRole('heading', { name: /^Cobro PLAN-/ })).toBeVisible();
       await pendingPage.getByLabel('Código de operación').fill(`PLAN${Date.now()}`);
       await pendingPage.getByRole('radio', { name: 'Yape', exact: true }).check();
       await pendingPage.getByRole('button', { name: 'Reportar pago', exact: true }).click();

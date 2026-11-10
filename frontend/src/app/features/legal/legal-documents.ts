@@ -103,8 +103,13 @@ export function legalDocs(): Record<string, LegalDoc> {
           items: [
             'Los planes, lo que incluye cada uno (límites y funciones) y su precio total en soles se muestran en la ' +
               'página de inicio y en «Mi plan» antes de pagar.',
+            'Prueba gratuita: al elegir tu primer plan de pago lo usas 14 días gratis, sin pagar ni registrar ' +
+              'medios de pago. Es una sola vez por negocio y por número de celular del titular. Al terminar la prueba ' +
+              'no hay plazo de gracia: para seguir vendiendo debes pagar el plan; si no lo pagas, la cuenta queda en ' +
+              'solo lectura y no se cobra nada.',
             `El pago se hace a las cuentas de ${N} indicadas en «Mi plan». El plan se activa cuando ${N} verifica el ` +
-              'pago y dura el periodo pagado (por ejemplo, un mes).',
+              'pago y dura el periodo pagado (por ejemplo, un mes). Si pagas durante la prueba, el periodo pagado ' +
+              'empieza cuando la prueba termina.',
             `No hay cobros automáticos: ${N} no guarda tarjetas ni debita dinero. Para continuar, pagas cada nuevo ` +
               'periodo. Si pagas por adelantado, el nuevo periodo se suma al vencimiento actual.',
             'Al vencer el plan hay un plazo de gracia, indicado en «Mi plan», en el que la cuenta sigue funcionando. ' +

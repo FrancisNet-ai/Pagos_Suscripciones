@@ -8,7 +8,7 @@ import { IconComponent } from '../../shared/components/icon.component';
 import { BRAND } from '../../core/brand';
 import { BrandMarkComponent } from '../../shared/components/brand-mark.component';
 import { WaveArtComponent } from '../../shared/components/wave-art.component';
-import { BillingApi, Plan } from '../billing/billing.api';
+import { BillingApi, Plan, TRIAL_DAYS } from '../billing/billing.api';
 import { PlanCardComponent } from '../billing/plan-card.component';
 import { RailDotsComponent } from '../../shared/components/rail-dots.component';
 
@@ -49,6 +49,8 @@ export class LandingPage {
   ];
 
   /** Con tres o más planes se destaca el del medio, como en una tabla de precios. */
+  protected readonly trialDays = TRIAL_DAYS;
+
   protected isRecommended(index: number, total: number): boolean {
     return total >= 3 && index === Math.floor(total / 2);
   }

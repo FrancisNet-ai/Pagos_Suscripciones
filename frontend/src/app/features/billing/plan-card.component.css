@@ -61,6 +61,20 @@
   text-transform: uppercase;
   opacity: 0.75;
 }
+.plan-card__trial {
+  margin-top: 10px;
+  align-self: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-mist) 45%, white);
+  color: var(--color-night);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+:host(.plan-card--featured) .plan-card__trial {
+  background: color-mix(in srgb, var(--color-snow) 16%, transparent);
+  color: var(--color-snow);
+}
 .plan-card__description {
   margin-top: 12px;
   font-size: 0.875rem;
