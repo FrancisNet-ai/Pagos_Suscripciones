@@ -1077,7 +1077,7 @@
   .store-banner-inner {
     max-width: 1120px;
     margin: auto;
-    padding: 45px 32px 50px;
+    padding: 40px 32px 40px;
   }
   .store-banner h1 {
     max-width: 660px;
@@ -1096,6 +1096,72 @@
     max-width: 1120px;
     margin: auto;
     padding: 30px 32px 60px;
+  }
+  /* Portada compacta: frase principal en máximo dos líneas; el resto en «Sobre la tienda». */
+  .store-banner .store-tagline {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .store-about-toggle {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgb(246 250 253 / 45%);
+    color: #f6fafd;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgb(10 25 49 / 25%);
+  }
+  .store-about-toggle:hover {
+    background: rgb(10 25 49 / 45%);
+  }
+  .store-about-toggle:focus-visible {
+    outline: 2px solid #f6fafd;
+    outline-offset: 2px;
+  }
+  .store-about-chevron {
+    display: inline-block;
+    line-height: 1;
+    transform: translateY(-3px);
+    transition: transform 0.2s ease;
+  }
+  .store-about-chevron--open {
+    transform: translateY(3px) rotate(180deg);
+  }
+  .store-about {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 20px 32px 0;
+  }
+  .store-about__card {
+    background: #ffffff;
+    border: 1px solid #dce8f1;
+    border-radius: 16px;
+    padding: 20px 22px;
+  }
+  .store-about__card h2 {
+    font: 600 1rem var(--font-ui);
+    color: #0a1931;
+  }
+  .store-about__text {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: #2c4a61;
+    overflow-wrap: anywhere;
+  }
+  .store-about__text strong {
+    color: #0a1931;
+  }
+  .store-about__close {
+    margin-top: 12px;
+    font-size: 0.85rem;
   }
   .store-filters {
     display: flex;
@@ -1700,10 +1766,20 @@
     padding: 16px 20px;
   }
   .store-banner-inner {
-    padding: 35px 22px 40px;
+    padding: 26px 20px 26px;
   }
   .store-banner h1 {
-    font-size: 2.8rem;
+    font-size: 2.3rem;
+  }
+  .store-banner p {
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .store-about {
+    padding: 16px 18px 0;
+  }
+  .store-about__card {
+    padding: 16px 18px;
   }
   .store-catalog {
     padding: 24px 18px 40px;

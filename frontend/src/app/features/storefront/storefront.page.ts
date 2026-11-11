@@ -21,6 +21,9 @@ import { DurationPipe, SolesPipe } from '../../shared/pipes/soles.pipe';
 import { PublicProduct, PublicStore, StorefrontApi } from './storefront.api';
 import { SmallImagePipe } from '../../shared/pipes/small-image.pipe';
 
+/** Más que esto no cabe en dos líneas de la portada en celular: se ofrece «Ver más». */
+const TAGLINE_MAX = 110;
+
 @Component({
   selector: 'app-storefront-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,6 +65,17 @@ export class StorefrontPage implements OnInit {
     this.category.set(null);
   }
   protected readonly error = signal<{ status: number; message: string } | null>(null);
+  /** La descripción completa del vendedor se abre aparte para que el catálogo quede a la vista. */
+  protected readonly aboutOpen = signal(false);
+  private readonly descriptionLines = computed(() =>
+    (this.store()?.description ?? '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean),
+  );
+  /** Frase principal de la portada: la primera línea de la descripción. */
+  protected readonly tagline = computed(() => this.descriptionLines()[0] ?? null);
+  protected readonly hasMoreAbout = computed(() => {
+    const lines = this.descriptionLines();
+    return lines.length > 1 || (lines[0]?.length ?? 0) > TAGLINE_MAX;
+  });
   protected readonly theme = computed(() => storeTheme(this.store()?.primaryColor));
   protected readonly initials = computed(() =>
     (this.store()?.businessName ?? '')

@@ -170,4 +170,24 @@ describe('StorefrontPage: catálogo visual', () => {
     expect(el.querySelector('.product-description')?.textContent?.trim()).toBe('Prime Video 🎬 Series');
     expect(el.querySelector('.store-banner-inner strong')?.textContent).toBe('Tienda Demo');
   });
+  it('la portada muestra solo la frase principal y el resto se abre con «Ver más sobre la tienda»', () => {
+    const fixture = TestBed.createComponent(StorefrontPage);
+    fixture.componentRef.setInput('slug', 'larga');
+    fixture.detectChanges();
+    http.expectOne('/api/v1/public/stores/larga').flush({
+      slug: 'larga', businessName: 'Larga', description: '**TecnoSiam** | Soluciones digitales\n\nSoporte técnico\n- Formateo de laptops',
+      logoUrl: null, coverUrl: null, primaryColor: null, acceptingOrders: true, notice: null, paymentMethods: [], orderUpdatesByWhatsapp: false,
+    });
+    http.expectOne('/api/v1/public/stores/larga/products').flush([]);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.store-tagline')?.textContent).toBe('TecnoSiam | Soluciones digitales');
+    expect(el.textContent).not.toContain('Formateo de laptops');
+    const toggle = el.querySelector<HTMLButtonElement>('.store-about-toggle')!;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(el.querySelector('#sobre-la-tienda')?.textContent).toContain('Formateo de laptops');
+  });
 });
