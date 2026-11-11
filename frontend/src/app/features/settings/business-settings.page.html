@@ -73,6 +73,21 @@
         @if (err('primaryColor'); as e) { <p id="primaryColor-error" class="field-error">{{ e }}</p> }
       </div>
 
+      <fieldset class="grid gap-4">
+        <legend class="field-label">Tus redes sociales (opcional)</legend>
+        <p class="field-hint -mt-2">Pega el enlace de tu perfil. En tu tienda solo aparecerá el ícono de las redes que agregues.</p>
+        <div class="grid gap-4 sm:grid-cols-2">
+          @for (n of socialFields; track n.control) {
+            <div class="field">
+              <label class="field-label" [for]="n.control">{{ n.label }}</label>
+              <input class="input" [id]="n.control" [formControlName]="n.control" inputmode="url" autocomplete="url" [placeholder]="n.placeholder"
+                     [attr.aria-invalid]="!!err(n.control)" [attr.aria-describedby]="n.control + '-error'" maxlength="300" />
+              @if (err(n.control); as e) { <p [id]="n.control + '-error'" class="field-error">{{ e }}</p> }
+            </div>
+          }
+        </div>
+      </fieldset>
+
       <div class="flex flex-wrap items-center gap-4 border-t border-[var(--line-subtle)] pt-6">
         <button class="btn btn-primary" type="submit" [disabled]="saving() || form.pristine">
           @if (saving()) { <span class="spinner" aria-hidden="true"></span> Guardando… } @else { Guardar cambios }

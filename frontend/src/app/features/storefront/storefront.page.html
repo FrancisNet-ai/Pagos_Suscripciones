@@ -38,6 +38,10 @@
           @if (tagline(); as t) {
             <!-- Solo la frase principal (primera línea): el resto va en «Ver más sobre la tienda». -->
             <p class="store-tagline" [innerHTML]="t | richText"></p>
+          } @else {
+            <p>Elige un producto y compra sin crear una cuenta. Pagas por Yape o Plin directamente al vendedor.</p>
+          }
+          <div class="store-banner-actions">
             @if (hasMoreAbout()) {
               <button type="button" class="store-about-toggle" aria-controls="sobre-la-tienda"
                       [attr.aria-expanded]="aboutOpen()" (click)="aboutOpen.set(!aboutOpen())">
@@ -45,9 +49,8 @@
                 <span aria-hidden="true" class="store-about-chevron" [class.store-about-chevron--open]="aboutOpen()">⌄</span>
               </button>
             }
-          } @else {
-            <p>Elige un producto y compra sin crear una cuenta. Pagas por Yape o Plin directamente al vendedor.</p>
-          }
+            <app-social-links [links]="s.socialLinks" [storeName]="s.businessName" />
+          </div>
         </div>
       </div>
     </header>

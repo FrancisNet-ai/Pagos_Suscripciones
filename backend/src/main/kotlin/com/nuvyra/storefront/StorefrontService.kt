@@ -2,6 +2,7 @@ package com.nuvyra.storefront
 
 import com.nuvyra.businesses.Business
 import com.nuvyra.businesses.BusinessRepository
+import com.nuvyra.businesses.SocialLinks
 import com.nuvyra.saas.EntitlementService
 import com.nuvyra.saas.PlanFeature
 import com.nuvyra.products.CapacityService
@@ -48,6 +49,7 @@ class StorefrontService(
             notice = if (methods.isEmpty()) "Esta tienda aún no tiene métodos de pago habilitados." else null,
             paymentMethods = methods,
             orderUpdatesByWhatsapp = orderUpdates.availableFor(business.id),
+            socialLinks = SocialLinks.of(business),
         )
     }
 

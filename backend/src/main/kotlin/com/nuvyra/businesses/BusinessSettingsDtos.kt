@@ -22,6 +22,12 @@ data class UpdateBusinessRequest(
     @field:NotBlank(message = "Selecciona una zona horaria")
     @field:Size(max = 64)
     val timeZone: String?,
+
+    /** Redes del vendedor (opcionales): enlace completo o, en Instagram y TikTok, el @usuario. */
+    @field:Size(max = 300) val instagramUrl: String? = null,
+    @field:Size(max = 300) val facebookUrl: String? = null,
+    @field:Size(max = 300) val tiktokUrl: String? = null,
+    @field:Size(max = 300) val websiteUrl: String? = null,
 )
 
 data class UpdateSlugRequest(

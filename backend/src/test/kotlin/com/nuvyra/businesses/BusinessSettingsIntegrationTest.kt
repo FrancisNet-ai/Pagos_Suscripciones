@@ -29,6 +29,39 @@ class BusinessSettingsIntegrationTest : IntegrationTest() {
             .andExpect(jsonPath("$.whatsappNumber").value("+51912345678"))
     }
 
+    private fun linksJson(links: String) =
+        """{"businessName":"Tienda Redes","timeZone":"America/Lima",$links}"""
+
+    @Test
+    fun `guarda las redes del vendedor normalizadas y las muestra en la tienda publica`() {
+        val email = uniqueEmail()
+        val seller = registerSeller(email)
+        val slug = mockMvc.perform(
+            put("/api/v1/business/me").with(csrf()).cookie(seller).contentType(MediaType.APPLICATION_JSON).content(
+                linksJson(""""instagramUrl":"@tecno.siam","facebookUrl":"facebook.com/tecnosiam","tiktokUrl":"https://www.tiktok.com/@tecnosiam?lang=es","websiteUrl":" """"),
+            ),
+        ).andExpect(status().isOk)
+            .andExpect(jsonPath("$.socialLinks.instagram").value("https://www.instagram.com/tecno.siam"))
+            .andExpect(jsonPath("$.socialLinks.facebook").value("https://facebook.com/tecnosiam"))
+            .andExpect(jsonPath("$.socialLinks.tiktok").value("https://www.tiktok.com/@tecnosiam?lang=es"))
+            .andExpect(jsonPath("$.socialLinks.website").doesNotExist())
+            .andReturn().response.contentAsString.let { Regex("\"slug\":\"([^\"]+)\"").find(it)!!.groupValues[1] }
+
+        mockMvc.perform(get("/api/v1/public/stores/$slug"))
+            .andExpect(jsonPath("$.socialLinks.instagram").value("https://www.instagram.com/tecno.siam"))
+            .andExpect(jsonPath("$.socialLinks.website").doesNotExist())
+
+        // Un ícono de Instagram nunca lleva a otro sitio, ni a enlaces con usuario o sin dominio.
+        for (bad in listOf(""""instagramUrl":"https://evil.example/instagram.com"""", """"facebookUrl":"https://user@facebook.com.evil.example"""",
+            """"tiktokUrl":"javascript:alert(1)"""", """"websiteUrl":"localhost"""")) {
+            mockMvc.perform(put("/api/v1/business/me").with(csrf()).cookie(seller).contentType(MediaType.APPLICATION_JSON).content(linksJson(bad)))
+                .andExpect(status().isBadRequest)
+        }
+        // Vaciar un campo quita el ícono.
+        mockMvc.perform(put("/api/v1/business/me").with(csrf()).cookie(seller).contentType(MediaType.APPLICATION_JSON)
+            .content(linksJson(""""instagramUrl":"""""))).andExpect(jsonPath("$.socialLinks.instagram").doesNotExist())
+    }
+
     @Test
     fun `rechaza color, zona horaria y WhatsApp invalidos`() {
         val seller = registerSeller()

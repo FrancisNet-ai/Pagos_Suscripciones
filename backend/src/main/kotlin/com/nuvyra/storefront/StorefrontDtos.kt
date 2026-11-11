@@ -1,5 +1,6 @@
 package com.nuvyra.storefront
 
+import com.nuvyra.businesses.SocialLinks
 import com.nuvyra.payments.PaymentInstructions
 import com.nuvyra.payments.PaymentMethodType
 import com.nuvyra.products.ProductType
@@ -28,6 +29,8 @@ data class PublicStoreResponse(
     val paymentMethods: List<PublicPaymentOption>,
     /** La tienda envía confirmaciones de pedido o pago por WhatsApp a quien lo autorice. */
     val orderUpdatesByWhatsapp: Boolean = false,
+    /** Redes del vendedor; la tienda solo muestra el ícono de las que tenga. */
+    val socialLinks: SocialLinks = SocialLinks(),
 )
 
 data class PublicProductResponse(

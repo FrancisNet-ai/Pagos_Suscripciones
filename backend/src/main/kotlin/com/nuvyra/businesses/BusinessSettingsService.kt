@@ -40,6 +40,10 @@ class BusinessSettingsService(
         business.primaryColor = color
         business.whatsappNumber = request.whatsappNumber?.takeIf { it.isNotBlank() }?.let { PeruPhone.normalize(it) }
         business.timeZone = timeZone
+        business.instagramUrl = SocialLinks.instagram(request.instagramUrl)
+        business.facebookUrl = SocialLinks.facebook(request.facebookUrl)
+        business.tiktokUrl = SocialLinks.tiktok(request.tiktokUrl)
+        business.websiteUrl = SocialLinks.website(request.websiteUrl)
         audit.record(AuditActions.BUSINESS_UPDATED, actorId = actorId, businessId = businessId, entityType = "BUSINESS", entityId = businessId)
         return business
     }

@@ -16,6 +16,15 @@ export interface Business {
   timeZone: string;
   status: 'ACTIVE' | 'SUSPENDED';
   createdAt: string;
+  socialLinks?: SocialLinks;
+}
+
+/** Redes del vendedor; la tienda muestra solo el ícono de las que tenga. */
+export interface SocialLinks {
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  website: string | null;
 }
 
 export interface UpdateBusinessPayload {
@@ -24,6 +33,10 @@ export interface UpdateBusinessPayload {
   primaryColor: string | null;
   whatsappNumber: string | null;
   timeZone: string;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  tiktokUrl: string | null;
+  websiteUrl: string | null;
 }
 
 export interface SlugAvailability {

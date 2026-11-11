@@ -1104,8 +1104,17 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .store-about-toggle {
+  .store-banner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
     margin-top: 14px;
+  }
+  .store-banner-actions:empty {
+    display: none;
+  }
+  .store-about-toggle {
     display: inline-flex;
     align-items: center;
     gap: 8px;

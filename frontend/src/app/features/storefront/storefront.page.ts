@@ -1,3 +1,4 @@
+import { SocialLinksComponent } from '../../shared/components/social-links.component';
 import { LoadingIndicatorComponent } from '../../shared/components/loading-indicator.component';
 import { PlainTextPipe, RichTextPipe } from '../../shared/pipes/rich-text.pipe';
 import {
@@ -27,7 +28,7 @@ const TAGLINE_MAX = 110;
 @Component({
   selector: 'app-storefront-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LoadingIndicatorComponent, SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent, WaveArtComponent, RichTextPipe, PlainTextPipe],
+  imports: [LoadingIndicatorComponent, SmallImagePipe, RouterLink, SolesPipe, DurationPipe, IconComponent, WaveArtComponent, RichTextPipe, PlainTextPipe, SocialLinksComponent],
   templateUrl: './storefront.page.html',
 })
 export class StorefrontPage implements OnInit {

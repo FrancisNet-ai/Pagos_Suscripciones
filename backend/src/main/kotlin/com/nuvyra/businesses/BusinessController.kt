@@ -32,11 +32,12 @@ data class BusinessResponse(
     val timeZone: String,
     val status: BusinessStatus,
     val createdAt: Instant?,
+    val socialLinks: SocialLinks = SocialLinks(),
 ) {
     companion object {
         fun from(b: Business) = BusinessResponse(
             b.id, b.uniqueCode, b.slug, b.businessName, b.description, b.logoUrl, b.coverUrl,
-            b.primaryColor, b.whatsappNumber, b.timeZone, b.status, b.createdAt,
+            b.primaryColor, b.whatsappNumber, b.timeZone, b.status, b.createdAt, SocialLinks.of(b),
         )
     }
 }
