@@ -170,4 +170,46 @@ describe('StorefrontPage: catálogo visual', () => {
     expect(el.querySelector('.product-description')?.textContent?.trim()).toBe('Prime Video 🎬 Series');
     expect(el.querySelector('.store-banner-inner strong')?.textContent).toBe('Tienda Demo');
   });
+  it('la portada muestra solo la frase principal y el resto se abre con «Ver más sobre la tienda»', () => {
+    const fixture = TestBed.createComponent(StorefrontPage);
+    fixture.componentRef.setInput('slug', 'larga');
+    fixture.detectChanges();
+    http.expectOne('/api/v1/public/stores/larga').flush({
+      slug: 'larga', businessName: 'Larga', description: '**TecnoSiam** | Soluciones digitales\n\nSoporte técnico\n- Formateo de laptops',
+      logoUrl: null, coverUrl: null, primaryColor: null, acceptingOrders: true, notice: null, paymentMethods: [], orderUpdatesByWhatsapp: false,
+    });
+    http.expectOne('/api/v1/public/stores/larga/products').flush([]);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.store-tagline')?.textContent).toBe('TecnoSiam | Soluciones digitales');
+    expect(el.textContent).not.toContain('Formateo de laptops');
+    const toggle = el.querySelector<HTMLButtonElement>('.store-about-toggle')!;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(el.querySelector('#sobre-la-tienda')?.textContent).toContain('Formateo de laptops');
+  });
+  it('muestra solo los íconos de las redes que el vendedor agregó', () => {
+    const fixture = TestBed.createComponent(StorefrontPage);
+    fixture.componentRef.setInput('slug', 'redes');
+    fixture.detectChanges();
+    http.expectOne('/api/v1/public/stores/redes').flush({
+      slug: 'redes', businessName: 'Redes', description: null, logoUrl: null, coverUrl: null, primaryColor: null,
+      acceptingOrders: true, notice: null, paymentMethods: [], orderUpdatesByWhatsapp: false,
+      socialLinks: { instagram: 'https://www.instagram.com/redes', facebook: null, tiktok: 'https://www.tiktok.com/@redes', website: null },
+    });
+    http.expectOne('/api/v1/public/stores/redes/products').flush([]);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const links = Array.from(el.querySelectorAll<HTMLAnchorElement>('.social-links a'));
+    expect(links.map((a) => a.getAttribute('aria-label'))).toEqual(['Instagram de Redes', 'TikTok de Redes']);
+    expect(links[0].getAttribute('href')).toBe('https://www.instagram.com/redes');
+    expect(links[0].getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('sin redes no muestra íconos', () => {
+    const { el } = render();
+    expect(el.querySelector('.social-links')).toBeNull();
+  });
 });

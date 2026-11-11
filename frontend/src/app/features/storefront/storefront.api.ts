@@ -1,3 +1,4 @@
+import { StoreSocialLinks } from '../../shared/components/social-links.component';
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -17,6 +18,8 @@ export interface PublicStore {
   paymentMethods: { method: PaymentMethodType; label: string }[];
   /** La tienda envía confirmaciones del pedido por WhatsApp a quien lo autorice. */
   orderUpdatesByWhatsapp: boolean;
+  /** Redes del vendedor: la portada muestra solo el ícono de las que tenga. */
+  socialLinks?: StoreSocialLinks | null;
 }
 
 export interface PublicProduct {

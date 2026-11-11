@@ -33,6 +33,10 @@ class Business(
     /** Motivo de la suspensión administrativa (SUPER_ADMIN); visible para el vendedor. */
     var suspensionReason: String? = null,
     var suspendedAt: java.time.Instant? = null,
+    var instagramUrl: String? = null,
+    var facebookUrl: String? = null,
+    var tiktokUrl: String? = null,
+    var websiteUrl: String? = null,
 ) : VersionedEntity()
 
 interface BusinessRepository : JpaRepository<Business, UUID> {

@@ -6,7 +6,7 @@ import { applyServerErrors, controlError } from '../../shared/validators/form-er
 import { peruMobileValidator } from '../../shared/validators/peru-phone';
 import { Business, SettingsApi } from './settings.api';
 
-type Field = 'businessName' | 'description' | 'primaryColor' | 'whatsappNumber' | 'timeZone';
+type Field = 'businessName' | 'description' | 'primaryColor' | 'whatsappNumber' | 'timeZone' | 'instagramUrl' | 'facebookUrl' | 'tiktokUrl' | 'websiteUrl';
 type ImageKind = 'logo' | 'cover';
 
 const TIME_ZONES = ['America/Lima', 'America/Bogota', 'America/Guayaquil', 'America/La_Paz', 'America/Santiago', 'America/Mexico_City', 'America/Argentina/Buenos_Aires'];
@@ -22,6 +22,12 @@ export class BusinessSettingsPage {
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly timeZones = TIME_ZONES;
+  protected readonly socialFields: { control: 'instagramUrl' | 'facebookUrl' | 'tiktokUrl' | 'websiteUrl'; label: string; placeholder: string }[] = [
+    { control: 'instagramUrl', label: 'Instagram', placeholder: '@tutienda o instagram.com/tutienda' },
+    { control: 'facebookUrl', label: 'Facebook', placeholder: 'facebook.com/tutienda' },
+    { control: 'tiktokUrl', label: 'TikTok', placeholder: '@tutienda o tiktok.com/@tutienda' },
+    { control: 'websiteUrl', label: 'Página web', placeholder: 'tutienda.com' },
+  ];
   protected readonly business = signal<Business | null>(null);
   protected readonly loadError = signal<string | null>(null);
   protected readonly saving = signal(false);
@@ -36,6 +42,10 @@ export class BusinessSettingsPage {
     primaryColor: ['#1A3D63', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]],
     whatsappNumber: ['', [peruMobileValidator]],
     timeZone: ['America/Lima', [Validators.required]],
+    instagramUrl: ['', [Validators.maxLength(300)]],
+    facebookUrl: ['', [Validators.maxLength(300)]],
+    tiktokUrl: ['', [Validators.maxLength(300)]],
+    websiteUrl: ['', [Validators.maxLength(300)]],
   });
 
   constructor() {
@@ -68,6 +78,10 @@ export class BusinessSettingsPage {
         primaryColor: v.primaryColor || null,
         whatsappNumber: v.whatsappNumber || null,
         timeZone: v.timeZone,
+        instagramUrl: v.instagramUrl.trim() || null,
+        facebookUrl: v.facebookUrl.trim() || null,
+        tiktokUrl: v.tiktokUrl.trim() || null,
+        websiteUrl: v.websiteUrl.trim() || null,
       })
       .subscribe({
         next: (b) => {
@@ -121,6 +135,10 @@ export class BusinessSettingsPage {
         primaryColor: b.primaryColor ?? '#1A3D63',
         whatsappNumber: b.whatsappNumber?.replace(/^\+51/, '') ?? '',
         timeZone: b.timeZone,
+        instagramUrl: b.socialLinks?.instagram ?? '',
+        facebookUrl: b.socialLinks?.facebook ?? '',
+        tiktokUrl: b.socialLinks?.tiktok ?? '',
+        websiteUrl: b.socialLinks?.website ?? '',
       },
       { emitEvent: false },
     );
