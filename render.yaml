@@ -45,3 +45,10 @@ services:
       # Correo por la API de Brevo: Render Free bloquea SMTP. El remitente (APP_MAIL_FROM) debe estar verificado en Brevo.
       - key: APP_MAIL_BREVO_API_KEY
         sync: false
+      # Avisos por Telegram (opcional): token de @BotFather, usuario del bot y un secreto aleatorio para el webhook.
+      - key: APP_TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: APP_TELEGRAM_BOT_USERNAME
+        value: NuvyraAvisosBot
+      - key: APP_TELEGRAM_WEBHOOK_SECRET
+        generateValue: true

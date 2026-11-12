@@ -9,7 +9,7 @@ Cada paquete de primer nivel de `com.nuvyra` es un módulo. La prueba
 2. **Las dependencias van hacia abajo.** Un módulo puede usar los de su nivel o de niveles inferiores, nunca los de
    arriba.
 3. **Los módulos de borde se pueden quitar sin romper el resto:** nadie los importa. Son `admin`, `imports`,
-   `reports`, `staff`, `supportaccess`, `tasks` y `web`.
+   `reports`, `staff`, `supportaccess`, `tasks`, `telegram` y `web`.
 4. **Cuando un módulo de abajo necesita algo de uno de arriba, lo pide con una interfaz (puerto)** y el de arriba la
    implementa. Ejemplo: `businesses.BrandingGate`, que implementa `saas.PlanBrandingGate`. Si el módulo de arriba
    no existe, el de abajo funciona igual.
@@ -24,7 +24,7 @@ Cada paquete de primer nivel de `com.nuvyra` es un módulo. La prueba
 | Identidad | `users`, `membership`, `security`, `twofactor`, `auth` |
 | Negocio | `businesses`, `media`, `customers`, `notifications` |
 | Ventas (nudo pendiente) | `products`, `orders`, `payments`, `subscriptions`, `renewals`, `storefront`, `saas`, `whatsapp` |
-| Borde | `admin`, `customeradmin`, `imports`, `reports`, `staff`, `supportaccess`, `tasks`, `web` |
+| Borde | `admin`, `customeradmin`, `imports`, `reports`, `staff`, `supportaccess`, `tasks`, `telegram`, `web` |
 
 ## Estado
 - **Antes:** 17 dependencias circulares, con 19 de 26 módulos dentro de un solo nudo.

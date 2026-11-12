@@ -20,6 +20,7 @@ data class AppProperties(
     val renewals: Renewals = Renewals(),
     val secrets: Secrets = Secrets(),
     val whatsapp: WhatsApp = WhatsApp(),
+    val telegram: Telegram = Telegram(),
     val security: Security = Security(),
     val web: Web = Web(),
 ) {
@@ -42,6 +43,20 @@ data class AppProperties(
         /** Segunda barrera entre negocios en PostgreSQL (V17). Solo se apaga ante una emergencia. */
         val rowLevelSecurity: Boolean = true,
     )
+
+    /**
+     * Bot de Telegram de la plataforma para avisos a vendedores y al superadministrador. Sin token queda apagado.
+     * El secreto lo envía Telegram en cada webhook (`X-Telegram-Bot-Api-Secret-Token`).
+     */
+    data class Telegram(
+        val botToken: String = "",
+        val botUsername: String = "",
+        val webhookSecret: String = "",
+        val apiBaseUrl: String = "https://api.telegram.org",
+        val requestTimeout: Duration = Duration.ofSeconds(8),
+    ) {
+        val enabled: Boolean get() = botToken.isNotBlank() && botUsername.isNotBlank() && webhookSecret.length >= 16
+    }
 
     data class WhatsApp(
         val graphBaseUrl: String = "https://graph.facebook.com/v21.0",

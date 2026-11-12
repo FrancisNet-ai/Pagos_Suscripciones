@@ -49,6 +49,10 @@ abstract class IntegrationTest {
         @DynamicPropertySource
         fun whatsappProperties(registry: DynamicPropertyRegistry) {
             registry.add("app.whatsapp.graph-base-url") { FakeWhatsAppGraph.baseUrl }
+            registry.add("app.telegram.api-base-url") { FakeTelegramApi.baseUrl }
+            registry.add("app.telegram.bot-token") { FakeTelegramApi.TOKEN }
+            registry.add("app.telegram.bot-username") { "NuvyraPruebasBot" }
+            registry.add("app.telegram.webhook-secret") { FakeTelegramApi.SECRET }
         }
     }
 
