@@ -212,6 +212,11 @@ export const routes: Routes = [
             loadComponent: () => import('./features/settings/renewal-settings.page').then((m) => m.RenewalSettingsPage),
           },
           {
+            path: 'telegram',
+            title: 'Avisos por Telegram',
+            loadComponent: () => import('./features/settings/telegram-settings.page').then((m) => m.TelegramSettingsPage),
+          },
+          {
             path: 'whatsapp',
             title: 'WhatsApp Business',
             loadComponent: () => import('./features/whatsapp/whatsapp-settings.page').then((m) => m.WhatsAppSettingsPage),
