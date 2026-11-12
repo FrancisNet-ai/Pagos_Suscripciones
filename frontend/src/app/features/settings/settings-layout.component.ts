@@ -34,6 +34,7 @@ export class SettingsLayoutComponent {
     { label: 'Enlace público', route: '/panel/configuracion/enlace' },
     { label: 'Yape y Plin', route: '/panel/configuracion/cobros' },
     { label: 'Renovaciones', route: '/panel/configuracion/renovaciones' },
+    { label: 'Avisos por Telegram', route: '/panel/configuracion/telegram' },
     { label: 'WhatsApp Business', route: '/panel/configuracion/whatsapp' },
     { label: 'Equipo', route: '/panel/configuracion/equipo' },
     { label: 'Soporte', route: '/panel/configuracion/soporte' },
