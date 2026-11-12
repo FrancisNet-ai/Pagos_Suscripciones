@@ -1,3 +1,4 @@
+import { TelegramConnectComponent } from '../../shared/components/telegram-connect.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -13,13 +14,15 @@ type MethodForm = FormGroup<{ holderName: FormControl<string>; phone: FormContro
 @Component({
   selector: 'app-admin-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ImageUploadComponent],
+  imports: [ReactiveFormsModule, ImageUploadComponent, TelegramConnectComponent],
   template: `
     <p class="type-eyebrow">Nuvyra</p>
     <h1 class="type-h1 mt-3">Configuración general</h1>
 
     @if (notice(); as n) { <p class="notice notice-success mt-6" role="status">{{ n }}</p> }
     @if (error(); as e) { <p class="notice notice-error mt-6" role="alert">{{ e }}</p> }
+
+    <app-telegram-connect class="mt-8 block max-w-3xl" description="Recibe al instante los vendedores nuevos, las pruebas gratis y los pagos de planes por aprobar." />
 
     @if (settings(); as s) {
       <form class="mt-10 grid max-w-3xl gap-6" [formGroup]="general" (ngSubmit)="saveGeneral()" novalidate>

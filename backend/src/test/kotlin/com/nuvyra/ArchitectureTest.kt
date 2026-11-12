@@ -33,7 +33,7 @@ class ArchitectureTest {
 
     @Test
     fun `los modulos de borde no son usados por otros`() {
-        val edge = setOf("admin", "imports", "reports", "staff", "supportaccess", "tasks", "web")
+        val edge = setOf("admin", "imports", "reports", "staff", "supportaccess", "tasks", "telegram", "web")
         val offenders = deps.flatMap { (module, uses) -> uses.intersect(edge).map { "$module -> $it" } }
         assertThat(offenders).describedAs("Un módulo de borde debe poder quitarse sin romper el resto").isEmpty()
     }

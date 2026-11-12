@@ -1,3 +1,4 @@
+import { TelegramConnectComponent } from '../../shared/components/telegram-connect.component';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiError } from '../../core/services/api-error';
@@ -14,7 +15,7 @@ const TIME_ZONES = ['America/Lima', 'America/Bogota', 'America/Guayaquil', 'Amer
 @Component({
   selector: 'app-business-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ImageUploadComponent],
+  imports: [ReactiveFormsModule, ImageUploadComponent, TelegramConnectComponent],
   templateUrl: './business-settings.page.html',
 })
 export class BusinessSettingsPage {

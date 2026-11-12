@@ -95,6 +95,12 @@ app:
     graph-base-url: ${APP_WHATSAPP_GRAPH_BASE_URL:https://graph.facebook.com/v21.0}
     app-secret: ${APP_WHATSAPP_APP_SECRET:}
     verify-token: ${APP_WHATSAPP_VERIFY_TOKEN:}
+  telegram:
+    # Bot de avisos (@NuvyraAvisosBot). Sin token, la conexión con Telegram queda oculta y apagada.
+    bot-token: ${APP_TELEGRAM_BOT_TOKEN:}
+    bot-username: ${APP_TELEGRAM_BOT_USERNAME:}
+    # Texto aleatorio (16+ caracteres) que Telegram reenvía en cada webhook para probar que viene de él.
+    webhook-secret: ${APP_TELEGRAM_WEBHOOK_SECRET:}
   security:
     # El superadministrador debe activar la verificación en dos pasos para usar /admin.
     require-super-admin-two-factor: ${APP_SECURITY_REQUIRE_SUPER_ADMIN_TWO_FACTOR:true}
