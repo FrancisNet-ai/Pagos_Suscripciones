@@ -9,7 +9,7 @@ spring-dependency-management = "1.1.7"
 springdoc = "3.2.0"
 poi = "5.5.1"
 zxing = "3.5.4"
-mockk = "1.14.11"
+mockk = "1.14.12"
 springmockk = "5.0.1"
 
 [libraries]
